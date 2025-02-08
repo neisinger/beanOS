@@ -10,6 +10,12 @@ log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current
 menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Gesamtstatistiken zurücksetzen", "Datum ändern", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
 version = "1.6.0"
+# Neue globale Variablen
+additional_menu_active = False
+additional_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espresso tonic", "other"]
+current_additional_menu_option = 0
+additional_counts = [0] * len(additional_menu_options)
+
 
 def parse_date(date_str):
     try:
@@ -82,6 +88,9 @@ def update_display(full_update=False):
         display.text(f"Version: {version}", 10, 30)
         display.text("by Joao Neisinger", 10, 50)
         display.text("Lizenz: None", 10, 70)
+    elif additional_menu_active:
+        for i, option in enumerate(additional_menu_options):
+            display.text("> " + option if i == current_additional_menu_option else option, 10, 20 + i * 20)
     elif menu_active:
         for i, option in enumerate(menu_options):
             display.text("> " + option if i == current_menu_option else option, 10, 20 + i * 20)
@@ -95,7 +104,7 @@ def update_display(full_update=False):
     display.update()
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, battery_reminder_count
+    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, battery_reminder_count, additional_menu_active, current_additional_menu_option, additional_counts
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
             battery_reminder_active = False
@@ -119,6 +128,17 @@ def button_pressed(pin):
         return
     if view_info_active:
         if display.pressed(BUTTON_C): view_info_active = False
+        update_display(False)
+        return
+    if additional_menu_active:
+        if display.pressed(BUTTON_UP):
+            current_additional_menu_option = (current_additional_menu_option - 1) % len(additional_menu_options)
+        elif display.pressed(BUTTON_DOWN):
+            current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
+        elif display.pressed(BUTTON_A):
+            additional_counts[current_additional_menu_option] += 1
+        elif display.pressed(BUTTON_C):
+            additional_menu_active = False
         update_display(False)
         return
     if display.pressed(BUTTON_UP):
@@ -164,10 +184,13 @@ def button_pressed(pin):
             elif view_info_active: view_info_active = False
             else: menu_active = False
             update_display(True)
-            return
-        if not menu_active:
-            other_count += 1
-            button_press_count += 1
+        else:
+            additional_menu_active = True
+        update_display(False)
+        return
+    if not menu_active:
+        other_count += 1
+        button_press_count += 1
     update_display(False)
     if button_press_count >= 10:
         update_display(True)
