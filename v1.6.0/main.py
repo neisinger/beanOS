@@ -32,9 +32,10 @@ def get_from_file(file, default, parser=lambda x: x):
     return default
 
 def format_date(t): return f"{t[2]:02d}.{t[1]:02d}.{t[0]}"
-def save_data(date, espresso, cappuccino, other):
+def save_data(date, espresso, cappuccino, other, additional_counts):
     with open(log_file, 'a') as file:
-        file.write(f'{date},{espresso},{cappuccino},{other}\n')
+        additional_counts_str = ",".join(map(str, additional_counts))
+        file.write(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
 
 def update_file(file, content):
     with open(file, 'w') as f:
@@ -101,6 +102,9 @@ def update_display(full_update=False):
         for term, count, center in zip(terms, counts, centers):
             display.text(str(count), center + (display.measure_text(term, 1) - display.measure_text(str(count), 1)) // 2 - display.measure_text(str(count), 1) // 2, HEIGHT - 40)
             display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20)
+        # Summe der anderen Getränke anzeigen
+        sum_other_drinks = sum(additional_counts)
+        display.text(str(sum_other_drinks), centers[2] + (display.measure_text("ANDERES", 1) - display.measure_text(str(sum_other_drinks), 1)) // 2 - display.measure_text(str(sum_other_drinks), 1) // 2, HEIGHT - 60)
     display.update()
 
 def button_pressed(pin):
@@ -137,6 +141,8 @@ def button_pressed(pin):
             current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
         elif display.pressed(BUTTON_A):
             additional_counts[current_additional_menu_option] += 1
+            additional_menu_active = False  # Menü schließen
+            update_file(count_file, f'{espresso_count},{cappuccino_count},{other_count},{battery_reminder_count}')
         elif display.pressed(BUTTON_C):
             additional_menu_active = False
         update_display(False)
@@ -149,10 +155,11 @@ def button_pressed(pin):
     if display.pressed(BUTTON_DOWN):
         current_menu_option = (current_menu_option + 1) % len(menu_options) if menu_active else 0
         if not menu_active:
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count)
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
             current_date += 86400
             update_file(date_file, format_date(time.localtime(current_date)))
             espresso_count, cappuccino_count, other_count, battery_reminder_count = 0, 0, 0, battery_reminder_count + 1
+            additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
             update_display(True)
