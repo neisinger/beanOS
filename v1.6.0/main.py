@@ -106,7 +106,7 @@ def update_display(full_update=False):
             display.text(str(count), center - display.measure_text(str(count), 1) // 2, HEIGHT - 40, scale=2)
             display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20, scale=2)
 
-    display.update()
+    display.update()    
 
 def button_pressed(pin):
     global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, battery_reminder_count, additional_menu_active, current_additional_menu_option, additional_counts
@@ -138,6 +138,7 @@ def button_pressed(pin):
     if additional_menu_active:
         if display.pressed(BUTTON_UP):
             current_additional_menu_option = (current_additional_menu_option - 1) % len(additional_menu_options)
+            print(f"BUTTON_UP pressed in additional_menu_active: {current_additional_menu_option}")
         elif display.pressed(BUTTON_DOWN):
             current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
         elif display.pressed(BUTTON_A):
@@ -151,6 +152,7 @@ def button_pressed(pin):
     if display.pressed(BUTTON_UP):
         current_menu_option = (current_menu_option - 1) % len(menu_options) if menu_active else 0
         menu_active = True if not menu_active else menu_active
+        print(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
         update_display(False)
         return
     if display.pressed(BUTTON_DOWN):
@@ -164,7 +166,6 @@ def button_pressed(pin):
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
             update_display(True)
-            update_file(count_file, f'{espresso_count},{cappuccino_count},{other_count},{battery_reminder_count}')
         update_display(False)
         return
     if display.pressed(BUTTON_A):
