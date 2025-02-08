@@ -8,7 +8,7 @@ led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Gesamtstatistiken zurücksetzen", "Datum ändern", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
-version = "1.5.0"
+version = "1.6.0"
 
 def parse_date(date_str):
     try:
