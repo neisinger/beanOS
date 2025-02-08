@@ -91,7 +91,7 @@ def update_display(full_update=False):
         display.text("Lizenz: None", 10, 70)
     elif additional_menu_active:
         for i, option in enumerate(additional_menu_options):
-            display.text("> " + option if i == current_additional_menu_option else option, 10, 20 + i * 20)
+            display.text("> " + option if i == current_additional_menu_option else option, 10, 20 + i * 15, scale=1)  # Schriftgröße kleiner gemacht
     elif menu_active:
         for i, option in enumerate(menu_options):
             display.text("> " + option if i == current_menu_option else option, 10, 20 + i * 20)
