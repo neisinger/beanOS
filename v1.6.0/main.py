@@ -98,15 +98,14 @@ def update_display(full_update=False):
         for i, option in enumerate(menu_options):
             display.text("> " + option if i == current_menu_option else option, 10, 21 + i * 20)  # Abstand zu oberem Rand auf 21 Pixel gesetzt
     else:
+        # Zähler und Labels am unteren Bildschirmrand
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
-        counts = [espresso_count, cappuccino_count, other_count]
-        centers = [41, 147, 253]  # Neue Zentrierungen
+        counts = [espresso_count, cappuccino_count, sum(additional_counts)]
+        centers = [41, 147, 253]  # Zentrierungen
         for term, count, center in zip(terms, counts, centers):
-            display.text(str(count), center + (display.measure_text(term, 1) - display.measure_text(str(count), 1)) // 2 - display.measure_text(str(count), 1) // 2, HEIGHT - 40)
-            display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20)
-        # Summe der anderen Getränke anzeigen
-        sum_other_drinks = sum(additional_counts)
-        display.text(str(sum_other_drinks), centers[2] + (display.measure_text("ANDERES", 1) - display.measure_text(str(sum_other_drinks), 1)) // 2 - display.measure_text(str(sum_other_drinks), 1) // 2, HEIGHT - 60)
+            display.text(str(count), center - display.measure_text(str(count), 1) // 2, HEIGHT - 40, scale=2)
+            display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20, scale=2)
+
     display.update()
 
 def button_pressed(pin):
