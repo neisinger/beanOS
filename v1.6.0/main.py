@@ -90,13 +90,13 @@ def update_display(full_update=False):
         display.text("by Joao Neisinger", 10, 50)
         display.text("Lizenz: None", 10, 70)
     elif additional_menu_active:
-        display.set_font("bitmap6")  # Schriftart auf bitmap6 setzen
+        display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(additional_menu_options):
-            display.text("> " + option if i == current_additional_menu_option else option, 10, 21 + i * 15, scale=1)  # Abstand zu oberem Rand auf 21 Pixel gesetzt, Schriftgröße kleiner gemacht
-        display.set_font("bitmap8")  # Schriftart zurücksetzen
+            display.text("> " + option if i == current_additional_menu_option else option, 10, 22 + i * 21)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
     elif menu_active:
+        display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(menu_options):
-            display.text("> " + option if i == current_menu_option else option, 10, 21 + i * 20)  # Abstand zu oberem Rand auf 21 Pixel gesetzt
+            display.text("> " + option if i == current_menu_option else option, 10, 22 + i * 21)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
     else:
         # Zähler und Labels am unteren Bildschirmrand
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
