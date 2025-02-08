@@ -92,11 +92,11 @@ def update_display(full_update=False):
     elif additional_menu_active:
         display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(additional_menu_options):
-            display.text("> " + option if i == current_additional_menu_option else option, 10, 22 + i * 21)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
+            display.text("> " + option if i == current_additional_menu_option else option, 10, 22 + i * 18)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
     elif menu_active:
         display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(menu_options):
-            display.text("> " + option if i == current_menu_option else option, 10, 22 + i * 21)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
+            display.text("> " + option if i == current_menu_option else option, 10, 22 + i * 18)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
     else:
         # Zähler und Labels am unteren Bildschirmrand
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
