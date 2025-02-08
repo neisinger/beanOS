@@ -2,6 +2,7 @@ import time, badger2040, machine, os
 
 # Initialisierung des Badger2040
 display = badger2040.Badger2040()
+display.set_font("bitmap8")  # Schriftart ändern
 WIDTH, HEIGHT = 296, 128
 BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A, badger2040.BUTTON_B, badger2040.BUTTON_C, badger2040.BUTTON_UP, badger2040.BUTTON_DOWN, 25
 led = machine.Pin(LED, machine.Pin.OUT)
