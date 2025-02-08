@@ -88,10 +88,10 @@ def update_display(full_update=False):
     else:
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
         counts = [espresso_count, cappuccino_count, other_count]
-        positions = [10, (WIDTH - display.measure_text("CAPPU", 1)) // 2, WIDTH - display.measure_text("ANDERES", 1) - 40]
-        for term, count, pos in zip(terms, counts, positions):
-            display.text(str(count), pos + (display.measure_text(term, 1) - display.measure_text(str(count), 1)) // 2, HEIGHT - 40)
-            display.text(term, pos, HEIGHT - 20)
+        centers = [41, 147, 253]  # Neue Zentrierungen
+        for term, count, center in zip(terms, counts, centers):
+            display.text(str(count), center + (display.measure_text(term, 1) - display.measure_text(str(count), 1)) // 2 - display.measure_text(str(count), 1) // 2, HEIGHT - 40)
+            display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20)
     display.update()
 
 def button_pressed(pin):
