@@ -53,6 +53,18 @@ def update_display(full_update=False):
     refresh_count = 0 if full_update else refresh_count + 1
     display.set_pen(15)
     display.clear()
+    
+    # Schwarz 20 Pixel hohen Balken hinzufügen
+    display.set_pen(0)
+    display.rectangle(0, 0, WIDTH, 20)
+    display.set_pen(15)
+    
+    # Text in Weiß
+    display.set_pen(15)
+    display.text("beanOS", 10, 2)
+    date_str = format_date(time.localtime(current_date))
+    display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
+    
     display.set_pen(0)
 
     if change_date_active:
@@ -74,9 +86,6 @@ def update_display(full_update=False):
         for i, option in enumerate(menu_options):
             display.text("> " + option if i == current_menu_option else option, 10, 20 + i * 20)
     else:
-        display.text("beanOS", 10, 10)
-        date_str = format_date(time.localtime(current_date))
-        display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 10)
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
         counts = [espresso_count, cappuccino_count, other_count]
         positions = [10, (WIDTH - display.measure_text("CAPPU", 1)) // 2, WIDTH - display.measure_text("ANDERES", 1) - 40]
