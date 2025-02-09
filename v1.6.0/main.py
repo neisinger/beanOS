@@ -66,6 +66,15 @@ def turn_off():
     for i in range(5, 0, -1):
         print(f"{i}...")
         time.sleep(1)
+    display.set_update_speed(badger2040.UPDATE_NORMAL)
+    display.set_pen(0)
+    display.clear()
+    display.set_pen(15)
+    text = "(-.-)"
+    text_width = display.measure_text(text, 2)
+    display.text("beanOS", 10, 2)
+    display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
+    display.update()
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
         machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
