@@ -201,7 +201,7 @@ def load_counters_from_log(log_file):
                 additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
 
     last_interaction_time = time.time()  # Update last interaction time on button press
 
@@ -256,7 +256,7 @@ def button_pressed(pin):
             save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             current_date += 86400
             update_file(date_file, format_date(time.localtime(current_date)))
-            espresso_count, cappuccino_count, battery_reminder_count = 0, 0, battery_reminder_count + 1
+            espresso_count, cappuccino_count, other_count, battery_reminder_count = 0, 0, 0, battery_reminder_count + 1
             additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
