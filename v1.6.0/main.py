@@ -270,10 +270,9 @@ def button_pressed(pin):
             if current_menu_option == 1:
                 clear_today_log_entries(log_file, format_date(time.localtime(current_date)))
                 espresso_count, cappuccino_count = 0, 0
-            if current_menu_option == 2: clear_log_file(log_file, format_date(time.localtime(current_date))); clear_log_file(count_file, format_date(time.localtime(current_date))); espresso_count, cappuccino_count = 0, 0
-            if current_menu_option == 3: change_date_active, temp_date = True, current_date
-            if current_menu_option == 4: view_info_active = True
-            if current_menu_option == 5: menu_active = False
+            if current_menu_option == 2: change_date_active, temp_date = True, current_date
+            if current_menu_option == 3: view_info_active = True
+            if current_menu_option == 4: menu_active = False
             update_display(True)
             return
         espresso_count += 1
@@ -294,6 +293,7 @@ def button_pressed(pin):
         update_display(False)
         return
     if not menu_active:
+        other_count += 1
         button_press_count += 1
     update_display(False)
     if button_press_count >= 10:
@@ -301,9 +301,6 @@ def button_pressed(pin):
         button_press_count = 0
     save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
 
-def turn_off():
-    machine.deepsleep()
-    print("System turned off")
 
 if __name__ == "__main__":
     current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
