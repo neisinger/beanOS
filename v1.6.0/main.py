@@ -72,8 +72,8 @@ def nap():
             led.value(0)
             time.sleep(0.1)
     display.set_update_speed(badger2040.UPDATE_NORMAL)
-    display.set_pen(15)  # Set to white color
-    text = "( -_・)"
+    display.set_pen(8)  # Set to white color
+    text = "wake me up when the caffeine ends"
     text_width = display.measure_text(text, 2)
     display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
     display.update()
@@ -84,7 +84,7 @@ def nap():
         pin.irq(trigger=machine.Pin.IRQ_FALLING, wake=machine.DEEPSLEEP)
     
     print("System turned off")
-    machine.deepsleep()
+    display.deepsleep()
     
 
 def update_file(file, content):
