@@ -75,7 +75,7 @@ def turn_off():
     display.set_pen(0)
     display.clear()
     display.set_pen(15)
-    text = "(ᴗ˳ᴗ) zZ"
+    text = "(⌐■_■)"
     text_width = display.measure_text(text, 2)
     display.text("beanOS", 10, 2)
     display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
@@ -326,14 +326,14 @@ if __name__ == "__main__":
     load_counters_from_log(log_file)
     print("Counters initialized")
 
-    led.value(1)
+    led.value(1)  # Ensure the LED is on when RP2040 is active
     update_display(True)
     last_interaction_time = time.time()  # Initialize last interaction time
     while True:
         if any(display.pressed(btn) for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]):
             button_pressed(None)
         else:
-            led.value(0)
+            led.value(1)  # Keep LED on when no button is pressed
         # Check for inactivity and turn off if no interaction for 30 seconds
         if time.time() - last_interaction_time > 30:
             turn_off()
