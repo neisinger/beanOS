@@ -1,4 +1,4 @@
-import time, badger2040, machine, os
+import time, badger2040, machine, uos
 
 # Initialisierung des Badger2040
 display = badger2040.Badger2040()
@@ -16,7 +16,6 @@ additional_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espr
 current_additional_menu_option = 0
 additional_counts = [0] * len(additional_menu_options)
 
-
 def parse_date(date_str):
     try:
         day, month, year = map(int, date_str.split('.'))
@@ -26,13 +25,18 @@ def parse_date(date_str):
         return None
 
 def get_from_file(file, default, parser=lambda x: x):
-    if file in os.listdir():
+    if file in uos.listdir():
         with open(file, 'r') as f:
             return parser(f.readline().strip())
     return default
 
 def format_date(t): return f"{t[2]:02d}.{t[1]:02d}.{t[0]}"
+
 def save_data(date, espresso, cappuccino, other, additional_counts):
+    if log_file not in uos.listdir():
+        with open(log_file, 'w') as file:
+            headers = "Datum,Espresso,Cappuccino,Other," + ",".join(additional_menu_options)
+            file.write(headers + "\n")
     with open(log_file, 'a') as file:
         additional_counts_str = ",".join(map(str, additional_counts))
         file.write(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
@@ -44,6 +48,27 @@ def update_file(file, content):
 current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
 espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
 button_press_count, temp_date, refresh_count = 0, current_date, 0
+
+def calculate_total_statistics_and_first_date():
+    if log_file not in uos.listdir():
+        return 0, 0, 0, None
+    
+    total_espresso, total_cappuccino, total_other = 0, 0, 0
+    first_date = None
+    
+    with open(log_file, 'r') as file:
+        lines = file.readlines()[1:]  # Skip header line
+        for line in lines:
+            date, espresso, cappuccino, other, *additional_counts = line.strip().split(',')
+            total_espresso += int(espresso)
+            total_cappuccino += int(cappuccino)
+            total_other += int(other) + sum(map(int, additional_counts))
+            if first_date is None:
+                first_date = date
+    
+    return total_espresso, total_cappuccino, total_other, first_date
+
+# Add this function definition to your code
 
 def update_display(full_update=False):
     global refresh_count
@@ -79,16 +104,18 @@ def update_display(full_update=False):
         display.text(date_str, (WIDTH - display.measure_text(date_str, 2)) // 2, HEIGHT // 2 - 10, scale=2)
     elif view_statistics_active:
         total_espresso, total_cappuccino, total_other, first_date = calculate_total_statistics_and_first_date()
-        display.text("Gesamtstatistiken:", 10, 10)
-        display.text(f"Espresso: {total_espresso}", 10, 30)
-        display.text(f"Cappuccino: {total_cappuccino}", 10, 50)
-        display.text(f"Anderes: {total_other}", 10, 70)
-        display.text(f"Seit: {first_date}" if first_date else "Keine Daten verfügbar", 10, 90)
+        display.set_font("bitmap8")
+        display.text("Gesamtstatistiken", 10, 22)
+        display.text(f"Espresso {total_espresso}", 10, 44)
+        display.text(f"Cappuccino {total_cappuccino}", 10, 66)
+        display.text(f"Andere Getränke {total_other}", 10, 88)
+        display.text(f"Seit: {first_date}" if first_date else "Keine Daten verfügbar", 10, 110)
     elif view_info_active:
-        display.text("Information:", 10, 10)
-        display.text(f"Version: {version}", 10, 30)
-        display.text("by Joao Neisinger", 10, 50)
-        display.text("Lizenz: None", 10, 70)
+        display.set_font("bitmap8")
+        display.text("Information", 10, 22)
+        display.text(f"Version: {version}", 10, 44)
+        display.text("by Joao Neisinger", 10, 66)
+        display.text("Lizenz: None", 10, 88)
     elif additional_menu_active:
         display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(additional_menu_options):
@@ -103,13 +130,14 @@ def update_display(full_update=False):
         counts = [espresso_count, cappuccino_count, sum(additional_counts)]
         centers = [41, 147, 253]  # Zentrierungen
         for term, count, center in zip(terms, counts, centers):
-            display.text(str(count), center - display.measure_text(str(count), 1) // 2, HEIGHT - 40, scale=2)
-            display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 20, scale=2)
+            display.text(str(count), center - display.measure_text(str(count), 1) // 2, HEIGHT - 42, scale=2)
+            display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 22, scale=2)
 
-    display.update()    
+    display.update()  
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, battery_reminder_count, additional_menu_active, current_additional_menu_option, additional_counts
+    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date
+
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
             battery_reminder_active = False
