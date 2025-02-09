@@ -62,6 +62,10 @@ def save_data(date, espresso, cappuccino, additional_counts):
     print(f"Data saved: {date}, {espresso}, {cappuccino}, {additional_counts}")
 
 def turn_off():
+    print("System will turn off in 5 seconds...")
+    for i in range(5, 0, -1):
+        print(f"{i}...")
+        time.sleep(1)
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
         machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
