@@ -37,9 +37,30 @@ def save_data(date, espresso, cappuccino, other, additional_counts):
         with open(log_file, 'w') as file:
             headers = "Datum,Espresso,Cappuccino,Other," + ",".join(additional_menu_options)
             file.write(headers + "\n")
-    with open(log_file, 'a') as file:
+    lines = []
+    with open(log_file, 'r') as file:
+        lines = file.readlines()
+    
+    updated = False
+    for i, line in enumerate(lines):
+        if line.startswith(date):
+            parts = line.strip().split(',')
+            parts[1] = str(espresso)
+            parts[2] = str(cappuccino)
+            parts[3] = str(other)
+            for j in range(4, 4 + len(additional_counts)):
+                parts[j] = str(additional_counts[j - 4])
+            lines[i] = ','.join(parts) + '\n'
+            updated = True
+            break
+    
+    if not updated:
         additional_counts_str = ",".join(map(str, additional_counts))
-        file.write(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
+        lines.append(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
+    
+    with open(log_file, 'w') as file:
+        file.writelines(lines)
+    print(f"Data saved: {date}, {espresso}, {cappuccino}, {other}, {additional_counts}")
 
 def update_file(file, content):
     with open(file, 'w') as f:
@@ -67,8 +88,6 @@ def calculate_total_statistics_and_first_date():
                 first_date = date
     
     return total_espresso, total_cappuccino, total_other, first_date
-
-# Add this function definition to your code
 
 def update_display(full_update=False):
     global refresh_count
@@ -133,16 +152,40 @@ def update_display(full_update=False):
             display.text(str(count), center - display.measure_text(str(count), 1) // 2, HEIGHT - 42, scale=2)
             display.text(term, center - display.measure_text(term, 1) // 2, HEIGHT - 22, scale=2)
 
-    display.update()  
+    display.update()
+
+def clear_today_log_entries(log_file, date):
+    if log_file in uos.listdir():
+        with open(log_file, 'r') as file:
+            lines = file.readlines()
+
+        with open(log_file, 'w') as file:
+            for line in lines:
+                if not line.startswith(date):
+                    file.write(line)
+
+def load_counters_from_log(log_file):
+    global espresso_count, cappuccino_count, other_count, additional_counts
+    if log_file in uos.listdir():
+        with open(log_file, 'r') as file:
+            lines = file.readlines()
+            if len(lines) > 1:
+                last_line = lines[-1].strip().split(',')
+                espresso_count = int(last_line[1])
+                cappuccino_count = int(last_line[2])
+                other_count = int(last_line[3])
+                additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date
+    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time
+
+    last_interaction_time = time.time()  # Update last interaction time on button press
 
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
             battery_reminder_active = False
             battery_reminder_count = 0
-            update_file(count_file, f'{espresso_count},{cappuccino_count},{other_count},{battery_reminder_count}')
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
             update_display(True)
         return
     if change_date_active:
@@ -171,8 +214,8 @@ def button_pressed(pin):
             current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
         elif display.pressed(BUTTON_A):
             additional_counts[current_additional_menu_option] += 1
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
             additional_menu_active = False  # Menü schließen
-            update_file(count_file, f'{espresso_count},{cappuccino_count},{other_count},{battery_reminder_count}')
         elif display.pressed(BUTTON_C):
             additional_menu_active = False
         update_display(False)
@@ -200,7 +243,7 @@ def button_pressed(pin):
         if menu_active:
             if current_menu_option == 0: view_statistics_active = True
             if current_menu_option == 1:
-                clear_today_log_entries(log_file, count_file, format_date(time.localtime(current_date)))
+                clear_today_log_entries(log_file, format_date(time.localtime(current_date)))
                 espresso_count, cappuccino_count, other_count = 0, 0, 0
             if current_menu_option == 2: clear_log_file(log_file); clear_count_file(count_file); espresso_count, cappuccino_count, other_count = 0, 0, 0
             if current_menu_option == 3: change_date_active, temp_date = True, current_date
@@ -232,15 +275,30 @@ def button_pressed(pin):
     if button_press_count >= 10:
         update_display(True)
         button_press_count = 0
-    update_file(count_file, f'{espresso_count},{cappuccino_count},{other_count},{battery_reminder_count}')
+    save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
+
+def turn_off():
+    machine.deepsleep()
+    print("System turned off")
 
 if __name__ == "__main__":
+    current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
+    espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
+    button_press_count, temp_date, refresh_count = 0, current_date, 0
+
+    load_counters_from_log(log_file)
+    print("Counters initialized")
+
     led.value(1)
     update_display(True)
+    last_interaction_time = time.time()  # Initialize last interaction time
     while True:
         if any(display.pressed(btn) for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]):
             button_pressed(None)
         else:
             led.value(0)
+        # Check for inactivity and turn off if no interaction for 30 seconds
+        if time.time() - last_interaction_time > 30:
+            turn_off()
         time.sleep(0.1)
     led.value(0)
