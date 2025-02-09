@@ -61,7 +61,7 @@ def save_data(date, espresso, cappuccino, additional_counts):
         file.write(''.join(lines))
     print(f"Data saved: {date}, {espresso}, {cappuccino}, {additional_counts}")
 
-def sleep():
+def nap():
     print("System will turn off in 5 seconds...")
     for i in range(5, 0, -1):
         print(f"{i}...")
@@ -86,7 +86,7 @@ def sleep():
         
     print("System turned off")
     sleep(0.5)
-    display.halt()
+    display.sleep()
     
 
 def update_file(file, content):
@@ -337,7 +337,7 @@ if __name__ == "__main__":
         else:
             led.value(1)  # Keep LED on when no button is pressed
         # Check for inactivity and turn off if no interaction for 30 seconds
-        if time.time() - last_interaction_time > 30:
-            sleep()
+        if time.time() - last_interaction_time > 15:
+            nap()
         time.sleep(0.1)
     led.value(0)
