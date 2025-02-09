@@ -71,21 +71,23 @@ def nap():
             time.sleep(0.1)
             led.value(0)
             time.sleep(0.1)
-    display.set_update_speed(badger2040.UPDATE_NORMAL)
-    display.set_pen(8)  # Set to white color
-    text = "wake me up"
-    text = "when the caffeine ends"
-    text_width = display.measure_text(text, 2)
-    display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
+    display.set_update_speed(badger2040.UPDATE_FAST)
+    display.set_pen(4)  # Set to white color
+    text1 = "wake me up"
+    text2 = "when the caffeine ends"
+    text_width1 = display.measure_text(text1, 2)
+    text_width2 = display.measure_text(text2, 2)
+    display.text(text1, (WIDTH - text_width1) // 2, (HEIGHT // 2) - 20, scale=2)
+    display.text(text2, (WIDTH - text_width2) // 2, (HEIGHT // 2), scale=2)
     display.update()
     
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
         pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-        pin.irq(trigger=machine.Pin.IRQ_FALLING, wake=machine.halt)
+        pin.irq(trigger=machine.Pin.IRQ_RISING, wake=machine.DEEPSLEEP)
     
     print("System turned off")
-    halt()
+    machine.deepsleep()
     
 
 def update_file(file, content):
