@@ -88,8 +88,7 @@ def clear_log_file(file, date):
                     parts = line.strip().split(',')
                     parts[1] = '0'  # Reset espresso count
                     parts[2] = '0'  # Reset cappuccino count
-                    parts[3] = '0'  # Reset other count
-                    for j in range(4, len(parts)):
+                    for j in range(3, len(parts)):
                         parts[j] = '0'  # Reset additional counts
                     f.write(','.join(parts) + '\n')
                 else:
@@ -300,7 +299,6 @@ def button_pressed(pin):
         update_display(True)
         button_press_count = 0
     save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
-
 
 if __name__ == "__main__":
     current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
