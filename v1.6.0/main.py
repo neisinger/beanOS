@@ -65,12 +65,17 @@ def turn_off():
     print("System will turn off in 5 seconds...")
     for i in range(5, 0, -1):
         print(f"{i}...")
-        time.sleep(1)
+        # Make the LED flicker
+        for _ in range(5):
+            led.value(1)
+            time.sleep(0.1)
+            led.value(0)
+            time.sleep(0.1)
     display.set_update_speed(badger2040.UPDATE_NORMAL)
     display.set_pen(0)
     display.clear()
     display.set_pen(15)
-    text = "(-.-)"
+    text = "(ᴗ˳ᴗ) zZ"
     text_width = display.measure_text(text, 2)
     display.text("beanOS", 10, 2)
     display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
