@@ -59,8 +59,16 @@ def save_data(date, espresso, cappuccino, other, additional_counts):
         lines.append(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
     
     with open(log_file, 'w') as file:
-        file.writelines(lines)
+        file.write(''.join(lines))
     print(f"Data saved: {date}, {espresso}, {cappuccino}, {other}, {additional_counts}")
+
+def turn_off():
+    # Configure buttons as wake-up sources
+    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
+        machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
+    
+    machine.deepsleep()
+    print("System turned off")
 
 def update_file(file, content):
     with open(file, 'w') as f:
