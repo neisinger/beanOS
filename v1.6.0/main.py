@@ -202,7 +202,7 @@ def load_counters_from_log(log_file):
                 additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, other_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time
 
     last_interaction_time = time.time()  # Update last interaction time on button press
 
@@ -210,7 +210,7 @@ def button_pressed(pin):
         if display.pressed(BUTTON_A):
             battery_reminder_active = False
             battery_reminder_count = 0
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             update_display(True)
         return
     if change_date_active:
@@ -239,7 +239,7 @@ def button_pressed(pin):
             current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
         elif display.pressed(BUTTON_A):
             additional_counts[current_additional_menu_option] += 1
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             additional_menu_active = False  # Menü schließen
         elif display.pressed(BUTTON_C):
             additional_menu_active = False
@@ -254,10 +254,10 @@ def button_pressed(pin):
     if display.pressed(BUTTON_DOWN):
         current_menu_option = (current_menu_option + 1) % len(menu_options) if menu_active else 0
         if not menu_active:
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
+            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             current_date += 86400
             update_file(date_file, format_date(time.localtime(current_date)))
-            espresso_count, cappuccino_count, other_count, battery_reminder_count = 0, 0, 0, battery_reminder_count + 1
+            espresso_count, cappuccino_count, battery_reminder_count = 0, 0, battery_reminder_count + 1
             additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
@@ -269,8 +269,8 @@ def button_pressed(pin):
             if current_menu_option == 0: view_statistics_active = True
             if current_menu_option == 1:
                 clear_today_log_entries(log_file, format_date(time.localtime(current_date)))
-                espresso_count, cappuccino_count, other_count = 0, 0, 0
-            if current_menu_option == 2: clear_log_file(log_file); clear_count_file(count_file); espresso_count, cappuccino_count, other_count = 0, 0, 0
+                espresso_count, cappuccino_count = 0, 0
+            if current_menu_option == 2: clear_log_file(log_file, format_date(time.localtime(current_date))); clear_log_file(count_file, format_date(time.localtime(current_date))); espresso_count, cappuccino_count = 0, 0
             if current_menu_option == 3: change_date_active, temp_date = True, current_date
             if current_menu_option == 4: view_info_active = True
             if current_menu_option == 5: menu_active = False
@@ -294,13 +294,12 @@ def button_pressed(pin):
         update_display(False)
         return
     if not menu_active:
-        other_count += 1
         button_press_count += 1
     update_display(False)
     if button_press_count >= 10:
         update_display(True)
         button_press_count = 0
-    save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, other_count, additional_counts)
+    save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
 
 def turn_off():
     machine.deepsleep()
