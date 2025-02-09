@@ -72,12 +72,9 @@ def nap():
             led.value(0)
             time.sleep(0.1)
     display.set_update_speed(badger2040.UPDATE_NORMAL)
-    display.set_pen(0)
-    display.clear()
-    display.set_pen(15)
-    text = "(⌐■_■)"
+    display.set_pen(15)  # Set to white color
+    text = "( -_・)"
     text_width = display.measure_text(text, 2)
-    display.text("beanOS", 10, 2)
     display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
     display.update()
     
