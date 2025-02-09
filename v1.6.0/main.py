@@ -61,7 +61,7 @@ def save_data(date, espresso, cappuccino, additional_counts):
         file.write(''.join(lines))
     print(f"Data saved: {date}, {espresso}, {cappuccino}, {additional_counts}")
 
-def turn_off():
+def sleep():
     print("System will turn off in 5 seconds...")
     for i in range(5, 0, -1):
         print(f"{i}...")
@@ -83,9 +83,11 @@ def turn_off():
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
         machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-    
-    machine.deepsleep()
+        
     print("System turned off")
+    sleep(0.5)
+    display.halt()
+    
 
 def update_file(file, content):
     with open(file, 'w') as f:
@@ -336,6 +338,6 @@ if __name__ == "__main__":
             led.value(1)  # Keep LED on when no button is pressed
         # Check for inactivity and turn off if no interaction for 30 seconds
         if time.time() - last_interaction_time > 30:
-            turn_off()
+            sleep()
         time.sleep(0.1)
     led.value(0)
