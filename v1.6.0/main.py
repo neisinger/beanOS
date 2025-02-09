@@ -7,7 +7,7 @@ WIDTH, HEIGHT = 296, 128
 BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A, badger2040.BUTTON_B, badger2040.BUTTON_C, badger2040.BUTTON_UP, badger2040.BUTTON_DOWN, 25
 led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
-menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Gesamtstatistiken zurücksetzen", "Datum ändern", "Information"]
+menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
 version = "1.6.0"
 # Neue globale Variablen
@@ -32,10 +32,10 @@ def get_from_file(file, default, parser=lambda x: x):
 
 def format_date(t): return f"{t[2]:02d}.{t[1]:02d}.{t[0]}"
 
-def save_data(date, espresso, cappuccino, other, additional_counts):
+def save_data(date, espresso, cappuccino, additional_counts):
     if log_file not in uos.listdir():
         with open(log_file, 'w') as file:
-            headers = "Datum,Espresso,Cappuccino,Other," + ",".join(additional_menu_options)
+            headers = "Datum,Espresso,Cappuccino," + ",".join(additional_menu_options)
             file.write(headers + "\n")
     lines = []
     with open(log_file, 'r') as file:
@@ -47,20 +47,19 @@ def save_data(date, espresso, cappuccino, other, additional_counts):
             parts = line.strip().split(',')
             parts[1] = str(espresso)
             parts[2] = str(cappuccino)
-            parts[3] = str(other)
-            for j in range(4, 4 + len(additional_counts)):
-                parts[j] = str(additional_counts[j - 4])
+            for j in range(3, 3 + len(additional_counts)):
+                parts[j] = str(additional_counts[j - 3])
             lines[i] = ','.join(parts) + '\n'
             updated = True
             break
     
     if not updated:
         additional_counts_str = ",".join(map(str, additional_counts))
-        lines.append(f'{date},{espresso},{cappuccino},{other},{additional_counts_str}\n')
+        lines.append(f'{date},{espresso},{cappuccino},{additional_counts_str}\n')
     
     with open(log_file, 'w') as file:
         file.write(''.join(lines))
-    print(f"Data saved: {date}, {espresso}, {cappuccino}, {other}, {additional_counts}")
+    print(f"Data saved: {date}, {espresso}, {cappuccino}, {additional_counts}")
 
 def turn_off():
     # Configure buttons as wake-up sources
@@ -78,6 +77,24 @@ current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, 
 espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
 button_press_count, temp_date, refresh_count = 0, current_date, 0
 
+def clear_log_file(file, date):
+    if file in uos.listdir():
+        with open(file, 'r') as f:
+            lines = f.readlines()
+        
+        with open(file, 'w') as f:
+            for line in lines:
+                if line.startswith(date):
+                    parts = line.strip().split(',')
+                    parts[1] = '0'  # Reset espresso count
+                    parts[2] = '0'  # Reset cappuccino count
+                    parts[3] = '0'  # Reset other count
+                    for j in range(4, len(parts)):
+                        parts[j] = '0'  # Reset additional counts
+                    f.write(','.join(parts) + '\n')
+                else:
+                    f.write(line)
+
 def calculate_total_statistics_and_first_date():
     if log_file not in uos.listdir():
         return 0, 0, 0, None
@@ -88,10 +105,10 @@ def calculate_total_statistics_and_first_date():
     with open(log_file, 'r') as file:
         lines = file.readlines()[1:]  # Skip header line
         for line in lines:
-            date, espresso, cappuccino, other, *additional_counts = line.strip().split(',')
+            date, espresso, cappuccino, *additional_counts = line.strip().split(',')
             total_espresso += int(espresso)
             total_cappuccino += int(cappuccino)
-            total_other += int(other) + sum(map(int, additional_counts))
+            total_other += sum(map(int, additional_counts))
             if first_date is None:
                 first_date = date
     
