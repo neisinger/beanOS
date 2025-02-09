@@ -80,13 +80,14 @@ def nap():
     display.text("beanOS", 10, 2)
     display.text(text, (WIDTH - text_width) // 2, (HEIGHT // 2) - 10, scale=2)
     display.update()
+    
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
-        machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-        
+        pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
+        pin.irq(trigger=machine.Pin.IRQ_FALLING, wake=machine.DEEPSLEEP)
+    
     print("System turned off")
-    sleep(0.5)
-    display.sleep()
+    machine.deepsleep()
     
 
 def update_file(file, content):
