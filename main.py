@@ -181,7 +181,7 @@ def update_display(full_update=False):
         display.text("Information", 10, 22)
         display.text(f"Version: {version}", 10, 44)
         display.text("by Joao Neisinger", 10, 66)
-        display.text("Lizenz: None", 10, 88)
+        display.text("Lizenz: GNU GPLv3", 10, 88)
     elif additional_menu_active:
         display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
         for i, option in enumerate(additional_menu_options):
