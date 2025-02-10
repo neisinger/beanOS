@@ -376,4 +376,3 @@ if __name__ == "__main__":
 
         if time.time() - last_interaction_time > 15:
             nap()
-        time.sleep(0.1)
