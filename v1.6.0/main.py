@@ -333,7 +333,7 @@ if __name__ == "__main__":
         else:
             led.value(1)  # Keep LED on when no button is pressed
         # Check for inactivity and turn off if no interaction for 30 seconds
-        if time.time() - last_interaction_time > 15:
+        if time.time() - last_interaction_time > 90:
             nap()
         time.sleep(0.1)
     led.value(0)
