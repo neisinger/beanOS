@@ -237,7 +237,8 @@ def button_pressed(pin):
     global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
 
     last_interaction_time = time.time()  # Update last interaction time on button press
-    print(f"Button pressed: {pin}, last interaction time updated")
+    button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
+    print(f"Button pressed: {button_name}, last interaction time updated")
 
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
@@ -358,15 +359,17 @@ if __name__ == "__main__":
     led.value(1)  # Ensure the LED is on when RP2040 is active
     update_display(True)
     last_interaction_time = time.time()  # Initialize last interaction time
+    debounce_time = 0.2  # Debounce time in seconds
+    last_button_press_time = {BUTTON_A: 0, BUTTON_B: 0, BUTTON_C: 0, BUTTON_UP: 0, BUTTON_DOWN: 0}
+
     while True:
-        if any(display.pressed(btn) for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]):
-            for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
-                if display.pressed(btn):
-                    button_pressed(btn)
-                    break
-        else:
-            led.value(1)  # Keep LED on when no button is pressed
-        # Check for inactivity and turn off if no interaction for 30 seconds
+        current_time = time.time()
+        for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
+            if display.pressed(btn) and (current_time - last_button_press_time[btn] > debounce_time):
+                button_pressed(btn)
+                last_button_press_time[btn] = current_time
+                break
+
         if time.time() - last_interaction_time > 15:
             nap()
         time.sleep(0.1)
