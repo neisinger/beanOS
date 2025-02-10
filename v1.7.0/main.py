@@ -360,7 +360,10 @@ if __name__ == "__main__":
     last_interaction_time = time.time()  # Initialize last interaction time
     while True:
         if any(display.pressed(btn) for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]):
-            button_pressed(None)
+            for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
+                if display.pressed(btn):
+                    button_pressed(btn)
+                    break
         else:
             led.value(1)  # Keep LED on when no button is pressed
         # Check for inactivity and turn off if no interaction for 30 seconds
