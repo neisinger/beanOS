@@ -68,9 +68,9 @@ def nap():
         # Make the LED flicker
         for _ in range(5):
             led.value(1)
-            time.sleep(0.1)
+            time.sleep(0.01)
             led.value(0)
-            time.sleep(0.1)
+            time.sleep(0.01)
     display.set_update_speed(badger2040.UPDATE_FAST)
     display.set_pen(4)  # Set to white color
     text1 = "wake me up"
@@ -84,11 +84,11 @@ def nap():
     # Configure buttons as wake-up sources
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
         pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-        pin.irq(trigger=machine.Pin.IRQ_RISING, wake=machine.DEEPSLEEP)
+        pin.irq(trigger=machine.Pin.IRQ_RISING, wake=machine.SLEEP)
     
     print("System turned off")
-    machine.deepsleep()
-    
+    time.sleep()
+
 
 def update_file(file, content):
     with open(file, 'w') as f:
@@ -222,7 +222,7 @@ def load_counters_from_log(log_file):
                 additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active
 
     last_interaction_time = time.time()  # Update last interaction time on button press
 
