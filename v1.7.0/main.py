@@ -9,7 +9,8 @@ led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
-version = "1.7.0"
+version = "1.6.0"
+# Neue globale Variablen
 additional_menu_active = False
 additional_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espresso tonic", "other"]
 current_additional_menu_option = 0
@@ -61,6 +62,7 @@ def save_data(date, espresso, cappuccino, additional_counts):
     print(f"Data saved: {date}, {espresso}, {cappuccino}, {additional_counts}")
 
 def nap():
+    global menu_active, view_statistics_active, change_date_active, view_info_active, additional_menu_active
     print("System will turn off in 5 seconds...")
     for i in range(5, 0, -1):
         print(f"{i}...")
@@ -80,13 +82,20 @@ def nap():
     display.text(text2, (WIDTH - text_width2) // 2, (HEIGHT // 2), scale=2)
     display.update()
     
-    # Configure buttons as wake-up sources
-    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
+    # Configure buttons as wake-up sources, excluding BUTTON_UP
+    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_DOWN]:
         pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
         pin.irq(trigger=machine.Pin.IRQ_RISING)
     
     print("System turned off")
     display.halt()
+
+    # Reset menu state after wake up
+    menu_active = False
+    view_statistics_active = False
+    change_date_active = False
+    view_info_active = False
+    additional_menu_active = False
     
 
 def update_file(file, content):
