@@ -82,8 +82,8 @@ def nap():
     display.text(text2, (WIDTH - text_width2) // 2, (HEIGHT // 2), scale=2)
     display.update()
     
-    # Configure buttons as wake-up sources, excluding BUTTON_UP
-    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_DOWN]:
+    # Configure BUTTON_A and BUTTON_C as wake-up sources
+    for btn in [BUTTON_A, BUTTON_C]:
         pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
         pin.irq(trigger=machine.Pin.IRQ_RISING)
     
@@ -100,7 +100,7 @@ def nap():
     # Reset button states
     for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_DOWN]:
         pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-        pin.irq(trigger=0)  # Disable interrupts to reset state  
+        pin.irq(trigger=0)  # Disable interrupts to reset state 
 
 def update_file(file, content):
     with open(file, 'w') as f:
@@ -359,23 +359,23 @@ if __name__ == "__main__":
     led.value(1)  # Ensure the LED is on when RP2040 is active
     update_display(True)
     last_interaction_time = time.time()  # Initialize last interaction time
-debounce_time = 0.2  # Debounce time in seconds
-last_button_press_time = {BUTTON_A: 0, BUTTON_B: 0, BUTTON_C: 0, BUTTON_UP: 0, BUTTON_DOWN: 0}
+    debounce_time = 0.2  # Debounce time in seconds
+    last_button_press_time = {BUTTON_A: 0, BUTTON_B: 0, BUTTON_C: 0, BUTTON_UP: 0, BUTTON_DOWN: 0}
 
-while True:
-    current_time = time.time()
-    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
-        if display.pressed(btn):
-            time.sleep(0.05)  # Short delay to confirm the press
-            if display.pressed(btn) and (current_time - last_button_press_time[btn] > debounce_time):
-                button_pressed(btn)
-                last_button_press_time[btn] = current_time
-                break
-        else:
-            # Reset the debounce time if the button is not pressed to avoid false positives
-            last_button_press_time[btn] = 0
+    while True:
+        current_time = time.time()
+        for btn in [BUTTON_A, BUTTON_C]:  # Only check BUTTON_A and BUTTON_C
+            if display.pressed(btn):
+                time.sleep(0.05)  # Short delay to confirm the press
+                if display.pressed(btn) and (current_time - last_button_press_time[btn] > debounce_time):
+                    button_pressed(btn)
+                    last_button_press_time[btn] = current_time
+                    break
+            else:
+                # Reset the debounce time if the button is not pressed to avoid false positives
+                last_button_press_time[btn] = 0
 
-    # Check for inactivity and turn off if no interaction for 30 seconds
-    if time.time() - last_interaction_time > 15:
-        nap()
-    time.sleep(0.1)
+        # Check for inactivity and turn off if no interaction for 15 seconds
+        if time.time() - last_interaction_time > 15:
+            nap()
+        time.sleep(0.1)
