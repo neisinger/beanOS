@@ -45,11 +45,11 @@ Switches to the next day and resets the daily counts
 |  other                                         |
 +------------------------------------------------+
 #### Buttons
-**a:**
+- **a:**
 Chooses the selected drink
-**c:**
+- **c:**
 Closes the menu
-**UP** & **DOWN:**
+- **UP** & **DOWN:**
 Navigate the menu
 
 ### Main menu
@@ -63,43 +63,19 @@ Navigate the menu
 |ESPRESSO             CAPPU             ANDERE   |
 +------------------------------------------------+
 #### Buttons
+- **a:**
+Chooses the selected optoin
+- **c:**
+Closes the menu
+- **UP** & **DOWN:**
+Navigate the menu
 
-
-### Buttons and Navigation
-
-- **BUTTON_A**: 
-  - Increments the espresso count.
-  - Activates a selected menu item when in a menu.
-  - Confirms actions in certain modes (e.g., change date).
-- **BUTTON_B**: 
-  - Increments the cappuccino count.
-- **BUTTON_C**: 
-  - Opens the additional menu when not in a menu.
-  - Closes or goes back in menus and modes.
-- **BUTTON_UP**: 
-  - Navigates up in menus.
-- **BUTTON_DOWN**: 
-  - Navigates down in menus.
-  - In the main menu, it changes the date.
-
-### Menu Options
+#### Menu Options
 
 - **View Statistics**: Displays total counts of espresso, cappuccino, and other drinks.
 - **Reset Daily Counts**: Resets the daily counts for espresso, cappuccino, and other drinks.
 - **Change Date**: Allows you to change the current date.
 - **Information**: Displays version information and credits.
-
-### Data Storage
-
-- **Daily Logs**: Stored in `kaffee_log.csv` with columns for the date, espresso, cappuccino, and other drink counts.
-- **Current Date**: Stored in `current_date.txt`.
-- **Current Counts**: Stored in `current_counts.txt`.
-
-## Additional Menu Options
-
-
-
-Each option increments its respective count and logs it in `kaffee_log.csv`.
 
 ## License
 
