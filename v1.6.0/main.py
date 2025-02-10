@@ -68,9 +68,9 @@ def nap():
         # Make the LED flicker
         for _ in range(5):
             led.value(1)
-            time.sleep(0.01)
+            time.sleep(0.1)
             led.value(0)
-            time.sleep(0.01)
+            time.sleep(0.1)
     display.set_update_speed(badger2040.UPDATE_FAST)
     display.set_pen(4)  # Set to white color
     text1 = "wake me up"
@@ -81,13 +81,8 @@ def nap():
     display.text(text2, (WIDTH - text_width2) // 2, (HEIGHT // 2), scale=2)
     display.update()
     
-    # Configure buttons as wake-up sources
-    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
-        pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
-        pin.irq(trigger=machine.Pin.IRQ_RISING, wake=machine.SLEEP)
-    
     print("System turned off")
-    time.sleep()
+    machine.lightsleep()
 
 
 def update_file(file, content):
