@@ -27,15 +27,7 @@ Opens the main menu
 Switches to the next day and resets the daily counts
 
 ### Drink menu
-+------------------------------------------------+
-|  beanOS                                  date  |
-|  > lungo                                       |
-|  iced latte                                    |
-|  affogato                                      |
-|  shakerato                                     |
-|  espresso tonic                                |
-|  other                                         |
-+------------------------------------------------+
+![drink menu screen](images/beanOS_screen-5.jpg)
 #### Buttons
 - **a:**
 Chooses the selected drink
@@ -45,15 +37,7 @@ Closes the menu
 Navigate the menu
 
 ### Main menu
-+------------------------------------------------+
-|  beanOS                                  date  |
-|                                                |
-|                                                |
-|                                                |
-|                                                |
-|    0                  0                  0     |
-|ESPRESSO             CAPPU             ANDERE   |
-+------------------------------------------------+
+![main menu screen](images/beanOS_screen-4.jpg)
 #### Buttons
 - **a:**
 Chooses the selected optoin
