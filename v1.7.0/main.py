@@ -96,7 +96,11 @@ def nap():
     change_date_active = False
     view_info_active = False
     additional_menu_active = False
-    
+
+    # Reset button states
+    for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_DOWN]:
+        pin = machine.Pin(btn, machine.Pin.IN, machine.Pin.PULL_UP)
+        pin.irq(trigger=0)  # Disable interrupts to reset state  
 
 def update_file(file, content):
     with open(file, 'w') as f:
