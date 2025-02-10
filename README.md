@@ -13,15 +13,7 @@ To install beanOS on your Badger2040:
 ## Usage
 
 ### Main screen
-+------------------------------------------------+
-|  beanOS                                  date  |
-|                                                |
-|                                                |
-|                                                |
-|                                                |
-|    0                  0                  0     |
-|ESPRESSO             CAPPU             ANDERE   |
-+------------------------------------------------+
+
 #### Buttons
 - **a:**
 Increments the espresso count
