@@ -268,8 +268,9 @@ def button_pressed(pin):
         elif display.pressed(BUTTON_DOWN):
             current_additional_menu_option = (current_additional_menu_option + 1) % len(additional_menu_options)
         elif display.pressed(BUTTON_A):
-            additional_counts[current_additional_menu_option] += 1
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
+            if 0 <= current_additional_menu_option < len(additional_counts):
+                additional_counts[current_additional_menu_option] += 1
+                save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             additional_menu_active = False  # Menü schließen
         elif display.pressed(BUTTON_C):
             additional_menu_active = False
