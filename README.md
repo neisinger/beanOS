@@ -27,6 +27,7 @@ To install beanOS on your Badger2040:
   - Navigates up in menus.
 - **BUTTON_DOWN**: 
   - Navigates down in menus.
+  - In the main menu, it changes the date.
 
 ### Menu Options
 
@@ -55,7 +56,7 @@ Each option increments its respective count and logs it in `kaffee_log.csv`.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the GNU GPLv3 License. See the LICENSE file for details.
 
 ## Author
 
