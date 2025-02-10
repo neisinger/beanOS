@@ -364,7 +364,7 @@ if __name__ == "__main__":
 
     while True:
         current_time = time.time()
-        for btn in [BUTTON_A, BUTTON_C]:
+        for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
             if display.pressed(btn):
                 time.sleep(0.05)
                 if display.pressed(btn) and (current_time - last_button_press_time[btn] > debounce_time):
