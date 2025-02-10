@@ -80,6 +80,7 @@ def nap():
     display.text(text1, (WIDTH - text_width1) // 2, (HEIGHT // 2) - 20, scale=2)
     display.text(text2, (WIDTH - text_width2) // 2, (HEIGHT // 2), scale=2)
     display.update()
+    time.sleep(1)
 
     # Configure BUTTON_A and BUTTON_C as wake-up sources
     for btn in [BUTTON_A, BUTTON_C]:
