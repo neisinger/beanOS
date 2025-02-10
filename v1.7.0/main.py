@@ -237,6 +237,7 @@ def button_pressed(pin):
     global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
 
     last_interaction_time = time.time()  # Update last interaction time on button press
+    print(f"Button pressed: {pin}, last interaction time updated")
 
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
@@ -245,6 +246,7 @@ def button_pressed(pin):
             save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             update_display(True)
         return
+
     if change_date_active:
         temp_date += -86400 if display.pressed(BUTTON_UP) else 86400 if display.pressed(BUTTON_DOWN) else 0
         if display.pressed(BUTTON_A):
@@ -255,14 +257,19 @@ def button_pressed(pin):
             temp_date, change_date_active = current_date, False
         update_display(False)
         return
+
     if view_statistics_active:
-        if display.pressed(BUTTON_C): view_statistics_active = False
+        if display.pressed(BUTTON_C): 
+            view_statistics_active = False
         update_display(False)
         return
+
     if view_info_active:
-        if display.pressed(BUTTON_C): view_info_active = False
+        if display.pressed(BUTTON_C): 
+            view_info_active = False
         update_display(False)
         return
+
     if additional_menu_active:
         if display.pressed(BUTTON_UP):
             current_additional_menu_option = (current_additional_menu_option - 1) % len(additional_menu_options)
@@ -277,12 +284,14 @@ def button_pressed(pin):
             additional_menu_active = False
         update_display(False)
         return
+
     if display.pressed(BUTTON_UP):
         current_menu_option = (current_menu_option - 1) % len(menu_options) if menu_active else 0
         menu_active = True if not menu_active else menu_active
         print(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
         update_display(False)
         return
+
     if display.pressed(BUTTON_DOWN):
         current_menu_option = (current_menu_option + 1) % len(menu_options) if menu_active else 0
         if not menu_active:
@@ -296,6 +305,7 @@ def button_pressed(pin):
             update_display(True)
         update_display(False)
         return
+
     if display.pressed(BUTTON_A):
         if menu_active:
             if current_menu_option == 0: view_statistics_active = True
@@ -309,10 +319,12 @@ def button_pressed(pin):
             return
         espresso_count += 1
         button_press_count += 1
+
     if display.pressed(BUTTON_B):
         if not menu_active:
             cappuccino_count += 1
             button_press_count += 1
+
     if display.pressed(BUTTON_C):
         if menu_active:
             if change_date_active: change_date_active = False
@@ -324,9 +336,11 @@ def button_pressed(pin):
             additional_menu_active = True
         update_display(False)
         return
+
     if not menu_active:
         other_count += 1
         button_press_count += 1
+
     update_display(False)
     if button_press_count >= 10:
         update_display(True)
