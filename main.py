@@ -8,7 +8,7 @@ BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A,
 led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
-current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
+current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active = 0, False, False, False, False
 version = "1.0.0"
 # Neue globale Variablen
 additional_menu_active = False
@@ -97,7 +97,7 @@ def update_file(file, content):
         f.write(content)
 
 current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
-espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
+espresso_count, cappuccino_count, other_count = map(int, get_from_file(count_file, "0,0,0").split(','))
 button_press_count, temp_date, refresh_count = 0, current_date, 0
 
 def clear_log_file(file, date):
@@ -138,14 +138,6 @@ def calculate_total_statistics_and_first_date():
 
 def update_display(full_update=False):
     global refresh_count
-    if battery_reminder_active:
-        display.set_update_speed(badger2040.UPDATE_NORMAL)
-        display.set_pen(0)
-        display.clear()
-        display.set_pen(15)
-        display.text("Batterien wechseln!", 10, 50, scale=2)
-        display.update()
-        return
 
     display.set_update_speed(badger2040.UPDATE_NORMAL if full_update or refresh_count >= 14 else badger2040.UPDATE_TURBO)
     refresh_count = 0 if full_update else refresh_count + 1
@@ -224,19 +216,11 @@ def load_counters_from_log(log_file):
                 additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, additional_menu_active, temp_date, refresh_count
 
     last_interaction_time = time.time()  # Update last interaction time on button press
     button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
     print(f"Button pressed: {button_name}, last interaction time updated")
-
-    if battery_reminder_active:
-        if display.pressed(BUTTON_A):
-            battery_reminder_active = False
-            battery_reminder_count = 0
-            save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
-            update_display(True)
-        return
 
     if change_date_active:
         temp_date += -86400 if display.pressed(BUTTON_UP) else 86400 if display.pressed(BUTTON_DOWN) else 0
@@ -290,9 +274,8 @@ def button_pressed(pin):
             save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             current_date += 86400
             update_file(date_file, format_date(time.localtime(current_date)))
-            espresso_count, cappuccino_count, other_count, battery_reminder_count = 0, 0, 0, battery_reminder_count + 1
+            espresso_count, cappuccino_count, other_count = 0, 0, 0
             additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
-            battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
             update_display(True)
         update_display(False)
@@ -341,7 +324,7 @@ def button_pressed(pin):
 
 if __name__ == "__main__":
     current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
-    espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
+    espresso_count, cappuccino_count, other_count = map(int, get_from_file(count_file, "0,0,0").split(','))
     button_press_count, temp_date, refresh_count = 0, current_date, 0
 
     load_counters_from_log(log_file)
@@ -365,5 +348,5 @@ if __name__ == "__main__":
             else:
                 last_button_press_time[btn] = 0
 
-        if time.time() - last_interaction_time > 15:
+            if time.time() - last_interaction_time > 15:
             nap()
