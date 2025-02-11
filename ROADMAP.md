@@ -9,4 +9,4 @@
   - 1st, 10th, 50th, 100th ... coffee
   - stay cool
   - dessert
-  -happy bean day
+  - happy bean day
