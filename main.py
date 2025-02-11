@@ -7,7 +7,7 @@ WIDTH, HEIGHT = 296, 128
 BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A, badger2040.BUTTON_B, badger2040.BUTTON_C, badger2040.BUTTON_UP, badger2040.BUTTON_DOWN, 25
 led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
-menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
+menu_options = ["Statistiken anzeigen", "Heatmap", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
 version = "1.0.0"
 # Neue globale Variablen
@@ -224,7 +224,7 @@ def load_counters_from_log(log_file):
                 additional_counts = list(map(int, last_line[4:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active
 
     last_interaction_time = time.time()  # Update last interaction time on button press
     button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
@@ -302,11 +302,13 @@ def button_pressed(pin):
         if menu_active:
             if current_menu_option == 0: view_statistics_active = True
             if current_menu_option == 1:
+                exec(open("heatmap.py").read())
+                menu_active = False
+            if current_menu_option == 2:
                 clear_today_log_entries(log_file, format_date(time.localtime(current_date)))
                 espresso_count, cappuccino_count = 0, 0
-            if current_menu_option == 2: change_date_active, temp_date = True, current_date
-            if current_menu_option == 3: view_info_active = True
-            if current_menu_option == 4: menu_active = False
+            if current_menu_option == 3: change_date_active, temp_date = True, current_date
+            if current_menu_option == 4: view_info_active = True
             update_display(True)
             return
         espresso_count += 1
