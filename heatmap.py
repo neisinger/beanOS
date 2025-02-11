@@ -1,6 +1,6 @@
-import csv
-import time
 import badger2040
+import machine
+import time
 
 # Constants
 WIDTH = 296
@@ -18,9 +18,10 @@ display.set_font("bitmap8")
 def read_log():
     data = []
     with open(FILENAME, 'r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            daily_sum = sum(int(value) for key, value in row.items() if key != 'Datum')
+        headers = file.readline().strip().split(',')
+        for line in file:
+            row = line.strip().split(',')
+            daily_sum = sum(int(value) for i, value in enumerate(row) if headers[i] != 'Datum')
             data.append(daily_sum)
     return data
 
@@ -35,7 +36,7 @@ def fill_data(data):
     return data[-NUM_DAYS:]
 
 def draw_heatmap(data):
-    display.pen(15)  # White background
+    display.set_pen(15)  # White background
     display.clear()
     data = fill_data(data)
     normalized_data = normalize_data(data)
@@ -46,16 +47,22 @@ def draw_heatmap(data):
         x = col * SQUARE_SIZE
         y = row * SQUARE_SIZE
         color = 255 - value  # Invert value for grayscale
-        display.pen(color)
+        display.set_pen(color)
         display.rectangle(x + PADDING, y + PADDING, SQUARE_SIZE - PADDING, SQUARE_SIZE - PADDING)
     
     display.update()
 
 def main():
+    last_update = time.time()
     while True:
-        data = read_log()
-        draw_heatmap(data)
-        time.sleep(60)  # Update every minute
+        if display.pressed(badger2040.BUTTON_C):
+            machine.reset()  # This will reset the device and run main.py
+
+        current_time = time.time()
+        if current_time - last_update >= 60:  # Check if a minute has passed
+            data = read_log()
+            draw_heatmap(data)
+            last_update = current_time
 
 if __name__ == "__main__":
     main()
