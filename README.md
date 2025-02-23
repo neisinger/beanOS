@@ -2,6 +2,8 @@
 
 beanOS is a Micropython application designed for the Badger2040 device. It tracks and logs your coffee consumption, providing a simple interface to view statistics, reset counts, and change settings.
 
+This code must not be used by fascists! No code for the AfD or Musk or Trump!
+
 ## Installation
 
 To install beanOS on your Badger2040:
