@@ -1,4 +1,4 @@
-import time, badger2040, machine, uos
+import time, badger2040, machine, uos, json
 
 # Initialisierung des Badger2040
 display = badger2040.Badger2040()
@@ -15,6 +15,23 @@ additional_menu_active = False
 additional_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espresso tonic", "other"]
 current_additional_menu_option = 0
 additional_counts = [0] * len(additional_menu_options)
+
+# Wartungsstatus
+maintenance_status_file = "maintenance_status.json"
+
+def load_maintenance_status():
+    if maintenance_status_file in uos.listdir():
+        with open(maintenance_status_file, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_maintenance_status(status):
+    with open(maintenance_status_file, 'w') as f:
+        json.dump(status, f)
+
+def load_maintenance_config():
+    with open("maintenance_config.json", 'r') as f:
+        return json.load(f)["tasks"]
 
 def parse_date(date_str):
     try:
@@ -92,12 +109,19 @@ def nap():
     view_info_active = False
     additional_menu_active = False
 
+    # Nach dem Aufwachen Zähler aus Logdatei laden
+    load_counters_from_log(log_file)
+
 def update_file(file, content):
     with open(file, 'w') as f:
         f.write(content)
 
 current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
-espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
+count_values = get_from_file(count_file, "0,0,0").split(',')
+# Robust gegen zu viele/wenige Werte
+espresso_count = int(count_values[0]) if len(count_values) > 0 else 0
+cappuccino_count = int(count_values[1]) if len(count_values) > 1 else 0
+battery_reminder_count = int(count_values[2]) if len(count_values) > 2 else 0
 button_press_count, temp_date, refresh_count = 0, current_date, 0
 
 def clear_log_file(file, date):
@@ -116,6 +140,11 @@ def clear_log_file(file, date):
                     f.write(','.join(parts) + '\n')
                 else:
                     f.write(line)
+    # Nach dem Zurücksetzen auch die aktuellen Zähler im RAM zurücksetzen
+    global espresso_count, cappuccino_count, additional_counts
+    espresso_count = 0
+    cappuccino_count = 0
+    additional_counts = [0] * len(additional_menu_options)
 
 def calculate_total_statistics_and_first_date():
     if log_file not in uos.listdir():
@@ -136,14 +165,52 @@ def calculate_total_statistics_and_first_date():
     
     return total_espresso, total_cappuccino, total_other, first_date
 
+# Wartungswarnung-Status
+maintenance_warning_hidden = False
+maintenance_warning_tasks = []
+
+def check_maintenance_warnings():
+    global maintenance_warning_tasks
+    tasks = load_maintenance_config()
+    status = load_maintenance_status()
+    warnings = []
+    today = int(time.mktime(time.localtime(current_date)) // 86400)  # Tag als Zahl
+    total_drinks = espresso_count + cappuccino_count + sum(additional_counts)
+    for task in tasks:
+        last_done = status.get(task["name"], today)
+        interval = task["interval"]
+        if task["name"] == "brew_group_cleaning":
+            last_drinks = status.get("brew_group_cleaning_drinks", total_drinks)
+            drink_limit = task.get("drink_limit", 150)
+            if (today - last_done >= interval) or (total_drinks - last_drinks >= drink_limit):
+                warnings.append(task["name"])
+        else:
+            if today - last_done >= interval:
+                warnings.append(task["name"])
+    maintenance_warning_tasks = warnings
+    return warnings
+
 def update_display(full_update=False):
-    global refresh_count
+    global refresh_count, maintenance_warning_hidden
+    # Wartungswarnungen prüfen
+    maintenance_warnings = check_maintenance_warnings()
     if battery_reminder_active:
         display.set_update_speed(badger2040.UPDATE_NORMAL)
         display.set_pen(0)
         display.clear()
         display.set_pen(15)
         display.text("Batterien wechseln!", 10, 50, scale=2)
+        display.update()
+        return
+    if maintenance_warnings and not maintenance_warning_hidden:
+        display.set_update_speed(badger2040.UPDATE_NORMAL)
+        display.set_pen(0)
+        display.clear()
+        display.set_pen(15)
+        display.text("Wartung fällig!", 10, 30, scale=2)
+        for i, warn in enumerate(maintenance_warnings):
+            display.text(warn, 10, 60 + i*20, scale=1)
+        display.text("A: erledigt  C: ausblenden", 10, 120, scale=1)
         display.update()
         return
 
@@ -208,11 +275,23 @@ def clear_today_log_entries(log_file, date):
 
         with open(log_file, 'w') as file:
             for line in lines:
-                if not line.startswith(date):
+                if line.startswith(date):
+                    parts = line.strip().split(',')
+                    parts[1] = '0'  # Reset espresso count
+                    parts[2] = '0'  # Reset cappuccino count
+                    for j in range(3, len(parts)):
+                        parts[j] = '0'  # Reset additional counts
+                    file.write(','.join(parts) + '\n')
+                else:
                     file.write(line)
+    # Nach dem Zurücksetzen auch die aktuellen Zähler im RAM zurücksetzen
+    global espresso_count, cappuccino_count, additional_counts
+    espresso_count = 0
+    cappuccino_count = 0
+    additional_counts = [0] * len(additional_menu_options)
 
 def load_counters_from_log(log_file):
-    global espresso_count, cappuccino_count, other_count, additional_counts
+    global espresso_count, cappuccino_count, additional_counts
     if log_file in uos.listdir():
         with open(log_file, 'r') as file:
             lines = file.readlines()
@@ -220,11 +299,11 @@ def load_counters_from_log(log_file):
                 last_line = lines[-1].strip().split(',')
                 espresso_count = int(last_line[1])
                 cappuccino_count = int(last_line[2])
-                other_count = int(last_line[3])
-                additional_counts = list(map(int, last_line[4:]))
+                # Die Werte für andere Getränke sind alle in additional_counts
+                additional_counts = list(map(int, last_line[3:]))
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, other_count
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, additional_menu_active, current_additional_menu_option, additional_counts, battery_reminder_count, temp_date, last_interaction_time, maintenance_warning_hidden, maintenance_warning_tasks
 
     last_interaction_time = time.time()  # Update last interaction time on button press
     button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
@@ -290,7 +369,9 @@ def button_pressed(pin):
             save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, additional_counts)
             current_date += 86400
             update_file(date_file, format_date(time.localtime(current_date)))
-            espresso_count, cappuccino_count, other_count, battery_reminder_count = 0, 0, 0, battery_reminder_count + 1
+            espresso_count = 0
+            cappuccino_count = 0
+            battery_reminder_count += 1
             additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
@@ -329,9 +410,39 @@ def button_pressed(pin):
         update_display(False)
         return
 
-    if not menu_active:
-        other_count += 1
-        button_press_count += 1
+    # Entferne die Zählung von additional_counts[-1] außerhalb des Untermenüs
+
+    # Wartungswarnung-Interaktion
+    if check_maintenance_warnings() and not maintenance_warning_hidden:
+        if display.pressed(BUTTON_A):
+            # Markiere alle fälligen Aufgaben als erledigt
+            status = load_maintenance_status()
+            today = int(time.mktime(time.localtime(current_date)) // 86400)
+            total_drinks = espresso_count + cappuccino_count + sum(additional_counts)
+            for task in maintenance_warning_tasks:
+                status[task] = today
+                if task == "brew_group_cleaning":
+                    status["brew_group_cleaning_drinks"] = total_drinks
+                # Wartungsaktion ins Logfile schreiben
+                # Format: Datum,Wartung,<Zählerstände>
+                wartung_eintrag = f'{format_date(time.localtime(current_date))},WARTUNG:{task},{espresso_count},{cappuccino_count}'
+                # Zusätzliche Getränkezähler anhängen
+                wartung_eintrag += "," + ",".join(map(str, additional_counts))
+                # Logfile ergänzen
+                if log_file not in uos.listdir():
+                    with open(log_file, 'w') as file:
+                        headers = "Datum,Espresso,Cappuccino," + ",".join(additional_menu_options)
+                        file.write(headers + "\n")
+                with open(log_file, 'a') as file:
+                    file.write(wartung_eintrag + "\n")
+            save_maintenance_status(status)
+            maintenance_warning_hidden = False
+            update_display(True)
+            return
+        if display.pressed(BUTTON_C):
+            maintenance_warning_hidden = True
+            update_display(True)
+            return
 
     update_display(False)
     if button_press_count >= 10:
@@ -341,7 +452,11 @@ def button_pressed(pin):
 
 if __name__ == "__main__":
     current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
-    espresso_count, cappuccino_count, other_count, battery_reminder_count = map(int, get_from_file(count_file, "0,0,0,0").split(','))
+    count_values = get_from_file(count_file, "0,0,0").split(',')
+    # Robust gegen zu viele/wenige Werte
+    espresso_count = int(count_values[0]) if len(count_values) > 0 else 0
+    cappuccino_count = int(count_values[1]) if len(count_values) > 1 else 0
+    battery_reminder_count = int(count_values[2]) if len(count_values) > 2 else 0
     button_press_count, temp_date, refresh_count = 0, current_date, 0
 
     load_counters_from_log(log_file)

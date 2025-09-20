@@ -1,0 +1,9 @@
+{
+  "tasks": [
+    {"name": "cleaning", "interval": 7},
+    {"name": "descaling", "interval": 28},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
+    {"name": "grinder_cleaning", "interval": 56},
+    {"name": "deep_cleaning", "interval": 365}
+  ]
+}
