@@ -8,8 +8,10 @@ BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A,
 led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information"]
+menu_options = ["Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Information", "Wartungshistorie"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, battery_reminder_active = 0, False, False, False, False, False
-version = "1.0.0"
+current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active, battery_reminder_active = 0, False, False, False, False, False, False
+version = "1.1.0"
 # Neue globale Variablen
 additional_menu_active = False
 additional_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espresso tonic", "other"]
@@ -21,8 +23,13 @@ maintenance_status_file = "maintenance_status.json"
 
 def load_maintenance_status():
     if maintenance_status_file in uos.listdir():
-        with open(maintenance_status_file, 'r') as f:
-            return json.load(f)
+        try:
+            with open(maintenance_status_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Fehler beim Laden von maintenance_status.json: {e}")
+            show_error(f"Fehler in maintenance_status.json: {e}")
+            return {}
     return {}
 
 def save_maintenance_status(status):
@@ -30,8 +37,32 @@ def save_maintenance_status(status):
         json.dump(status, f)
 
 def load_maintenance_config():
-    with open("maintenance_config.json", 'r') as f:
-        return json.load(f)["tasks"]
+    if "maintenance_config.json" in uos.listdir():
+        try:
+            with open("maintenance_config.json", 'r') as f:
+                data = json.load(f)
+                if "tasks" in data and isinstance(data["tasks"], list):
+                    return data["tasks"]
+                else:
+                    print("Fehler: 'tasks' fehlt oder ist kein Array in maintenance_config.json")
+                    show_error("Fehlerhafte maintenance_config.json: 'tasks' fehlt oder ist kein Array")
+                    return []
+        except Exception as e:
+            print(f"Fehler beim Laden von maintenance_config.json: {e}")
+            show_error(f"Fehler in maintenance_config.json: {e}")
+            return []
+    else:
+        print("maintenance_config.json nicht gefunden")
+        show_error("maintenance_config.json nicht gefunden")
+        return []
+def show_error(msg):
+    display.set_update_speed(badger2040.UPDATE_NORMAL)
+    display.set_pen(0)
+    display.clear()
+    display.set_pen(15)
+    display.text("FEHLER!", 10, 30, scale=2)
+    display.text(msg, 10, 60, scale=1)
+    display.update()
 
 def parse_date(date_str):
     try:
@@ -191,6 +222,20 @@ def check_maintenance_warnings():
     return warnings
 
 def update_display(full_update=False):
+    if view_maintenance_history_active:
+        display.set_font("bitmap8")
+        display.text("Wartungshistorie", 10, 22)
+        history = get_maintenance_history()
+        y = 44
+        if not history:
+            display.text("Keine Wartungseinträge", 10, y)
+        else:
+            for entry in history:
+                parts = entry.split(',')
+                datum = parts[0]
+                wartung = parts[1].replace("WARTUNG:", "")
+                display.text(f"{datum}: {wartung}", 10, y)
+                y += 16
     global refresh_count, maintenance_warning_hidden
     # Wartungswarnungen prüfen
     maintenance_warnings = check_maintenance_warnings()
@@ -371,11 +416,17 @@ def button_pressed(pin):
             update_file(date_file, format_date(time.localtime(current_date)))
             espresso_count = 0
             cappuccino_count = 0
+            if current_menu_option == 4: view_maintenance_history_active = True
             battery_reminder_count += 1
             additional_counts = [0] * len(additional_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
             update_display(True)
+    if view_maintenance_history_active:
+        if display.pressed(BUTTON_C):
+            view_maintenance_history_active = False
+        update_display(False)
+        return
         update_display(False)
         return
 
