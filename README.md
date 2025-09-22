@@ -48,12 +48,21 @@ Closes the menu
 - **UP** & **DOWN:**
 Navigate the menu
 
+
 #### Menu Options
 
-- **View Statistics**: Displays total counts of espresso, cappuccino, and other drinks.
+- **View Statistics**: Displays total counts of espresso, cappuccino, and other drinks. Also shows bean consumption (grams per day, days per pack) and average coffee per day.
 - **Reset Daily Counts**: Resets the daily counts for espresso, cappuccino, and other drinks.
 - **Change Date**: Allows you to change the current date.
 - **Information**: Displays version information and credits.
+- **Bean Packs**: Lets you select the current pack size (e.g. 250g, 500g, 1000g) for more accurate bean consumption statistics.
+- **Maintenance History**: (Placeholder) Overview of maintenance tasks.
+
+### Bean Packs
+You can select the current pack size in the menu. The statistics will show how many days a pack lasts and your average bean consumption per day.
+
+### Maintenance Reminders
+Automatic reminders for cleaning, descaling, and other maintenance tasks. Warnings are shown when tasks are due, based on your configuration.
 
 ## License
 
