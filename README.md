@@ -11,6 +11,7 @@ To install beanOS on your Badger2040:
 2. Open Thonny IDE.
 3. Copy the `main.py` file content into Thonny's editor.
 4. Save the file to your Badger2040 as `main.py`.
+5. Copy the file `maintenance_config.json` to your Badger2040 as well. This file is required for maintenance reminders and configuration.
 
 ## Usage
 

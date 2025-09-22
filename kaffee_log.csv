@@ -1,0 +1,8 @@
+Datum,Espresso,Cappuccino,lungo,iced latte,affogato,shakerato,espresso tonic,other
+18.09.2025,0,0,0,0,0,0,0,0
+19.09.2025,1,0,0,0,0,0,0,0
+20.09.2025,0,1,0,0,0,0,0,0
+21.09.2025,1,2,0,0,0,0,0,0
+21.09.2025,WARTUNG:descaling
+22.09.2025,2,1,0,0,0,0,0,0
+22.09.2025,WARTUNG:brew_group_cleaning
