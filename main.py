@@ -9,7 +9,9 @@ led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Wartungshistorie", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active = 0, False, False, False, False, False
-version = "2.1.9"
+version = "2.2.6"
+# Wartungshistorie Auswahl
+maintenance_history_selected = 0
 # Statistik-Seitenumschaltung
 statistics_page = 0  # 0 = Gesamtstatistik, 1 = Bohnenstatistik
 # Neue globale Variablen
@@ -99,8 +101,9 @@ def save_data(date, espresso, cappuccino, drink_counts):
     
     updated = False
     for i, line in enumerate(lines):
-        if line.startswith(date):
-            parts = line.strip().split(',')
+        parts = line.strip().split(',')
+        # Nur Tageszeilen (mindestens 3 Felder, kein Wartungseintrag)
+        if line.startswith(date) and len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
             parts[1] = str(espresso)
             parts[2] = str(cappuccino)
             for j in range(3, 3 + len(drink_counts)):
@@ -120,6 +123,13 @@ def save_data(date, espresso, cappuccino, drink_counts):
 def nap():
     global menu_active, view_statistics_active, change_date_active, view_info_active, drink_menu_active
     print("System will turn off in 5 seconds...")
+    # Hauptbildschirm anzeigen
+    menu_active = False
+    view_statistics_active = False
+    change_date_active = False
+    view_info_active = False
+    drink_menu_active = False
+    update_display(True)
     for i in range(5, 0, -1):
         print(f"{i}...")
         for _ in range(5):
@@ -140,13 +150,6 @@ def nap():
 
     print("System turned off")
     display.halt()
-
-    # Reset menu state after wake up
-    menu_active = False
-    view_statistics_active = False
-    change_date_active = False
-    view_info_active = False
-    drink_menu_active = False
 
     # Nach dem Aufwachen Zähler aus Logdatei laden
     load_counters_from_log(log_file)
@@ -245,7 +248,7 @@ def check_maintenance_warnings():
 def update_display(full_update=False):
     global statistics_page
     if view_maintenance_history_active:
-        global menu_active
+        global menu_active, maintenance_history_selected
         menu_active = False
         display.set_pen(0)
         display.rectangle(0, 0, WIDTH, 20)
@@ -273,10 +276,18 @@ def update_display(full_update=False):
         ]
         for i, (typ, name) in enumerate(wartungstypen):
             datum = wartung_dict.get(typ, "")
+            prefix = "> " if i == maintenance_history_selected else "  "
             if datum:
-                display.text(f"{name}: {datum}", 10, 30 + i*18)
+                # Jahr als '25 anzeigen
+                try:
+                    tag, monat, jahr = datum.split('.')
+                    jahr_kurz = jahr[-2:]
+                    datum_kurz = f"{tag}.{monat}.'{jahr_kurz}"
+                except Exception:
+                    datum_kurz = datum
+                display.text(f"{prefix}{name}: {datum_kurz}", 10, 30 + i*18)
             else:
-                display.text(f"{name}: ", 10, 30 + i*18)
+                display.text(f"{prefix}{name}: ", 10, 30 + i*18)
         display.update()
         return
     global refresh_count, maintenance_warning_hidden
@@ -298,7 +309,6 @@ def update_display(full_update=False):
         display.text("Wartung fällig!", 10, 30, scale=2)
         for i, warn in enumerate(maintenance_warnings):
             display.text(warn, 10, 60 + i*20, scale=1)
-        display.text("A: erledigt  C: ausblenden", 10, 120, scale=1)
         display.update()
         return
 
@@ -505,6 +515,50 @@ def button_pressed(pin):
         update_display(False)
         return
 
+    if view_maintenance_history_active:
+        global maintenance_history_selected
+        wartungstypen = [
+            ("cleaning", "Reinigung"),
+            ("descaling", "Entkalken"),
+            ("brew_group_cleaning", "Brühgruppe reinigen"),
+            ("grinder_cleaning", "Mühle reinigen"),
+            ("deep_cleaning", "Grundreinigung")
+        ]
+        if display.pressed(BUTTON_UP):
+            maintenance_history_selected = (maintenance_history_selected - 1) % len(wartungstypen)
+            update_display(False)
+            return
+        if display.pressed(BUTTON_DOWN):
+            maintenance_history_selected = (maintenance_history_selected + 1) % len(wartungstypen)
+            update_display(False)
+            return
+        if display.pressed(BUTTON_A):
+            # Wartungseintrag auf heute setzen
+            typ = wartungstypen[maintenance_history_selected][0]
+            datum = format_date(time.localtime(current_date))
+            wartung_eintrag = f'{datum},WARTUNG:{typ}'
+            if log_file not in uos.listdir():
+                with open(log_file, 'w') as file:
+                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                    file.write(headers + "\n")
+            with open(log_file, 'a') as file:
+                file.write(wartung_eintrag + "\n")
+            status = load_maintenance_status()
+            today_num = int(time.mktime(time.localtime(current_date)) // 86400)
+            status[typ] = today_num
+            if typ == "brew_group_cleaning":
+                total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
+                status["brew_group_cleaning_drinks"] = total_drinks
+            save_maintenance_status(status)
+            update_display(True)
+            return
+        if display.pressed(BUTTON_C):
+            view_maintenance_history_active = False
+            menu_active = True
+            update_display(True)
+            return
+        update_display(True)
+        return
     if display.pressed(BUTTON_DOWN):
         current_menu_option = (current_menu_option + 1) % len(menu_options) if menu_active else 0
         if not menu_active:
@@ -519,6 +573,44 @@ def button_pressed(pin):
             button_press_count = 0
             update_display(True)
     if view_maintenance_history_active:
+        global maintenance_history_selected
+        wartungstypen = [
+            ("cleaning", "Reinigung"),
+            ("descaling", "Entkalken"),
+            ("brew_group_cleaning", "Brühgruppe reinigen"),
+            ("grinder_cleaning", "Mühle reinigen"),
+            ("deep_cleaning", "Grundreinigung")
+        ]
+        if display.pressed(BUTTON_UP):
+            maintenance_history_selected = (maintenance_history_selected - 1) % len(wartungstypen)
+            update_display(False)
+            return
+        if display.pressed(BUTTON_DOWN):
+            maintenance_history_selected = (maintenance_history_selected + 1) % len(wartungstypen)
+            update_display(False)
+            return
+        if display.pressed(BUTTON_A):
+            # Wartungseintrag auf heute setzen
+            typ = wartungstypen[maintenance_history_selected][0]
+            datum = format_date(time.localtime(current_date))
+            # Logfile ergänzen
+            wartung_eintrag = f'{datum},WARTUNG:{typ}'
+            if log_file not in uos.listdir():
+                with open(log_file, 'w') as file:
+                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                    file.write(headers + "\n")
+            with open(log_file, 'a') as file:
+                file.write(wartung_eintrag + "\n")
+            # Status aktualisieren
+            status = load_maintenance_status()
+            today_num = int(time.mktime(time.localtime(current_date)) // 86400)
+            status[typ] = today_num
+            if typ == "brew_group_cleaning":
+                total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
+                status["brew_group_cleaning_drinks"] = total_drinks
+            save_maintenance_status(status)
+            update_display(True)
+            return
         if display.pressed(BUTTON_C):
             view_maintenance_history_active = False
             menu_active = True
