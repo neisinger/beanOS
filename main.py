@@ -9,7 +9,7 @@ led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Wartungshistorie", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active = 0, False, False, False, False, False
-version = "2.2.6"
+version = "2.2.10"
 # Wartungshistorie Auswahl
 maintenance_history_selected = 0
 # Statistik-Seitenumschaltung
@@ -324,7 +324,19 @@ def update_display(full_update=False):
 
     # Text in Weiß
     display.set_pen(15)
-    display.text("beanOS", 10, 2)
+    # Balken-Beschriftung je nach Modus
+    if view_statistics_active:
+        if statistics_page == 0:
+            balken_text = "Gesamtstatistik"
+        elif statistics_page == 1:
+            balken_text = "Bohnenstatistik"
+        else:
+            balken_text = "Statistik"
+    elif view_info_active:
+        balken_text = "Information"
+    else:
+        balken_text = "beanOS"
+    display.text(balken_text, 10, 2)
     date_str = format_date(time.localtime(current_date))
     display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
 
@@ -338,7 +350,6 @@ def update_display(full_update=False):
         if statistics_page == 0:
             # Seite 0: Gesamtstatistik
             total_espresso, total_cappuccino, total_other, first_date = calculate_total_statistics_and_first_date()
-            display.text("Gesamtstatistiken", 10, 22)
             # Tagesschnitt berechnen
             log_days = 0
             espresso_avg = cappuccino_avg = other_avg = 0
@@ -357,7 +368,6 @@ def update_display(full_update=False):
             display.text(f"Kaffee gesamt: {total_drinks}", 10, 132)
         elif statistics_page == 1:
             # Seite 1: Bohnenstatistik
-            display.text("Bohnenstatistik", 10, 22)
             bean_pack_size = bean_pack_sizes[bean_pack_size_index]
             log_days = 0
             total_beans_used = 0
@@ -380,7 +390,6 @@ def update_display(full_update=False):
             display.text("Unbekannte Statistik-Seite", 10, 22)
     elif view_info_active:
         display.set_font("bitmap8")
-        display.text("Information", 10, 22)
         display.text(f"Version: {version}", 10, 44)
         display.text("by Joao Neisinger", 10, 66)
         display.text("Lizenz: GNU GPLv3", 10, 88)
