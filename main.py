@@ -9,7 +9,7 @@ led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Wartungshistorie", "Information"]
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active = 0, False, False, False, False, False
-version = "2.2.10"
+version = "2.2.11"
 # Wartungshistorie Auswahl
 maintenance_history_selected = 0
 # Statistik-Seitenumschaltung
@@ -291,7 +291,7 @@ def update_display(full_update=False):
         display.update()
         return
     global refresh_count, maintenance_warning_hidden
-    # Wartungswarnungen prüfen
+    # Wartungswarnungen prüfen (nur einmal)
     maintenance_warnings = check_maintenance_warnings()
     if battery_reminder_active:
         display.set_update_speed(badger2040.UPDATE_NORMAL)
@@ -339,6 +339,11 @@ def update_display(full_update=False):
     display.text(balken_text, 10, 2)
     date_str = format_date(time.localtime(current_date))
     display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
+    
+    # Kleines Wartungsicon anzeigen wenn Wartung versteckt aber noch fällig
+    if maintenance_warnings and maintenance_warning_hidden:
+        # Kleines "!" Icon links vom Datum
+        display.text("!", WIDTH - display.measure_text(date_str, 1) - 60, 2)
 
     display.set_pen(0)
 
@@ -559,6 +564,8 @@ def button_pressed(pin):
                 total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
                 status["brew_group_cleaning_drinks"] = total_drinks
             save_maintenance_status(status)
+            # Wartungswarnung zurücksetzen da eine Wartung durchgeführt wurde
+            maintenance_warning_hidden = False
             update_display(True)
             return
         if display.pressed(BUTTON_C):
@@ -618,6 +625,8 @@ def button_pressed(pin):
                 total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
                 status["brew_group_cleaning_drinks"] = total_drinks
             save_maintenance_status(status)
+            # Wartungswarnung zurücksetzen da eine Wartung durchgeführt wurde
+            maintenance_warning_hidden = False
             update_display(True)
             return
         if display.pressed(BUTTON_C):
@@ -670,18 +679,21 @@ def button_pressed(pin):
     # Entferne die Zählung von drink_counts[-1] außerhalb des Untermenüs
 
     # Wartungswarnung-Interaktion
-    if check_maintenance_warnings() and not maintenance_warning_hidden:
+    maintenance_warnings = check_maintenance_warnings()
+    if maintenance_warnings and not maintenance_warning_hidden:
         if display.pressed(BUTTON_A):
-            # Markiere alle fälligen Aufgaben als erledigt
+            # Markiere nur die erste fällige Aufgabe als erledigt
             status = load_maintenance_status()
             today = int(time.mktime(time.localtime(current_date)) // 86400)
             total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
-            for task in maintenance_warning_tasks:
+            
+            # Nur die erste Wartung aus der Liste bearbeiten
+            if maintenance_warning_tasks:
+                task = maintenance_warning_tasks[0]  # Nur die erste Wartung
                 status[task] = today
                 if task == "brew_group_cleaning":
                     status["brew_group_cleaning_drinks"] = total_drinks
                 # Wartungsaktion ins Logfile schreiben
-                # Format: Datum,WARTUNG:typ
                 wartung_eintrag = f'{format_date(time.localtime(current_date))},WARTUNG:{task}'
                 # Logfile ergänzen
                 if log_file not in uos.listdir():
@@ -691,7 +703,7 @@ def button_pressed(pin):
                 with open(log_file, 'a') as file:
                     file.write(wartung_eintrag + "\n")
             save_maintenance_status(status)
-            maintenance_warning_hidden = False
+            maintenance_warning_hidden = False  # Reset nach Erledigung
             update_display(True)
             return
         if display.pressed(BUTTON_C):

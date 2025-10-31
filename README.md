@@ -52,18 +52,36 @@ Navigate the menu
 
 #### Menu Options
 
-- **View Statistics**: Displays total counts of espresso, cappuccino, and other drinks. Also shows bean consumption (grams per day, days per pack) and average coffee per day.
-- **Reset Daily Counts**: Resets the daily counts for espresso, cappuccino, and other drinks.
-- **Change Date**: Allows you to change the current date.
+- **Bohnen**: Opens the additional drink menu (same as Button C)
+- **Statistiken anzeigen**: Displays total counts of espresso, cappuccino, and other drinks. Also shows bean consumption (grams per day, days per pack) and average coffee per day.
+- **Tagesstatistiken zurücksetzen**: Resets the daily counts for espresso, cappuccino, and other drinks.
+- **Datum ändern**: Allows you to change the current date.
+- **Wartungshistorie**: View and manually log maintenance tasks. Select a task and press Button A to mark it as completed for today.
 - **Information**: Displays version information and credits.
-- **Bean Packs**: Lets you select the current pack size (e.g. 250g, 500g, 1000g) for more accurate bean consumption statistics.
-- **Maintenance History**: (Placeholder) Overview of maintenance tasks.
 
 ### Bean Packs
 You can select the current pack size in the menu. The statistics will show how many days a pack lasts and your average bean consumption per day.
 
 ### Maintenance Reminders
-Automatic reminders for cleaning, descaling, and other maintenance tasks. Warnings are shown when tasks are due, based on your configuration.
+beanOS includes an intelligent maintenance reminder system that helps you keep your coffee machine in optimal condition.
+
+#### Features:
+- **Automatic Warnings**: The system automatically shows full-screen warnings when maintenance tasks are due
+- **Smart Icon**: When you dismiss a warning with Button C, a small "!" icon appears next to the date as a subtle reminder
+- **Quick Action**: Press Button A on a maintenance warning to mark the current task as completed
+- **Menu Integration**: Use the "Wartungshistorie" menu to manually log maintenance tasks
+- **Auto-Reset**: The warning icon automatically disappears when you log a maintenance task through the menu
+
+#### Maintenance Tasks:
+- **Cleaning** (every 7 days)
+- **Descaling** (every 28 days) 
+- **Brew Group Cleaning** (every 42 days OR after 150 drinks)
+- **Grinder Cleaning** (every 56 days)
+- **Deep Cleaning** (every 365 days)
+
+#### Button Controls for Maintenance:
+- **Button A**: Mark the current maintenance task as completed
+- **Button C**: Hide the warning and show the small reminder icon instead
 
 ## License
 
