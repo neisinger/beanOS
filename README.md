@@ -1,8 +1,32 @@
 # beanOS
 
-beanOS is a Micropython application designed for the Badger2040 device. It tracks and logs your coffee consumption, providing a simple interface to view statistics, reset counts, and change settings.
+beanOS is a Micropython application designed for the Badger2040 device. It tracks and logs your coffee consumption with gamification features, providing a simple interface to view statistics, reset counts, and unlock achievements.
 
 This code must not be used by fascists! No code for the AfD or Musk or Trump!
+
+## Features
+
+### ☕ Coffee Tracking
+- Track espresso, cappuccino, and 6 additional drink types
+- Daily, weekly, and total statistics
+- Bean consumption analytics
+- Automatic data logging to CSV
+
+### 🏆 Achievement System
+- **Milestone Achievements**: Unlock rewards for 1, 10, 50, 100, 500, and 1000 coffees
+- **Streak Achievements**: Keep your coffee habit going for 7 or 30 days straight
+- **Special Drink Achievements**: Try new drinks like iced latte, affogato, or shakerato
+- **Maintenance Achievements**: Keep your machine in perfect condition
+- **Experimental Achievements**: Become a true barista by trying all drink types
+- **Progress Tracking**: Visual progress bars for streak achievements
+- **Achievement Notifications**: Full-screen celebrations when you unlock new achievements
+- **Achievement Icon**: Daily star (★) in the title bar when you unlock achievements
+
+### 🔧 Smart Maintenance System
+- Automatic maintenance reminders based on time and usage
+- 5 different maintenance types with custom intervals
+- Visual warnings and quick completion logging
+- Maintenance history tracking
 
 ## Installation
 
@@ -57,7 +81,42 @@ Navigate the menu
 - **Tagesstatistiken zurücksetzen**: Resets the daily counts for espresso, cappuccino, and other drinks.
 - **Datum ändern**: Allows you to change the current date.
 - **Wartungshistorie**: View and manually log maintenance tasks. Select a task and press Button A to mark it as completed for today.
+- **Achievements**: View your unlocked achievements organized by category. Navigate through your coffee accomplishments and see progress bars for incomplete streak achievements.
 - **Information**: Displays version information and credits.
+
+### Achievement Categories
+![achievements screen](images/beanOS_achievements.jpg)
+
+#### 🏅 Meilensteine (Milestones)
+Unlock achievements for reaching coffee consumption milestones:
+- **[1] Erster Kaffee**: Your very first coffee!
+- **[10] Kaffee-Starter**: 10 coffees consumed
+- **[50] Kaffee-Fan**: 50 coffees consumed  
+- **[100] Kaffee-Liebhaber**: 100 coffees consumed
+- **[500] Kaffee-Experte**: 500 coffees consumed
+- **[1K] Kaffee-Meister**: 1000 coffees consumed
+
+#### ⚡ Streaks
+Maintain consistent coffee consumption:
+- **[7d] Wochenentkämpfer**: 7 days in a row with coffee
+- **[30d] Monatsmarathon**: 30 days in a row with coffee
+- *Progress bars show your current streak progress for incomplete achievements*
+
+#### 🍹 Spezialgetränke (Special Drinks)
+Try different coffee varieties:
+- **[IC] Stay Cool**: First iced latte consumed
+- **[AF] Dessert**: First affogato consumed
+- **[SH] Shake it!**: First shakerato consumed
+
+#### 🔧 Wartung (Maintenance)
+Keep your machine in perfect condition:
+- **[CL] Saubere Maschine**: First maintenance completed
+- **[WM] Wartungsmeister**: All maintenance tasks completed on time
+
+#### 🧪 Experimentell (Experimental)
+Master the art of coffee:
+- **[BA] Barista**: All drink types tried
+- **[HB] Happy Bean Day**: 10 coffees in a single day
 
 ### Bean Packs
 You can select the current pack size in the menu. The statistics will show how many days a pack lasts and your average bean consumption per day.
@@ -82,6 +141,17 @@ beanOS includes an intelligent maintenance reminder system that helps you keep y
 #### Button Controls for Maintenance:
 - **Button A**: Mark the current maintenance task as completed
 - **Button C**: Hide the warning and show the small reminder icon instead
+
+## Changelog
+
+### v2.3.1 (Current)
+- 🐛 **Fixed**: Button B now correctly increments cappuccino count
+- 🏆 **Improved**: Achievement checking for cappuccino button restored
+
+### v2.3.0 
+- 🏆 **New**: Complete achievement system with 20+ achievements
+- 🔧 **New**: Smart maintenance reminders with visual warnings
+- 📊 **Improved**: Enhanced statistics and tracking
 
 ## License
 

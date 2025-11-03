@@ -7,11 +7,13 @@ WIDTH, HEIGHT = 296, 128
 BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A, badger2040.BUTTON_B, badger2040.BUTTON_C, badger2040.BUTTON_UP, badger2040.BUTTON_DOWN, 25
 led = machine.Pin(LED, machine.Pin.OUT)
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
-menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Wartungshistorie", "Information"]
-current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active = 0, False, False, False, False, False
-version = "2.2.11"
+menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetzen", "Datum ändern", "Wartungshistorie", "Achievements", "Information"]
+current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active, view_achievements_active = 0, False, False, False, False, False, False
+version = "2.3.1"
 # Wartungshistorie Auswahl
 maintenance_history_selected = 0
+# Achievement Auswahl
+achievement_selected = 0
 # Statistik-Seitenumschaltung
 statistics_page = 0  # 0 = Gesamtstatistik, 1 = Bohnenstatistik
 # Neue globale Variablen
@@ -19,6 +21,15 @@ drink_menu_active = False
 drink_menu_options = ["lungo", "iced latte", "affogato", "shakerato", "espresso tonic", "other"]
 current_drink_menu_option = 0
 drink_counts = [0] * len(drink_menu_options)
+
+# Notification-System (für Achievements und Wartungen)
+notification_active = False
+notification_type = ""  # "achievement" oder "maintenance"
+notification_data = {}
+achievements_file = "achievements.json"
+
+# Achievement-Status für Titelleiste
+daily_achievement_unlocked = False
 
 # Battery-Reminder-Status
 battery_reminder_active = False
@@ -65,6 +76,390 @@ def load_maintenance_config():
         print("maintenance_config.json nicht gefunden")
         show_error("maintenance_config.json nicht gefunden")
         return []
+
+# Generisches Notification-System
+def show_notification(notification_type, data):
+    global notification_active, notification_data
+    notification_active = True
+    notification_data = {"type": notification_type, "data": data}
+
+def handle_notification_display():
+    global notification_active, notification_data
+    if not notification_active:
+        return False
+    
+    display.set_update_speed(badger2040.UPDATE_NORMAL)
+    display.set_pen(15)
+    display.clear()
+    
+    # Schwarzer Rahmen um die Benachrichtigung
+    display.set_pen(0)
+    display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
+    display.set_pen(15)
+    display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
+    display.set_pen(0)
+    
+    if notification_data["type"] == "achievement":
+        # Achievement-Benachrichtigung
+        achievement_key = notification_data["data"]
+        
+        # Titel zentrieren
+        title_text = "!! ACHIEVEMENT !!"
+        title_width = display.measure_text(title_text, 2)
+        title_x = (WIDTH - title_width) // 2
+        display.text(title_text, title_x, 40, scale=2)
+        
+        # Achievement anzeigen
+        definitions = get_achievement_definitions()
+        if achievement_key in definitions:
+            achievement = definitions[achievement_key]
+            
+            # Icon und Name zentriert
+            icon_name = f"[{achievement['icon']}] {achievement['name']}"
+            text_width = display.measure_text(icon_name, 2)
+            x_centered = (WIDTH - text_width) // 2
+            display.text(icon_name, x_centered, 70, scale=2)
+        
+        # Button-Hinweise
+        ok_text = "OK"
+        ok_x = 41 - display.measure_text(ok_text, 1) // 2  # A-Button Position
+        display.text(ok_text, ok_x, HEIGHT - 15, scale=1)
+        
+    elif notification_data["type"] == "maintenance":
+        # Wartungs-Benachrichtigung
+        maintenance_warnings = notification_data["data"]
+        
+        # Titel zentrieren
+        title_text = "!! WARTUNG FÄLLIG !!"
+        title_width = display.measure_text(title_text, 2)
+        title_x = (WIDTH - title_width) // 2
+        display.text(title_text, title_x, 40, scale=2)
+        
+        # Wartungsaufgaben zentriert anzeigen
+        y_pos = 70
+        for i, warn in enumerate(maintenance_warnings):
+            warn_names = {
+                "cleaning": "Maschine reinigen",
+                "descaling": "Maschine entkalken", 
+                "brew_group_cleaning": "Brühgruppe reinigen",
+                "grinder_cleaning": "Mahlwerk reinigen",
+                "deep_cleaning": "Grundreinigung"
+            }
+            warn_display = warn_names.get(warn, warn)
+            text_width = display.measure_text(warn_display, 2)
+            x_centered = (WIDTH - text_width) // 2
+            display.text(warn_display, x_centered, y_pos, scale=2)
+            y_pos += 25
+        
+        # Button-Hinweise
+        erledigt_text = "Erledigt"
+        erledigt_x = 41 - display.measure_text(erledigt_text, 1) // 2
+        display.text(erledigt_text, erledigt_x, HEIGHT - 15, scale=1)
+        
+        verstecken_text = "Verstecken"
+        verstecken_x = 253 - display.measure_text(verstecken_text, 1) // 2
+        display.text(verstecken_text, verstecken_x, HEIGHT - 15, scale=1)
+    
+    display.update()
+    return True
+
+def handle_notification_input():
+    global notification_active, notification_data, maintenance_warning_hidden, daily_achievement_unlocked
+    
+    if notification_data["type"] == "achievement":
+        if display.pressed(BUTTON_A) or display.pressed(BUTTON_B) or display.pressed(BUTTON_C):
+            daily_achievement_unlocked = True  # Zeige Icon in Titelleiste
+            notification_active = False
+            notification_data = {}
+            update_display(True)
+            return True
+            
+    elif notification_data["type"] == "maintenance":
+        if display.pressed(BUTTON_A):
+            # Markiere nur die erste fällige Aufgabe als erledigt
+            maintenance_warnings = notification_data["data"]
+            status = load_maintenance_status()
+            today = int(time.mktime(time.localtime(current_date)) // 86400)
+            total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
+            
+            if maintenance_warnings:
+                task = maintenance_warnings[0]
+                status[task] = today
+                if task == "brew_group_cleaning":
+                    status["brew_group_cleaning_drinks"] = total_drinks
+                
+                wartung_eintrag = f'{format_date(time.localtime(current_date))},WARTUNG:{task}'
+                if log_file not in uos.listdir():
+                    with open(log_file, 'w') as file:
+                        headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                        file.write(headers + "\n")
+                with open(log_file, 'a') as file:
+                    file.write(wartung_eintrag + "\n")
+            
+            save_maintenance_status(status)
+            maintenance_warning_hidden = False
+            notification_active = False
+            notification_data = {}
+            update_display(True)
+            return True
+            
+        if display.pressed(BUTTON_C):
+            maintenance_warning_hidden = True
+            notification_active = False
+            notification_data = {}
+            update_display(True)
+            return True
+    
+    return False
+def load_achievements():
+    if achievements_file in uos.listdir():
+        try:
+            with open(achievements_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Fehler beim Laden von achievements.json: {e}")
+            return {}
+    return {}
+
+def save_achievements(achievements):
+    try:
+        with open(achievements_file, 'w') as f:
+            json.dump(achievements, f)
+    except Exception as e:
+        print(f"Fehler beim Speichern von achievements.json: {e}")
+
+def get_achievement_definitions():
+    return {
+        # Meilensteine
+        "first_coffee": {"name": "Erster Kaffee", "desc": "Dein allererster Kaffee!", "icon": "1", "category": "Meilensteine"},
+        "coffee_10": {"name": "Kaffee-Starter", "desc": "10 Kaffees getrunken", "icon": "10", "category": "Meilensteine"},
+        "coffee_50": {"name": "Kaffee-Fan", "desc": "50 Kaffees getrunken", "icon": "50", "category": "Meilensteine"},
+        "coffee_100": {"name": "Kaffee-Liebhaber", "desc": "100 Kaffees getrunken", "icon": "100", "category": "Meilensteine"},
+        "coffee_500": {"name": "Kaffee-Experte", "desc": "500 Kaffees getrunken", "icon": "500", "category": "Meilensteine"},
+        "coffee_1000": {"name": "Kaffee-Meister", "desc": "1000 Kaffees getrunken", "icon": "1K", "category": "Meilensteine"},
+        
+        # Streak-basiert
+        "streak_7": {"name": "Wochenentkämpfer", "desc": "7 Tage in Folge Kaffee", "icon": "7d", "category": "Streaks"},
+        "streak_30": {"name": "Monatsmarathon", "desc": "30 Tage in Folge Kaffee", "icon": "30d", "category": "Streaks"},
+        
+        # Spezialgetränke
+        "stay_cool": {"name": "Stay Cool", "desc": "Ersten Iced Latte getrunken", "icon": "IC", "category": "Spezialgetränke"},
+        "dessert": {"name": "Dessert", "desc": "Ersten Affogato getrunken", "icon": "AF", "category": "Spezialgetränke"},
+        "shaker": {"name": "Shake it!", "desc": "Ersten Shakerato getrunken", "icon": "SH", "category": "Spezialgetränke"},
+        
+        # Wartungsbezogen
+        "maintenance_master": {"name": "Wartungsmeister", "desc": "Alle Wartungen rechtzeitig", "icon": "WM", "category": "Wartung"},
+        "clean_machine": {"name": "Saubere Maschine", "desc": "Erste Wartung durchgeführt", "icon": "CL", "category": "Wartung"},
+        
+        # Experimentell
+        "barista": {"name": "Barista", "desc": "Alle Getränketypen probiert", "icon": "BA", "category": "Experimentell"},
+        "happy_bean_day": {"name": "Happy Bean Day", "desc": "10 Kaffees an einem Tag", "icon": "HB", "category": "Experimentell"}
+    }
+
+def check_achievements():
+    global daily_achievement_unlocked
+    achievements = load_achievements()
+    definitions = get_achievement_definitions()
+    new_achievements = []
+    
+    # Gesamtkaffee-Statistiken berechnen
+    total_coffee = calculate_total_coffee_count()
+    print(f"DEBUG: Total coffee count: {total_coffee}")
+    
+    # Meilenstein-Achievements
+    milestones = [1, 10, 50, 100, 500, 1000]
+    achievement_keys = ["first_coffee", "coffee_10", "coffee_50", "coffee_100", "coffee_500", "coffee_1000"]
+    
+    for i, milestone in enumerate(milestones):
+        key = achievement_keys[i]
+        already_has = key in achievements
+        print(f"DEBUG: Checking {key} - milestone: {milestone}, total: {total_coffee}, has: {already_has}")
+        if total_coffee >= milestone and key not in achievements:
+            achievements[key] = format_date(time.localtime(current_date))
+            new_achievements.append(key)
+            print(f"DEBUG: NEW ACHIEVEMENT: {key}")
+    
+    # Happy Bean Day Debug
+    today_drinks = espresso_count + cappuccino_count + sum(drink_counts)
+    print(f"DEBUG: Today drinks: {today_drinks}, Happy Bean Day check: {all_drinks_today()}")
+    
+    # Getränke-spezifische Achievements
+    if has_drunk_drink("iced latte") and "stay_cool" not in achievements:
+        achievements["stay_cool"] = format_date(time.localtime(current_date))
+        new_achievements.append("stay_cool")
+    
+    if has_drunk_drink("affogato") and "dessert" not in achievements:
+        achievements["dessert"] = format_date(time.localtime(current_date))
+        new_achievements.append("dessert")
+    
+    if has_drunk_drink("shakerato") and "shaker" not in achievements:
+        achievements["shaker"] = format_date(time.localtime(current_date))
+        new_achievements.append("shaker")
+    
+    # Barista Achievement (alle Getränke probiert)
+    if all_drinks_tried() and "barista" not in achievements:
+        achievements["barista"] = format_date(time.localtime(current_date))
+        new_achievements.append("barista")
+    
+    # Happy Bean Day (10 Kaffees an einem Tag)
+    if all_drinks_today() and "happy_bean_day" not in achievements:
+        achievements["happy_bean_day"] = format_date(time.localtime(current_date))
+        new_achievements.append("happy_bean_day")
+    
+    # Wartungs-Achievements
+    if has_done_maintenance() and "clean_machine" not in achievements:
+        achievements["clean_machine"] = format_date(time.localtime(current_date))
+        new_achievements.append("clean_machine")
+    
+    # Streak-Achievements
+    current_streak = calculate_coffee_streak()
+    if current_streak >= 7 and "streak_7" not in achievements:
+        achievements["streak_7"] = format_date(time.localtime(current_date))
+        new_achievements.append("streak_7")
+    
+    if current_streak >= 30 and "streak_30" not in achievements:
+        achievements["streak_30"] = format_date(time.localtime(current_date))
+        new_achievements.append("streak_30")
+    
+    # Speichere Achievements und zeige Benachrichtigung
+    if new_achievements:
+        save_achievements(achievements)
+        show_notification("achievement", new_achievements[0])  # Zeige das erste neue Achievement
+        print(f"DEBUG: Showing achievement notification for: {new_achievements[0]}")
+    
+    return new_achievements
+
+def calculate_total_coffee_count():
+    # Hole historische Daten aus dem Logfile
+    total_espresso, total_cappuccino, total_other, _ = calculate_total_statistics_and_first_date()
+    
+    # Addiere die aktuellen Zähler für heute (falls sie noch nicht gespeichert wurden)
+    current_total = espresso_count + cappuccino_count + sum(drink_counts)
+    
+    # Prüfe, ob die heutigen Daten bereits im Logfile sind
+    today_str = format_date(time.localtime(current_date))
+    today_in_log = get_day_total_coffee(today_str)
+    
+    # Falls heute noch nicht im Log ist, addiere die aktuellen Zähler
+    if today_in_log == 0 and current_total > 0:
+        return total_espresso + total_cappuccino + total_other + current_total
+    else:
+        return total_espresso + total_cappuccino + total_other
+
+def has_drunk_drink(drink_name):
+    if log_file not in uos.listdir():
+        return False
+    
+    drink_index = drink_menu_options.index(drink_name) if drink_name in drink_menu_options else -1
+    if drink_index == -1:
+        return False
+    
+    with open(log_file, 'r') as file:
+        lines = file.readlines()[1:]  # Skip header
+        for line in lines:
+            parts = line.strip().split(',')
+            if len(parts) > 3 + drink_index and not parts[1].startswith("WARTUNG:"):
+                if int(parts[3 + drink_index]) > 0:
+                    return True
+    return False
+
+def all_drinks_tried():
+    for drink in drink_menu_options:
+        if not has_drunk_drink(drink):
+            return False
+    return True
+
+def all_drinks_today():
+    today_str = format_date(time.localtime(current_date))
+    
+    # Hole gespeicherte Daten für heute
+    today_in_log = get_day_total_coffee(today_str)
+    
+    # Addiere aktuelle Zähler (falls noch nicht gespeichert)
+    current_total = espresso_count + cappuccino_count + sum(drink_counts)
+    
+    # Falls heute noch nicht im Log oder Log-Wert ist kleiner als aktuelle Zähler
+    if today_in_log == 0 or current_total > today_in_log:
+        total_today = current_total
+    else:
+        total_today = today_in_log
+    
+    return total_today >= 10
+
+def has_done_maintenance():
+    if log_file not in uos.listdir():
+        return False
+    
+    with open(log_file, 'r') as file:
+        lines = file.readlines()[1:]  # Skip header
+        for line in lines:
+            parts = line.strip().split(',')
+            if len(parts) == 2 and parts[1].startswith("WARTUNG:"):
+                return True
+    return False
+
+def calculate_coffee_streak():
+    if log_file not in uos.listdir():
+        return 0
+    
+    streak = 0
+    current_check_date = current_date
+    
+    while True:
+        date_str = format_date(time.localtime(current_check_date))
+        day_total = get_day_total_coffee(date_str)
+        
+        if day_total > 0:
+            streak += 1
+            current_check_date -= 86400  # Ein Tag zurück
+        else:
+            break
+    
+    return streak
+
+def get_day_total_coffee(date_str):
+    if log_file not in uos.listdir():
+        return 0
+    
+    with open(log_file, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.startswith(date_str):
+                parts = line.strip().split(',')
+                if len(parts) >= 3 and not parts[1].startswith("WARTUNG:"):
+                    espresso = int(parts[1]) if parts[1].isdigit() else 0
+                    cappuccino = int(parts[2]) if parts[2].isdigit() else 0
+                    other = sum(int(parts[i]) for i in range(3, len(parts)) if parts[i].isdigit())
+                    return espresso + cappuccino + other
+    return 0
+
+def draw_progress_bar(x, y, current, maximum):
+    """Zeichnet einen Fortschrittsbalken mit kleinen Kästchen"""
+    box_width = 6
+    box_height = 6
+    box_spacing = 2
+    total_width = min(maximum, 20) * (box_width + box_spacing) - box_spacing  # Max 20 Kästchen für Platz
+    
+    # Zeichne die Kästchen
+    for i in range(min(maximum, 20)):  # Maximal 20 Kästchen anzeigen
+        box_x = x + i * (box_width + box_spacing)
+        
+        if i < current:
+            # Gefülltes Kästchen (erreicht)
+            display.rectangle(box_x, y, box_width, box_height)
+        else:
+            # Leeres Kästchen (nicht erreicht) - nur Rand zeichnen
+            display.set_pen(0)
+            display.rectangle(box_x, y, box_width, 1)  # Oben
+            display.rectangle(box_x, y + box_height - 1, box_width, 1)  # Unten  
+            display.rectangle(box_x, y, 1, box_height)  # Links
+            display.rectangle(box_x + box_width - 1, y, 1, box_height)  # Rechts
+    
+    # Fortschrittstext rechts neben den Kästchen
+    progress_text = f"{current}/{maximum}"
+    text_x = x + total_width + 10
+    display.text(progress_text, text_x, y - 1, scale=1)
+
 def show_error(msg):
     display.set_update_speed(badger2040.UPDATE_NORMAL)
     display.set_pen(0)
@@ -73,6 +468,70 @@ def show_error(msg):
     display.text("FEHLER!", 10, 30, scale=2)
     display.text(msg, 10, 60, scale=1)
     display.update()
+
+def debug_display_content():
+    """Debug-Funktion: Gibt den aktuellen Bildschirminhalt in der Konsole aus"""
+    print("=== DISPLAY DEBUG ===")
+    print("Achievement Screen Content:")
+    
+    achievements = load_achievements()
+    definitions = get_achievement_definitions()
+    
+    # Gleiche Logik wie im Display
+    categories = {}
+    for key, achievement in definitions.items():
+        category = achievement.get("category", "Andere")
+        date = achievements.get(key, None)
+        
+        if date or category == "Streaks":
+            if category not in categories:
+                categories[category] = []
+            categories[category].append((key, date, achievement))
+    
+    if not categories:
+        print("  Noch keine Achievements erreicht!")
+        return
+    
+    # Sortiere und erstelle Display-Liste
+    category_order = ["Meilensteine", "Streaks", "Spezialgetränke", "Wartung", "Experimentell", "Andere"]
+    sorted_categories = []
+    for cat in category_order:
+        if cat in categories:
+            sorted_categories.append((cat, categories[cat]))
+    
+    display_items = []
+    for category, items in sorted_categories:
+        display_items.append(("category", category, ""))
+        for key, date, achievement in items:
+            display_items.append(("achievement", key, date, achievement))
+    
+    print(f"Total display items: {len(display_items)}")
+    print(f"Current selection: {achievement_selected}")
+    
+    # Zeige alle Items wie sie dargestellt werden
+    for i, item in enumerate(display_items):
+        prefix = "> " if i == achievement_selected else "  "
+        
+        if item[0] == "category":
+            category_name = item[1]
+            print(f"[{i:2d}] {prefix}=== {category_name} ===")
+        else:
+            key, date, achievement = item[1], item[2], item[3]
+            if date:
+                name_text = f"{prefix}[{achievement['icon']}] {achievement['name']}"
+                print(f"[{i:2d}] {name_text} | {date}")
+            else:
+                name_text = f"{prefix}[ ] {achievement['name']}"
+                print(f"[{i:2d}] {name_text} | Nicht erreicht")
+            print(f"     Desc: {achievement['desc']}")
+            
+            # Progress bar info für Streaks
+            if key in ["streak_7", "streak_30"] and not date:
+                current_streak = calculate_coffee_streak()
+                max_streak = 7 if key == "streak_7" else 30
+                print(f"     Progress: {current_streak}/{max_streak}")
+    
+    print("=== END DEBUG ===")
 
 def parse_date(date_str):
     try:
@@ -246,15 +705,30 @@ def check_maintenance_warnings():
     return warnings
 
 def update_display(full_update=False):
-    global statistics_page
+    global statistics_page, menu_active, achievement_selected
+    
+    # Prüfe zuerst auf Benachrichtigungen
+    if handle_notification_display():
+        return
+    
     if view_maintenance_history_active:
-        global menu_active, maintenance_history_selected
         menu_active = False
+        # Vollständiges Clearing für Wartungshistorie-Anzeige
+        display.set_pen(15)
+        display.clear()
+        
+        # Schwarzer Balken für Titel
         display.set_pen(0)
         display.rectangle(0, 0, WIDTH, 20)
         display.set_pen(15)
         display.set_font("bitmap8")
         display.text("Wartungshistorie", 10, 2)
+        
+        # Datum rechts (ohne Achievement-Icon oder andere Störungen)
+        date_str = format_date(time.localtime(current_date))
+        display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 10, 2)
+        
+        # Weißer Hintergrund für Inhalt
         display.set_pen(15)
         display.rectangle(0, 20, WIDTH, HEIGHT-20)
         display.set_pen(0)
@@ -274,9 +748,13 @@ def update_display(full_update=False):
             ("grinder_cleaning", "Mühle reinigen"),
             ("deep_cleaning", "Grundreinigung")
         ]
+        # Aktuelle Warnungen abrufen für die Markierung
+        current_warnings = check_maintenance_warnings()
         for i, (typ, name) in enumerate(wartungstypen):
             datum = wartung_dict.get(typ, "")
             prefix = "> " if i == maintenance_history_selected else "  "
+            # Fällige Wartung mit ! markieren
+            warning_marker = "! " if typ in current_warnings else ""
             if datum:
                 # Jahr als '25 anzeigen
                 try:
@@ -285,30 +763,156 @@ def update_display(full_update=False):
                     datum_kurz = f"{tag}.{monat}.'{jahr_kurz}"
                 except Exception:
                     datum_kurz = datum
-                display.text(f"{prefix}{name}: {datum_kurz}", 10, 30 + i*18)
+                display.text(f"{prefix}{warning_marker}{name}: {datum_kurz}", 10, 30 + i*18)
             else:
-                display.text(f"{prefix}{name}: ", 10, 30 + i*18)
+                display.text(f"{prefix}{warning_marker}{name}: ", 10, 30 + i*18)
+        display.update()
+        return
+    if view_achievements_active:
+        menu_active = False
+        # Debug-Output für Achievement-Screen
+        debug_display_content()
+        
+        # Vollständiges Clearing für Achievement-Anzeige
+        display.set_pen(15)
+        display.clear()
+        
+        # Schwarzer Balken für Titel
+        display.set_pen(0)
+        display.rectangle(0, 0, WIDTH, 20)
+        display.set_pen(15)
+        display.set_font("bitmap8")
+        display.text("Achievements", 10, 2)
+        
+        # Weißer Hintergrund für Inhalt
+        display.set_pen(15)
+        display.rectangle(0, 20, WIDTH, HEIGHT-20)
+        display.set_pen(0)
+        
+        achievements = load_achievements()
+        definitions = get_achievement_definitions()
+        
+        # Gruppiere erreichte Achievements + alle Streak-Achievements nach Kategorien
+        categories = {}
+        for key, achievement in definitions.items():
+            category = achievement.get("category", "Andere")
+            date = achievements.get(key, None)
+            
+            # Nur erreichte Achievements ODER Streak-Achievements anzeigen
+            if date or category == "Streaks":
+                if category not in categories:
+                    categories[category] = []
+                categories[category].append((key, date, achievement))
+        
+        # Sortiere Achievements innerhalb der Kategorien
+        for category in categories:
+            if category == "Meilensteine":
+                # Sortiere Meilensteine nach der Zahl im Icon
+                milestone_order = {"1": 1, "10": 10, "50": 50, "100": 100, "500": 500, "1K": 1000}
+                categories[category].sort(key=lambda x: milestone_order.get(x[2]["icon"], 999))
+            else:
+                # Andere Kategorien alphabetisch nach Name
+                categories[category].sort(key=lambda x: x[2]["name"])
+        
+        if not categories:
+            display.text("  Noch keine Achievements", 10, 50)
+            display.text("  erreicht!", 10, 68)
+        else:
+            # Sortiere Kategorien für konsistente Reihenfolge
+            category_order = ["Meilensteine", "Streaks", "Spezialgetränke", "Wartung", "Experimentell", "Andere"]
+            sorted_categories = []
+            for cat in category_order:
+                if cat in categories:
+                    sorted_categories.append((cat, categories[cat]))
+            
+            # Erstelle flache Liste für Scroll-Navigation
+            display_items = []
+            for category, items in sorted_categories:
+                display_items.append(("category", category, ""))  # Kategorie-Header
+                for key, date, achievement in items:
+                    display_items.append(("achievement", key, date, achievement))
+            
+            # Zeige maximal 3 Items gleichzeitig (wegen größerem Abstand)
+            max_visible = 3
+            total_items = len(display_items)
+            
+            # Bestimme Start-Index basierend auf aktueller Auswahl
+            if achievement_selected < max_visible - 1:
+                start_index = 0
+            elif achievement_selected >= total_items - 1:
+                start_index = max(0, total_items - max_visible)
+            else:
+                start_index = achievement_selected - 1
+            
+            end_index = min(total_items, start_index + max_visible)
+            
+            y_pos = 30
+            for i in range(start_index, end_index):
+                if i < len(display_items):
+                    item = display_items[i]
+                    prefix = "> " if i == achievement_selected else "  "
+                    
+                    if item[0] == "category":
+                        # Kategorie-Header
+                        category_name = item[1]
+                        display.text(f"{prefix}=== {category_name} ===", 10, y_pos)
+                        y_pos += 24
+                    else:
+                        # Achievement
+                        key, date, achievement = item[1], item[2], item[3]
+                        
+                        # Zeile 1: [Icon] Name
+                        if date:  # Achievement erreicht
+                            name_text = f"{prefix}[{achievement['icon']}] {achievement['name']}"
+                        else:  # Achievement nicht erreicht
+                            name_text = f"{prefix}[ ] {achievement['name']}"
+                        display.text(name_text, 10, y_pos)
+                        
+                        # Zeile 2: Datum rechtsbündig
+                        if date:
+                            date_x = WIDTH - display.measure_text(date, 1) - 49
+                            display.text(date, date_x, y_pos + 12)
+                        else:
+                            not_reached_text = "Nicht erreicht"
+                            not_reached_x = WIDTH - display.measure_text(not_reached_text, 1) - 49
+                            display.text(not_reached_text, not_reached_x, y_pos + 12)
+                        
+                        # Zeile 3: Beschreibung
+                        display.text(f"  {achievement['desc']}", 10, y_pos + 24)
+                        
+                        # Zeile 4: Fortschrittsbalken für Streak-Achievements (falls nicht erreicht)
+                        if key in ["streak_7", "streak_30"] and not date:
+                            current_streak = calculate_coffee_streak()
+                            max_streak = 7 if key == "streak_7" else 30
+                            draw_progress_bar(10, y_pos + 36, current_streak, max_streak)
+                            y_pos += 52  # Mehr Platz für Fortschrittsbalken
+                        else:
+                            y_pos += 40  # Normaler Abstand: 3 Zeilen * 12px + 4px Abstand
+            
+            # Zeige Scroll-Indikatoren wenn nötig
+            display.set_pen(0)  # Schwarz für Pfeile
+            if start_index > 0:
+                display.text("↑", WIDTH - 15, 30)
+            if end_index < total_items:
+                display.text("↓", WIDTH - 15, HEIGHT - 25)
+        
         display.update()
         return
     global refresh_count, maintenance_warning_hidden
     # Wartungswarnungen prüfen (nur einmal)
     maintenance_warnings = check_maintenance_warnings()
+    
+    # Zeige Wartungswarnung über das Notification-System
+    if maintenance_warnings and not maintenance_warning_hidden and not notification_active:
+        show_notification("maintenance", maintenance_warnings)
+        return
+        
     if battery_reminder_active:
         display.set_update_speed(badger2040.UPDATE_NORMAL)
         display.set_pen(0)
         display.clear()
         display.set_pen(15)
         display.text("Batterien wechseln!", 10, 50, scale=2)
-        display.update()
-        return
-    if maintenance_warnings and not maintenance_warning_hidden:
-        display.set_update_speed(badger2040.UPDATE_NORMAL)
-        display.set_pen(0)
-        display.clear()
-        display.set_pen(15)
-        display.text("Wartung fällig!", 10, 30, scale=2)
-        for i, warn in enumerate(maintenance_warnings):
-            display.text(warn, 10, 60 + i*20, scale=1)
         display.update()
         return
 
@@ -338,11 +942,19 @@ def update_display(full_update=False):
         balken_text = "beanOS"
     display.text(balken_text, 10, 2)
     date_str = format_date(time.localtime(current_date))
+    
+    # Achievement-Icon zentriert in der Titelleiste
+    if daily_achievement_unlocked:
+        achievement_icon = "★"
+        icon_width = display.measure_text(achievement_icon, 1)
+        icon_x = (WIDTH - icon_width) // 2
+        display.text(achievement_icon, icon_x, 2)
+    
+    # Datum rechts
     display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
     
-    # Kleines Wartungsicon anzeigen wenn Wartung versteckt aber noch fällig
+    # Kleines Wartungsicon links vom Datum
     if maintenance_warnings and maintenance_warning_hidden:
-        # Kleines "!" Icon links vom Datum
         display.text("!", WIDTH - display.measure_text(date_str, 1) - 60, 2)
 
     display.set_pen(0)
@@ -404,8 +1016,32 @@ def update_display(full_update=False):
             display.text("> " + option if i == current_drink_menu_option else option, 10, 22 + i * 18)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
     elif menu_active:
         display.set_font("bitmap8")  # Schriftart auf bitmap8 setzen
-        for i, option in enumerate(menu_options):
-            display.text("> " + option if i == current_menu_option else option, 10, 22 + i * 18)  # Abstand zu oberem Rand auf 22 Pixel gesetzt
+        
+        # Berechne sichtbaren Bereich (maximal 5 Menüpunkte)
+        max_visible = 5
+        total_options = len(menu_options)
+        
+        # Bestimme Start-Index basierend auf aktueller Auswahl
+        if current_menu_option < max_visible - 2:
+            start_index = 0
+        elif current_menu_option >= total_options - 2:
+            start_index = max(0, total_options - max_visible)
+        else:
+            start_index = current_menu_option - 2
+        
+        end_index = min(total_options, start_index + max_visible)
+        
+        for i in range(start_index, end_index):
+            option = menu_options[i]
+            prefix = "> " if i == current_menu_option else "  "
+            display_y = 22 + (i - start_index) * 18
+            display.text(prefix + option, 10, display_y)
+        
+        # Zeige Scroll-Indikatoren wenn nötig
+        if start_index > 0:
+            display.text("↑", WIDTH - 15, 22)  # Pfeil nach oben
+        if end_index < total_options:
+            display.text("↓", WIDTH - 15, 22 + (max_visible - 1) * 18)  # Pfeil nach unten
     else:
         # Zähler und Labels am unteren Bildschirmrand
         terms = ["ESPRESSO", "CAPPU", "ANDERES"]
@@ -459,11 +1095,16 @@ def load_counters_from_log(log_file):
                     break
 
 def button_pressed(pin):
-    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, drink_menu_active, current_drink_menu_option, drink_counts, battery_reminder_count, temp_date, last_interaction_time, maintenance_warning_hidden, maintenance_warning_tasks, view_maintenance_history_active, statistics_page
+    global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, drink_menu_active, current_drink_menu_option, drink_counts, battery_reminder_count, temp_date, last_interaction_time, maintenance_warning_hidden, maintenance_warning_tasks, view_maintenance_history_active, view_achievements_active, notification_active, notification_data, achievement_selected, statistics_page, daily_achievement_unlocked
 
     last_interaction_time = time.time()  # Update last interaction time on button press
     button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
     print(f"Button pressed: {button_name}, last interaction time updated")
+
+    # Notification-System (muss ganz am Anfang stehen)
+    if notification_active:
+        if handle_notification_input():
+            return
 
     if battery_reminder_active:
         if display.pressed(BUTTON_A):
@@ -516,16 +1157,10 @@ def button_pressed(pin):
             if 0 <= current_drink_menu_option < len(drink_counts):
                 drink_counts[current_drink_menu_option] += 1
                 save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, drink_counts)
+                check_achievements()  # Prüfe Achievements nach Getränk
             drink_menu_active = False  # Menü schließen
         elif display.pressed(BUTTON_C):
             drink_menu_active = False
-        update_display(False)
-        return
-
-    if display.pressed(BUTTON_UP):
-        current_menu_option = (current_menu_option - 1) % len(menu_options) if menu_active else 0
-        menu_active = True if not menu_active else menu_active
-        print(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
         update_display(False)
         return
 
@@ -566,6 +1201,7 @@ def button_pressed(pin):
             save_maintenance_status(status)
             # Wartungswarnung zurücksetzen da eine Wartung durchgeführt wurde
             maintenance_warning_hidden = False
+            check_achievements()  # Prüfe Achievements nach Wartung
             update_display(True)
             return
         if display.pressed(BUTTON_C):
@@ -574,6 +1210,62 @@ def button_pressed(pin):
             update_display(True)
             return
         update_display(True)
+        return
+
+    if view_achievements_active:
+        # Lade erreichte Achievements für Navigation
+        achievements = load_achievements()
+        definitions = get_achievement_definitions()
+        
+        # Erstelle die gleiche Liste wie im Display (erreichte + Streak-Achievements)
+        categories = {}
+        for key, achievement in definitions.items():
+            category = achievement.get("category", "Andere")
+            date = achievements.get(key, None)
+            
+            # Nur erreichte Achievements ODER Streak-Achievements anzeigen
+            if date or category == "Streaks":
+                if category not in categories:
+                    categories[category] = []
+                categories[category].append((key, date, achievement))
+        
+        # Erstelle flache Liste für Navigation
+        category_order = ["Meilensteine", "Streaks", "Spezialgetränke", "Wartung", "Experimentell", "Andere"]
+        sorted_categories = []
+        for cat in category_order:
+            if cat in categories:
+                sorted_categories.append((cat, categories[cat]))
+        
+        display_items = []
+        for category, items in sorted_categories:
+            display_items.append(("category", category, ""))
+            for key, date, achievement in items:
+                display_items.append(("achievement", key, date, achievement))
+        
+        if display_items:
+            if display.pressed(BUTTON_UP):
+                achievement_selected = (achievement_selected - 1) % len(display_items)
+                update_display(False)
+                return
+            if display.pressed(BUTTON_DOWN):
+                achievement_selected = (achievement_selected + 1) % len(display_items)
+                update_display(False)
+                return
+        
+        if display.pressed(BUTTON_C):
+            view_achievements_active = False
+            menu_active = True
+            achievement_selected = 0  # Reset selection
+            update_display(True)
+            return
+        update_display(True)
+        return
+
+    if display.pressed(BUTTON_UP):
+        current_menu_option = (current_menu_option - 1) % len(menu_options) if menu_active else 0
+        menu_active = True if not menu_active else menu_active
+        print(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
+        update_display(False)
         return
     if display.pressed(BUTTON_DOWN):
         current_menu_option = (current_menu_option + 1) % len(menu_options) if menu_active else 0
@@ -587,55 +1279,8 @@ def button_pressed(pin):
             drink_counts = [0] * len(drink_menu_options)  # Reset additional counts
             battery_reminder_active = battery_reminder_count >= 10
             button_press_count = 0
+            daily_achievement_unlocked = False  # Achievement-Icon für neuen Tag zurücksetzen
             update_display(True)
-    if view_maintenance_history_active:
-        global maintenance_history_selected
-        wartungstypen = [
-            ("cleaning", "Reinigung"),
-            ("descaling", "Entkalken"),
-            ("brew_group_cleaning", "Brühgruppe reinigen"),
-            ("grinder_cleaning", "Mühle reinigen"),
-            ("deep_cleaning", "Grundreinigung")
-        ]
-        if display.pressed(BUTTON_UP):
-            maintenance_history_selected = (maintenance_history_selected - 1) % len(wartungstypen)
-            update_display(False)
-            return
-        if display.pressed(BUTTON_DOWN):
-            maintenance_history_selected = (maintenance_history_selected + 1) % len(wartungstypen)
-            update_display(False)
-            return
-        if display.pressed(BUTTON_A):
-            # Wartungseintrag auf heute setzen
-            typ = wartungstypen[maintenance_history_selected][0]
-            datum = format_date(time.localtime(current_date))
-            # Logfile ergänzen
-            wartung_eintrag = f'{datum},WARTUNG:{typ}'
-            if log_file not in uos.listdir():
-                with open(log_file, 'w') as file:
-                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-                    file.write(headers + "\n")
-            with open(log_file, 'a') as file:
-                file.write(wartung_eintrag + "\n")
-            # Status aktualisieren
-            status = load_maintenance_status()
-            today_num = int(time.mktime(time.localtime(current_date)) // 86400)
-            status[typ] = today_num
-            if typ == "brew_group_cleaning":
-                total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
-                status["brew_group_cleaning_drinks"] = total_drinks
-            save_maintenance_status(status)
-            # Wartungswarnung zurücksetzen da eine Wartung durchgeführt wurde
-            maintenance_warning_hidden = False
-            update_display(True)
-            return
-        if display.pressed(BUTTON_C):
-            view_maintenance_history_active = False
-            menu_active = True
-            update_display(True)
-            return
-        update_display(True)
-        return
 
     if display.pressed(BUTTON_A):
         if menu_active:
@@ -654,15 +1299,22 @@ def button_pressed(pin):
                 menu_active = False
                 update_display(True)
             elif current_menu_option == 5:
+                view_achievements_active = True
+                menu_active = False
+                update_display(True)
+            elif current_menu_option == 6:
                 view_info_active = True
             update_display(True)
             return
         espresso_count += 1
         button_press_count += 1
+        check_achievements()  # Prüfe Achievements nach Espresso
 
     if display.pressed(BUTTON_B):
         if not menu_active:
+            cappuccino_count += 1
             button_press_count += 1
+            check_achievements()  # Prüfe Achievements nach Cappuccino
 
     if display.pressed(BUTTON_C):
         if menu_active:
@@ -677,39 +1329,6 @@ def button_pressed(pin):
         return
 
     # Entferne die Zählung von drink_counts[-1] außerhalb des Untermenüs
-
-    # Wartungswarnung-Interaktion
-    maintenance_warnings = check_maintenance_warnings()
-    if maintenance_warnings and not maintenance_warning_hidden:
-        if display.pressed(BUTTON_A):
-            # Markiere nur die erste fällige Aufgabe als erledigt
-            status = load_maintenance_status()
-            today = int(time.mktime(time.localtime(current_date)) // 86400)
-            total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
-            
-            # Nur die erste Wartung aus der Liste bearbeiten
-            if maintenance_warning_tasks:
-                task = maintenance_warning_tasks[0]  # Nur die erste Wartung
-                status[task] = today
-                if task == "brew_group_cleaning":
-                    status["brew_group_cleaning_drinks"] = total_drinks
-                # Wartungsaktion ins Logfile schreiben
-                wartung_eintrag = f'{format_date(time.localtime(current_date))},WARTUNG:{task}'
-                # Logfile ergänzen
-                if log_file not in uos.listdir():
-                    with open(log_file, 'w') as file:
-                        headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-                        file.write(headers + "\n")
-                with open(log_file, 'a') as file:
-                    file.write(wartung_eintrag + "\n")
-            save_maintenance_status(status)
-            maintenance_warning_hidden = False  # Reset nach Erledigung
-            update_display(True)
-            return
-        if display.pressed(BUTTON_C):
-            maintenance_warning_hidden = True
-            update_display(True)
-            return
 
     update_display(False)
     if button_press_count >= 10:
@@ -748,4 +1367,7 @@ if __name__ == "__main__":
                 last_button_press_time[btn] = 0
 
         if time.time() - last_interaction_time > 15:
-            nap()
+            # Nicht in den Schlafmodus gehen, wenn eine Wartungswarnung angezeigt wird
+            maintenance_warnings = check_maintenance_warnings()
+            if not (maintenance_warnings and not maintenance_warning_hidden):
+                nap()
