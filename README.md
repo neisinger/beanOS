@@ -67,7 +67,7 @@ Navigate the menu
 ![main menu screen](images/beanOS_screen-4.jpg)
 #### Buttons
 - **a:**
-Chooses the selected optoin
+Chooses the selected option
 - **c:**
 Closes the menu
 - **UP** & **DOWN:**
