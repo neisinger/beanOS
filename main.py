@@ -264,7 +264,6 @@ def check_achievements():
     
     # Gesamtkaffee-Statistiken berechnen
     total_coffee = calculate_total_coffee_count()
-    print(f"DEBUG: Total coffee count: {total_coffee}")
     
     # Meilenstein-Achievements
     milestones = [1, 10, 50, 100, 500, 1000]
@@ -272,16 +271,9 @@ def check_achievements():
     
     for i, milestone in enumerate(milestones):
         key = achievement_keys[i]
-        already_has = key in achievements
-        print(f"DEBUG: Checking {key} - milestone: {milestone}, total: {total_coffee}, has: {already_has}")
         if total_coffee >= milestone and key not in achievements:
             achievements[key] = format_date(time.localtime(current_date))
             new_achievements.append(key)
-            print(f"DEBUG: NEW ACHIEVEMENT: {key}")
-    
-    # Happy Bean Day Debug
-    today_drinks = espresso_count + cappuccino_count + sum(drink_counts)
-    print(f"DEBUG: Today drinks: {today_drinks}, Happy Bean Day check: {all_drinks_today()}")
     
     # Getränke-spezifische Achievements
     if has_drunk_drink("iced latte") and "stay_cool" not in achievements:
@@ -325,7 +317,6 @@ def check_achievements():
     if new_achievements:
         save_achievements(achievements)
         show_notification("achievement", new_achievements[0])  # Zeige das erste neue Achievement
-        print(f"DEBUG: Showing achievement notification for: {new_achievements[0]}")
     
     return new_achievements
 
@@ -469,70 +460,6 @@ def show_error(msg):
     display.text(msg, 10, 60, scale=1)
     display.update()
 
-def debug_display_content():
-    """Debug-Funktion: Gibt den aktuellen Bildschirminhalt in der Konsole aus"""
-    print("=== DISPLAY DEBUG ===")
-    print("Achievement Screen Content:")
-    
-    achievements = load_achievements()
-    definitions = get_achievement_definitions()
-    
-    # Gleiche Logik wie im Display
-    categories = {}
-    for key, achievement in definitions.items():
-        category = achievement.get("category", "Andere")
-        date = achievements.get(key, None)
-        
-        if date or category == "Streaks":
-            if category not in categories:
-                categories[category] = []
-            categories[category].append((key, date, achievement))
-    
-    if not categories:
-        print("  Noch keine Achievements erreicht!")
-        return
-    
-    # Sortiere und erstelle Display-Liste
-    category_order = ["Meilensteine", "Streaks", "Spezialgetränke", "Wartung", "Experimentell", "Andere"]
-    sorted_categories = []
-    for cat in category_order:
-        if cat in categories:
-            sorted_categories.append((cat, categories[cat]))
-    
-    display_items = []
-    for category, items in sorted_categories:
-        display_items.append(("category", category, ""))
-        for key, date, achievement in items:
-            display_items.append(("achievement", key, date, achievement))
-    
-    print(f"Total display items: {len(display_items)}")
-    print(f"Current selection: {achievement_selected}")
-    
-    # Zeige alle Items wie sie dargestellt werden
-    for i, item in enumerate(display_items):
-        prefix = "> " if i == achievement_selected else "  "
-        
-        if item[0] == "category":
-            category_name = item[1]
-            print(f"[{i:2d}] {prefix}=== {category_name} ===")
-        else:
-            key, date, achievement = item[1], item[2], item[3]
-            if date:
-                name_text = f"{prefix}[{achievement['icon']}] {achievement['name']}"
-                print(f"[{i:2d}] {name_text} | {date}")
-            else:
-                name_text = f"{prefix}[ ] {achievement['name']}"
-                print(f"[{i:2d}] {name_text} | Nicht erreicht")
-            print(f"     Desc: {achievement['desc']}")
-            
-            # Progress bar info für Streaks
-            if key in ["streak_7", "streak_30"] and not date:
-                current_streak = calculate_coffee_streak()
-                max_streak = 7 if key == "streak_7" else 30
-                print(f"     Progress: {current_streak}/{max_streak}")
-    
-    print("=== END DEBUG ===")
-
 def parse_date(date_str):
     try:
         day, month, year = map(int, date_str.split('.'))
@@ -616,14 +543,6 @@ def nap():
 def update_file(file, content):
     with open(file, 'w') as f:
         f.write(content)
-
-current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
-count_values = get_from_file(count_file, "0,0,0").split(',')
-# Robust gegen zu viele/wenige Werte
-espresso_count = int(count_values[0]) if len(count_values) > 0 else 0
-cappuccino_count = int(count_values[1]) if len(count_values) > 1 else 0
-battery_reminder_count = int(count_values[2]) if len(count_values) > 2 else 0
-button_press_count, temp_date, refresh_count = 0, current_date, 0
 
 def clear_log_file(file, date):
     if file in uos.listdir():
@@ -770,8 +689,6 @@ def update_display(full_update=False):
         return
     if view_achievements_active:
         menu_active = False
-        # Debug-Output für Achievement-Screen
-        debug_display_content()
         
         # Vollständiges Clearing für Achievement-Anzeige
         display.set_pen(15)
