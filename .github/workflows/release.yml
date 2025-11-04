@@ -7,6 +7,10 @@ on:
         description: 'Release version (e.g., v2.3.1)'
         required: true
         default: 'v2.3.1'
+      title:
+        description: 'Release title (e.g., Bug Fixes and Improvements)'
+        required: false
+        default: ''
 
 jobs:
   release:
@@ -18,48 +22,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and push tag
         run: |
-          # Create and push tag
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a ${{ github.event.inputs.version }} -m "Release ${{ github.event.inputs.version }}"
           git push origin ${{ github.event.inputs.version }}
+      
+      - name: Create the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TITLE="${{ github.event.inputs.title }}"
+          VERSION="${{ github.event.inputs.version }}"
           
-          # Create release notes
-          cat > release_notes.md << 'EOF'
-          ## 🐛 Bug Fixes
-
-          ### Button B Cappuccino Fix
-          - **Fixed**: Button B now correctly increments cappuccino count
-          - **Improved**: Achievement checking for cappuccino button restored
-          - **Impact**: Full cappuccino tracking functionality has been restored
-
-          ## 📦 Installation Files
-
-          Download `main.py` and `maintenance_config.json` from the assets below and follow the installation instructions in the [README](https://github.com/neisinger/beanOS#installation).
-
-          ## ✨ Key Features
-
-          - ☕ Coffee tracking for espresso, cappuccino, and 6 additional drink types
-          - 🏆 Complete achievement system with 20+ achievements
-          - 🔧 Smart maintenance reminders
-          - 📊 Daily, weekly, and total statistics
-          - 📈 Bean consumption analytics
-
-          ## 🔄 Upgrading
-
-          Simply replace your existing `main.py` file. Your data will be preserved.
-
-          ---
-          **Note**: This code must not be used by fascists! No code for the AfD or Musk or Trump!
-          EOF
+          if [ -z "$RELEASE_TITLE" ]; then
+            TITLE_TEXT="beanOS $VERSION"
+          else
+            TITLE_TEXT="beanOS $VERSION - $RELEASE_TITLE"
+          fi
           
-          # Create the release
-          gh release create ${{ github.event.inputs.version }} \
-            --title "beanOS ${{ github.event.inputs.version }} - Button B Cappuccino Fix" \
-            --notes-file release_notes.md \
+          gh release create $VERSION \
+            --title "$TITLE_TEXT" \
+            --notes "See [README](https://github.com/neisinger/beanOS#readme) for installation instructions and changelog. Download main.py and maintenance_config.json from assets below." \
+            --generate-notes \
             main.py \
             maintenance_config.json
