@@ -19,24 +19,34 @@ git push origin v2.3.1
 ```
 
 That's it! The GitHub Actions workflow will automatically:
-✅ Create the release
-✅ Add the release notes
+✅ Create the release with auto-generated notes
 ✅ Attach `main.py` and `maintenance_config.json` as downloadable files
 
-### Option 2: Manual Trigger via GitHub UI
+### Option 2: Use the Helper Script
+
+```bash
+git checkout main
+git pull
+./create_release.sh
+```
+
+### Option 3: Manual Trigger via GitHub UI
 
 1. Go to: https://github.com/neisinger/beanOS/actions/workflows/release.yml
 2. Click "Run workflow"
 3. Enter version: `v2.3.1`
-4. Click "Run workflow"
+4. Optionally enter title: `Button B Cappuccino Fix`
+5. Click "Run workflow"
+
+This will create the tag and release in one step.
 
 ## What Happens Next
 
-After creating the tag (Option 1) or running the workflow (Option 2):
+After creating the tag (Option 1/2) or running the workflow (Option 3):
 
 1. A new release will appear at: https://github.com/neisinger/beanOS/releases
 2. Users can download `main.py` and `maintenance_config.json` directly
-3. The release will include full release notes and installation instructions
+3. The release will include auto-generated release notes and installation instructions
 
 ## Verification
 
