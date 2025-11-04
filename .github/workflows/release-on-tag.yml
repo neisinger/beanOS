@@ -1,0 +1,55 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Create release notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## Release Notes
+
+          This release includes the latest updates to beanOS.
+
+          ## 📦 Installation Files
+
+          Download `main.py` and `maintenance_config.json` from the assets below and follow the installation instructions in the [README](https://github.com/neisinger/beanOS#installation).
+
+          ## ✨ Key Features
+
+          - ☕ Coffee tracking for espresso, cappuccino, and 6 additional drink types
+          - 🏆 Complete achievement system with 20+ achievements
+          - 🔧 Smart maintenance reminders
+          - 📊 Daily, weekly, and total statistics
+          - 📈 Bean consumption analytics
+
+          For detailed changes, see the [CHANGELOG](https://github.com/neisinger/beanOS#changelog) in the README.
+
+          ---
+          **Note**: This code must not be used by fascists! No code for the AfD or Musk or Trump!
+          EOF
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.get_version.outputs.VERSION }} \
+            --title "beanOS ${{ steps.get_version.outputs.VERSION }}" \
+            --notes-file release_notes.md \
+            main.py \
+            maintenance_config.json
