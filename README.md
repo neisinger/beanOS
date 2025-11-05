@@ -242,6 +242,8 @@ Greife auf alle beanOS-Funktionen über das Hauptmenü zu:
 
 ### 📊 Statistikansicht
 
+![Statistics View](images/beanOS_screen-3.jpg)
+
 Greife auf detaillierte Analysen über deinen Kaffeekonsum zu:
 
 **Gesamtzähler:**
@@ -266,6 +268,8 @@ Greife auf detaillierte Analysen über deinen Kaffeekonsum zu:
 ---
 
 ### 🏆 Erfolge-System
+
+![Achievements](images/beanOS_screen-2.jpg)
 
 Mach deine Kaffee-Reise zum Spiel mit **über 20 einzigartigen Erfolgen** in 5 Kategorien!
 
@@ -350,6 +354,8 @@ Meistere die Kunst des Kaffees:
 
 ### 🔧 Wartungssystem
 
+![Maintenance System](images/beanOS_screen-1.jpg)
+
 Halte deine Kaffeemaschine in optimalem Zustand mit beanOS's intelligentem Wartungserinnerungssystem.
 
 #### 📋 Wartungsaufgaben
@@ -433,9 +439,9 @@ Verfolge deinen Bohnenverbrauch und optimiere Bestellungen:
 *Links: Hauptmenü | Rechts: Statistikansicht*
 
 ### Zusätzliche Bildschirme
-<img src="images/beanOS_screen-2.jpg" width="45%" alt="Bildschirm 2"> <img src="images/beanOS_screen-1.jpg" width="45%" alt="Bildschirm 1">
+<img src="images/beanOS_screen-2.jpg" width="45%" alt="Achievements"> <img src="images/beanOS_screen-1.jpg" width="45%" alt="Wartungshistorie">
 
-*Verschiedene Oberflächen-Bildschirme mit verschiedenen Features*
+*Links: Erfolge-System | Rechts: Wartungshistorie*
 
 </div>
 
