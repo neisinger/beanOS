@@ -13,7 +13,7 @@
 
 ![Main Screen](images/beanOS_screen-6.jpg)
 
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Achievements](#-achievement-system) • [Maintenance](#-maintenance-system)
+[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Screenshots](#-screenshots-gallery) • [Data Management](#️-data-management)
 
 </div>
 
