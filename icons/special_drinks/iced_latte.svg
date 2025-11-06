@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stay Cool ~ - Iced Latte -->
+  <circle cx="16" cy="16" r="14" fill="none" stroke="black" stroke-width="2"/>
+  <!-- Wavy line representing ice/cold -->
+  <path d="M 8,12 Q 12,10 16,12 T 24,12" fill="none" stroke="black" stroke-width="2"/>
+  <path d="M 8,16 Q 12,14 16,16 T 24,16" fill="none" stroke="black" stroke-width="2"/>
+  <path d="M 8,20 Q 12,18 16,20 T 24,20" fill="none" stroke="black" stroke-width="2"/>
+</svg>
