@@ -21,7 +21,7 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 - 🎨 E-Ink-optimierte Bitmap-Icons
 - 💾 Automatische CSV-Protokollierung
 
-**Installation:** Kopiere `main.py`, `icon_bitmaps.py` und `maintenance_config.json` auf dein Badger2040 → Fertig!
+**Installation:** Kopiere nur `main.py` auf dein Badger2040 → Fertig! Alle Icons und Konfigurationen sind bereits enthalten.
 
 ---
 
@@ -309,7 +309,7 @@ beanOS enthält eine umfassende Sammlung von SVG-Icon-Vorlagen, die speziell fü
 Die Icons werden als 1-Bit-Bitmaps (32x32 Pixel) gespeichert und direkt auf dem Display gerendert:
 
 - **Format**: Bytearray mit 4 Bytes pro Zeile (128 Bytes pro Icon)
-- **Speicherung**: In `icon_bitmaps.py` als MicroPython-kompatible Bytearrays
+- **Speicherung**: Direkt in `main.py` als MicroPython-kompatible Bytearrays
 - **Rendering**: Pixel-für-Pixel-Zeichnung mit der `draw_bitmap_icon()` Funktion
 - **Verwendung**: Achievements-Benachrichtigungen, Achievement-Menü, Titelleiste
 
@@ -343,14 +343,12 @@ So installieren Sie beanOS auf Ihrem Badger2040:
 2. Öffnen Sie Thonny IDE und stellen Sie sicher, dass das Gerät erkannt wird
 3. Kopieren Sie den Inhalt der `main.py`-Datei in Thonnys Editor
 4. Speichern Sie die Datei auf Ihrem Badger2040 als `main.py`
-5. Kopieren Sie die `icon_bitmaps.py`-Datei in das Stammverzeichnis Ihres Badger2040
-6. Kopieren Sie die `maintenance_config.json`-Datei in das Stammverzeichnis Ihres Badger2040
-7. Trennen Sie die Verbindung und starten Sie das Gerät neu
+5. Trennen Sie die Verbindung und starten Sie das Gerät neu
+
+**Das war's!** Alle benötigten Daten (Icons und Wartungskonfiguration) sind bereits in `main.py` enthalten.
 
 ### Erforderliche Dateien
-- **main.py** - Hauptanwendungscode
-- **icon_bitmaps.py** - 1-Bit-Bitmap-Daten für Achievement-Icons
-- **maintenance_config.json** - Wartungsaufgaben-Konfiguration
+- **main.py** - Vollständige Anwendung mit eingebetteten Icons und Konfiguration
 
 ### Automatisch generierte Dateien
 Die folgenden Dateien werden während der Nutzung automatisch erstellt:
@@ -422,7 +420,7 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - Rendert 32x32 Pixel Icons aus Bytearray-Daten
 - 16 vordefinierte Icons für Achievements und UI
 - E-Ink-optimiert: Nur Schwarz/Weiß, keine Graustufen
-- Icons in separatem Modul `icon_bitmaps.py`
+- Icons direkt in `main.py` eingebettet für vereinfachte Installation
 
 #### 3. Dateiverwaltung (Zeilen 99-240)
 - **Configuration Loading**: JSON-basierte Wartungskonfiguration
@@ -434,9 +432,10 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - `kaffee_log.csv` - Hauptdatenquelle für alle Statistiken
 - `achievements.json` - Persistenz freigeschalteter Achievements
 - `maintenance_status.json` - Wartungshistorie
-- `maintenance_config.json` - Wartungsintervalle (konfigurierbar)
 - `current_date.txt` - Aktuelle Datumsspeicherung
 - `current_counts.txt` - Backup täglicher Zähler
+
+**Hinweis:** Wartungsintervalle sind jetzt direkt in `main.py` eingebettet und können in der Funktion `load_maintenance_config()` angepasst werden.
 
 #### 4. Benachrichtigungssystem (Zeilen 241-469)
 ```python
@@ -488,14 +487,15 @@ def check_maintenance_warnings():
 - Manuelle Protokollierung über Menü
 - Visuelle Indikatoren ("!" bei überfälligen Tasks)
 
-**Konfiguration** (`maintenance_config.json`):
-```json
-{
-  "tasks": [
+**Konfiguration** (eingebettet in `main.py`):
+```python
+MAINTENANCE_TASKS = [
     {"name": "cleaning", "interval": 7},
-    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150}
-  ]
-}
+    {"name": "descaling", "interval": 28},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
+    {"name": "grinder_cleaning", "interval": 56},
+    {"name": "deep_cleaning", "interval": 365}
+]
 ```
 
 #### 8. Display-Update-System (Zeilen 1116-1913)
@@ -596,7 +596,7 @@ while True:
 **Flash-Speicher (2MB):**
 - Effiziente CSV-Append-Operationen
 - JSON-Dateien für strukturierte Daten
-- Bitmap-Icons in separatem Modul (shared code)
+- Bitmap-Icons direkt im Hauptcode eingebettet
 
 ### E-Ink Display-Optimierungen
 
@@ -750,7 +750,7 @@ Intelligente Wartungsprüfung basierend auf Zeit und Nutzung.
 ```
 
 **Prüflogik:**
-1. Lade `maintenance_config.json`
+1. Lade eingebettete Wartungskonfiguration
 2. Lade `maintenance_status.json`
 3. Für jeden Task:
    - Zeit-basiert: Tage seit letzter Durchführung ≥ Intervall?
@@ -851,7 +851,7 @@ Datum,Espresso,Cappuccino,Lungo,Iced Latte,Affogato,Shakerato,Espresso Tonic,Fla
 01.11.2024,3,2,0,1,0,0,0,0
 ```
 
-#### `icon_bitmaps.py` - Icon-Daten-Modul
+#### Icon-Bitmap-Daten (eingebettet in main.py)
 
 **Struktur:**
 ```python
@@ -877,30 +877,27 @@ ICON_MAP = {
 - Experimental: `>>`, `^^`
 - General: `★`
 
-#### `maintenance_config.json` - Wartungskonfiguration
+**Hinweis:** Die Icon-Daten sind jetzt direkt in `main.py` eingebettet, eine separate `icon_bitmaps.py`-Datei wird nicht mehr benötigt.
 
-**Schema:**
-```json
-{
-  "tasks": [
-    {
-      "name": "cleaning",
-      "interval": 7,
-      "drink_limit": null
-    },
-    {
-      "name": "brew_group_cleaning",
-      "interval": 42,
-      "drink_limit": 150
-    }
-  ]
-}
+#### Wartungskonfiguration (eingebettet in main.py)
+
+**Standardkonfiguration:**
+```python
+MAINTENANCE_TASKS = [
+    {"name": "cleaning", "interval": 7},
+    {"name": "descaling", "interval": 28},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
+    {"name": "grinder_cleaning", "interval": 56},
+    {"name": "deep_cleaning", "interval": 365}
+]
 ```
 
 **Felder:**
 - `name`: Eindeutiger Task-Identifier
 - `interval`: Tages-Intervall für Zeit-basierte Warnung
 - `drink_limit`: Optional - Getränkezahl-Limit für nutzungsbasierte Warnung
+
+**Anpassung:** Die Wartungskonfiguration kann direkt in der Funktion `load_maintenance_config()` in `main.py` angepasst werden. Eine separate `maintenance_config.json`-Datei wird nicht mehr benötigt.
 
 ### State-Variablen
 
@@ -1137,34 +1134,35 @@ if my_condition and "my_achievement" not in achievements:
 
 ### Wartungsaufgaben anpassen
 
-Editiere `maintenance_config.json`:
+Bearbeite die `MAINTENANCE_TASKS`-Konstante in der Funktion `load_maintenance_config()` in `main.py`:
 
-```json
-{
-  "tasks": [
-    {
-      "name": "my_task",
-      "interval": 14,         // Alle 14 Tage
-      "drink_limit": null     // Keine Getränke-basierte Prüfung
-    },
-    {
-      "name": "brew_group_cleaning",
-      "interval": 42,
-      "drink_limit": 150      // Auch nach 150 Getränken fällig
-    }
-  ]
-}
+```python
+def load_maintenance_config():
+    # Embedded maintenance configuration
+    MAINTENANCE_TASKS = [
+        {"name": "my_task", "interval": 14},  # Alle 14 Tage
+        {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},  # Nach 42 Tagen ODER 150 Getränken
+        # Füge hier weitere Aufgaben hinzu...
+    ]
+    return MAINTENANCE_TASKS
 ```
 
-**Hinweis:** Task-Namen müssen im Code in `wartungstypen`-Liste hinzugefügt werden.
+**Hinweis:** Task-Namen müssen im Code in der `wartungstypen`-Liste in der Wartungshistorie-Anzeige hinzugefügt werden, damit sie mit lesbaren deutschen Namen angezeigt werden.
 
 ### Neue Icons erstellen
 
 1. **SVG erstellen** (32×32px, schwarz/weiß, hoher Kontrast)
-2. **In Bitmap konvertieren** mit `icon_bitmaps.py` Script
-3. **Zu ICON_MAP hinzufügen**:
+2. **In Bitmap konvertieren** (siehe icons/README.md für Konvertierungs-Tools)
+3. **Zu ICON_MAP in main.py hinzufügen**:
 ```python
-"MY_ICON": bytearray([...])  # 128 Bytes
+# Am Anfang von main.py, nach den anderen Icon-Definitionen
+ICON_MY_NEW_ICON = bytearray([...])  # 128 Bytes
+
+# Im ICON_MAP Dictionary
+ICON_MAP = {
+    # ... existing icons ...
+    "MY_ICON": ICON_MY_NEW_ICON,
+}
 ```
 4. **In Code verwenden**:
 ```python
@@ -1257,12 +1255,12 @@ warnings = check_maintenance_warnings()
 
 | Problem | Lösung |
 |---------|--------|
-| **"maintenance_config.json nicht gefunden"** | Datei ins Root-Directory kopieren, JSON-Syntax prüfen |
 | **Achievements schalten nicht frei** | Console-Output prüfen, Achievement-Logik in `check_achievements()` debuggen |
 | **Display aktualisiert nicht** | `update_display(True)` für Force Refresh, Update Speed Settings prüfen |
 | **Datenverlust nach Neustart** | Dateischreib-Rechte prüfen, korrupte JSON-Dateien löschen (werden neu erstellt) |
 | **CSV-Parsing-Fehler** | `kaffee_log.csv` auf korrektes Format prüfen, Header-Zeile verifizieren |
 | **Speicher voll** | Alte Log-Einträge archivieren, JSON-Dateien verkleinern |
+| **Wartungskonfiguration anpassen** | `MAINTENANCE_TASKS` in `load_maintenance_config()` in `main.py` bearbeiten |
 
 ### Datei-Recovery
 
@@ -1298,7 +1296,15 @@ Bei korrupten Dateien:
 
 ## 📜 Changelog
 
-### v2.4.1 (Current)
+### v2.5.0 (Current)
+- 📦 **Simplified Installation**: Konsolidierung aller Dateien in eine einzige `main.py`
+- ✅ Icon-Bitmap-Daten jetzt eingebettet (keine separate `icon_bitmaps.py` mehr nötig)
+- ✅ Wartungskonfiguration jetzt eingebettet (keine separate `maintenance_config.json` mehr nötig)
+- 🚀 **Installation**: Nur eine Datei kopieren statt drei
+- 📝 **Documentation**: README aktualisiert mit vereinfachten Installationsanweisungen
+- 🔧 **Maintenance**: Wartungskonfiguration kann direkt in `main.py` angepasst werden
+
+### v2.4.1
 - 🎨 **New**: 1-Bit Bitmap Icon System
 - ✅ Converted all 16 SVG icons to 1-bit bitmaps (32x32 pixels)
 - ✅ Integrated bitmap icons into main.py for native rendering
@@ -1368,8 +1374,8 @@ Beiträge sind willkommen! Bitte öffnen Sie ein Issue oder erstellen Sie einen 
 
 Für eine vollständige Version-History, siehe [Changelog](#-changelog) oben.
 
-**Aktuell:** v2.4.1 - Bitmap Icon System
-**Stabil:** v2.3.3 - Vollständig dokumentiert und getestet
+**Aktuell:** v2.5.0 - Vereinfachte Installation (Single-File)
+**Stabil:** v2.4.1 - Bitmap Icon System
 
 ---
 
