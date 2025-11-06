@@ -27,3 +27,13 @@ Thumbs.db
 
 # Log files
 *.log
+
+# Test files
+test_*.py
+
+# Auto-generated data files
+kaffee_log.csv
+achievements.json
+maintenance_status.json
+current_date.txt
+current_counts.txt
