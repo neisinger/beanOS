@@ -32,8 +32,4 @@
   <!-- Another achievement -->
   <text x="14" y="116" font-family="monospace" font-size="12" fill="black">[#10] Kaffee-Starter</text>
   <text x="230" y="124" font-family="monospace" font-size="8" fill="black">01.10.2025</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="60" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

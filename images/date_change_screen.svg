@@ -10,7 +10,4 @@
   
   <!-- Date Display (centered) -->
   <text x="70" y="70" font-family="monospace" font-size="20" fill="black">07.11.2025</text>
-  
-  <!-- Button Labels -->
-  <text x="10" y="113" font-family="monospace" font-size="8" fill="black">UP/DOWN: Datum  A: Übernehmen  C: Abbrechen</text>
 </svg>

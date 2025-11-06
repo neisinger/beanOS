@@ -32,9 +32,4 @@
   <text x="95" y="58" font-family="monospace" font-size="12" fill="black">1000g 05.11.2025</text>
   
   <text x="95" y="78" font-family="monospace" font-size="12" fill="black">500g 01.11.2025</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Neue Packung</text>
-  <text x="90" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="170" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

@@ -12,8 +12,4 @@
   
   <!-- Maintenance Tasks (centered) -->
   <text x="60" y="80" font-family="monospace" font-size="12" fill="black">Maschine entkalken</text>
-  
-  <!-- Button Labels -->
-  <text x="30" y="113" font-family="monospace" font-size="8" fill="black">Erledigt</text>
-  <text x="220" y="113" font-family="monospace" font-size="8" fill="black">Verstecken</text>
 </svg>

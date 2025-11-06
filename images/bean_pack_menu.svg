@@ -32,9 +32,4 @@
   <!-- Last Two Packs -->
   <text x="60" y="55" font-family="monospace" font-size="8" fill="black">1000g 05.11.2025</text>
   <text x="60" y="72" font-family="monospace" font-size="8" fill="black">500g 01.11.2025</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Neue Packung</text>
-  <text x="80" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

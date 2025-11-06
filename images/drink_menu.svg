@@ -28,9 +28,4 @@
   
   <text x="12" y="116" font-family="monospace" font-size="12" fill="black">Shakerato</text>
   <text x="254" y="116" font-family="monospace" font-size="12" fill="black">x0</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Auswählen</text>
-  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

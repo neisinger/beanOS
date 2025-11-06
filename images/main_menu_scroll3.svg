@@ -19,9 +19,4 @@
   <rect x="5" y="86" width="286" height="30" fill="black"/>
   <rect x="7" y="88" width="282" height="26" fill="white"/>
   <text x="12" y="106" font-family="monospace" font-size="12" fill="black">Information</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Auswählen</text>
-  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

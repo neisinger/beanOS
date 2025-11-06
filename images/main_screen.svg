@@ -24,11 +24,4 @@
   <rect x="200" y="35" width="75" height="50" fill="white" stroke="black" stroke-width="1"/>
   <text x="237" y="50" font-family="monospace" font-size="16" fill="black" text-anchor="middle">2</text>
   <text x="225" y="78" font-family="monospace" font-size="7" fill="black">ANDERE</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Espresso</text>
-  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">B: Cappuccino</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Getränke</text>
-  <text x="190" y="118" font-family="monospace" font-size="6" fill="black">UP: Menü</text>
-  <text x="235" y="118" font-family="monospace" font-size="6" fill="black">DOWN: Schlafen</text>
 </svg>
