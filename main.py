@@ -1334,13 +1334,9 @@ def update_display(full_update=False):
                         # Vollständiges Achievement
                         key, achievement, date = item[1], item[2], item[3]
                         
-                        # Draw bitmap icon
+                        # Draw bitmap icon (32x32 pixels)
                         icon_symbol = achievement['icon']
-                        icon_size = 24  # Slightly smaller for menu
                         draw_bitmap_icon(12, y_pos, icon_symbol, width=32, height=32)
-                        
-                        # Scale down by only drawing every nth pixel for smaller display
-                        # Actually, let's use full 32x32 but just position it properly
                         
                         # Name to the right of icon
                         name_text = achievement['name']

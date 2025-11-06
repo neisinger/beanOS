@@ -59,7 +59,7 @@ def main():
         safe_name = safe_name.replace('[', 'lb').replace(']', 'rb').replace('^', 'up')
         safe_name = safe_name.replace('*', 'star').replace('=', 'eq').replace('★', 'star')
         safe_name = safe_name.replace('#', 'hash').replace('~', 'tilde').replace('%', 'pct')
-        safe_name = safe_name.replace('o', 'o')
+        # 'o' is already safe, no replacement needed
         
         filename = f"{output_dir}/icon_{safe_name}.png"
         
