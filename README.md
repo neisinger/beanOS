@@ -54,7 +54,7 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 - **Streak-Achievements**: Halte deine Kaffeegewohnheit 7 oder 30 Tage am Laufenden
 - **Spezialgetränke-Achievements**: Probiere neue Getränke wie Iced Latte, Affogato oder Shakerato
 - **Wartungs-Achievements**: Halte deine Maschine in perfektem Zustand
-- **Experimentelle Achievements**: Werde ein echter Barista, indem du alle Getränketypen probierst
+- **Geheime Achievements**: Entdecke versteckte Errungenschaften durch Experimentieren!
 - **Fortschrittsanzeige**: Visuelle Fortschrittsbalken für Streak-Achievements
 - **Achievement-Benachrichtigungen**: Vollbild-Feiern beim Freischalten neuer Achievements
 - **Achievement-Icon**: Täglicher Stern (★) in der Titelleiste bei freigeschalteten Achievements
@@ -1052,11 +1052,6 @@ Erkunde neue Geschmackserlebnisse:
 Halte deine Maschine in Top-Zustand:
 - **[<>] Saubere Maschine**: Erste Wartung durchgeführt
 - **[[]] Wartungsmeister**: Alle Wartungen rechtzeitig durchgeführt
-
-### 🧪 Experimentell
-Für echte Kaffee-Enthusiasten:
-- **[>>] Barista**: Alle Getränketypen probiert
-- **[^^] Happy Bean Day**: 10 Kaffees an einem Tag
 
 ## 🔧 Wartungssystem
 
