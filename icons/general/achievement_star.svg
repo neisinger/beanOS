@@ -2,5 +2,5 @@
 <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <!-- Achievement Star ★ - Daily Achievement Unlocked -->
   <polygon points="16,4 19.5,13 29,13.5 21.5,20 24,29 16,24 8,29 10.5,20 3,13.5 12.5,13" 
-           fill="black" stroke="black" stroke-width="1"/>
+           fill="black" stroke="black" stroke-width="2"/>
 </svg>
