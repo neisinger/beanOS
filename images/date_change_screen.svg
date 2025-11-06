@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="10" y="14" font-family="monospace" font-size="8" fill="white">Datum ändern</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Date Display (centered) -->
+  <text x="70" y="70" font-family="monospace" font-size="20" fill="black">07.11.2025</text>
+  
+  <!-- Button Labels -->
+  <text x="10" y="113" font-family="monospace" font-size="8" fill="black">UP/DOWN: Datum  A: Übernehmen  C: Abbrechen</text>
+</svg>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Achievements</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Incomplete achievement (top of scroll) -->
+  <text x="14" y="40" font-family="monospace" font-size="12" fill="black">[ ] Consistency Master</text>
+  
+  <!-- Progress Bar -->
+  <rect x="14" y="46" width="100" height="8" fill="white" stroke="black" stroke-width="1"/>
+  <!-- Filled Progress (15/30) -->
+  <rect x="15" y="47" width="50" height="6" fill="black"/>
+  <text x="120" y="52" font-family="monospace" font-size="8" fill="black">15/30</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="60" x2="288" y2="60" stroke="black" stroke-width="1"/>
+  
+  <!-- Selected Achievement -->
+  <rect x="5" y="62" width="286" height="36" fill="black"/>
+  <rect x="7" y="64" width="282" height="32" fill="white"/>
+  <text x="12" y="78" font-family="monospace" font-size="12" fill="black">[#50] Kaffee-Fan</text>
+  <text x="230" y="86" font-family="monospace" font-size="8" fill="black">15.10.2025</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="98" x2="288" y2="98" stroke="black" stroke-width="1"/>
+  
+  <!-- Another achievement -->
+  <text x="14" y="116" font-family="monospace" font-size="12" fill="black">[#10] Kaffee-Starter</text>
+  <text x="230" y="124" font-family="monospace" font-size="8" fill="black">01.10.2025</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="60" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>

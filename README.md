@@ -39,6 +39,8 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 
 ## 📱 Screenshots der Menüs
 
+Alle Screenshots zeigen das exakte Seitenverhältnis des Badger2040 E-Ink Displays (296x128 Pixel).
+
 ### Hauptbildschirm
 ![Hauptbildschirm](images/main_screen.svg)
 
@@ -49,30 +51,90 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 
 *Das zentrale Navigationsmenü mit Achievement-Style Layout. Ausgewählte Optionen werden mit schwarzen Rahmen hervorgehoben.*
 
+#### Hauptmenü - Scroll-Zustände
+![Hauptmenü - Wartungshistorie](images/main_menu_scroll2.svg)
+![Hauptmenü - Information](images/main_menu_scroll3.svg)
+
+*Navigation durch alle 7 Menüoptionen mit intelligentem Scrolling.*
+
+### Getränkemenü
+![Getränkemenü](images/drink_menu.svg)
+
+*Auswahl zusätzlicher Getränketypen wie Lungo, Iced Latte, Affogato, Shakerato, Espresso Tonic und andere.*
+
+#### Getränkemenü - Scroll-Zustand
+![Getränkemenü - Gescrollt](images/drink_menu_scroll2.svg)
+
+*Zeigt alle 6 verfügbaren Getränkeoptionen mit Zählern.*
+
 ### Bohnen-Tracking-Menü
 ![Bohnen-Tracking](images/bean_pack_menu.svg)
 
 *Bean-Pack-Verfolgung mit verschiedenen Packungsgrößen. Zeigt Gesamtanzahl und die letzten beiden angebrochenen Packungen mit Datum.*
 
-### Gesamtstatistik
+#### Bohnen-Tracking - Scroll-Zustand
+![Bohnen-Tracking - Gescrollt](images/bean_pack_menu_scroll2.svg)
+
+*Navigation durch alle 6 verfügbaren Packungsgrößen (125g, 200g, 250g, 500g, 750g, 1000g).*
+
+### Statistiken
+
+#### Gesamtstatistik
 ![Statistiken](images/statistics_view.svg)
 
-*Detaillierte Verbrauchsstatistiken mit Tages-Durchschnittswerten und Bohnenverbrauchsanalyse.*
+*Detaillierte Verbrauchsstatistiken mit Tages-Durchschnittswerten für Espresso, Cappuccino und andere Getränke.*
+
+#### Bohnenstatistik
+![Bohnenstatistik](images/bean_statistics_view.svg)
+
+*Bohnenverbrauchsanalyse mit Packungsgröße, Tage pro Packung, Gramm pro Tag und Gesamtverbrauch.*
 
 ### Achievement-Menü
 ![Achievements](images/achievements_menu.svg)
 
 *Achievement-Übersicht mit Fortschrittsbalken für unvollständige Streak-Achievements und Datum für erreichte Meilensteine.*
 
+#### Achievement-Menü - Scroll-Zustand
+![Achievements - Gescrollt](images/achievements_menu_scroll2.svg)
+
+*Navigation durch alle erreichten und in Arbeit befindlichen Achievements.*
+
 ### Wartungshistorie
 ![Wartungshistorie](images/maintenance_menu.svg)
 
 *Wartungsaufgaben mit Status-Anzeige. Überfällige Wartungen werden mit "!" markiert.*
 
-### Achievement-Benachrichtigung
+#### Wartungshistorie - Scroll-Zustand
+![Wartungshistorie - Gescrollt](images/maintenance_menu_scroll2.svg)
+
+*Zeigt alle 5 Wartungstypen mit letzten Durchführungsdaten.*
+
+### Datum ändern
+![Datum ändern](images/date_change_screen.svg)
+
+*Interaktive Datumsauswahl mit UP/DOWN-Tasten zur Anpassung des aktuellen Datums.*
+
+### Information
+![Information](images/information_screen.svg)
+
+*Zeigt Versionsinformationen, Autor, Lizenz und Hardware-Details.*
+
+### Benachrichtigungen
+
+#### Achievement-Benachrichtigung
 ![Achievement-Benachrichtigung](images/achievement_notification.svg)
 
-*Vollbild-Feier beim Freischalten neuer Achievements mit Trophy-Symbol und Beschreibung.*
+*Vollbild-Feier beim Freischalten neuer Achievements.*
+
+#### Wartungs-Warnung
+![Wartungs-Warnung](images/maintenance_warning.svg)
+
+*Vollbild-Warnung bei fälligen Wartungsaufgaben.*
+
+#### Bean-Pack-Benachrichtigung
+![Bean-Pack-Benachrichtigung](images/bean_pack_notification.svg)
+
+*Bestätigung beim Starten einer neuen Bohnenpackung.*
 
 ## 🎨 SVG Icon Templates & Bitmap Integration
 

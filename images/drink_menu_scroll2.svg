@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="10" y="14" font-family="monospace" font-size="8" fill="white">Getränkeauswahl</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Menu Items (showing scroll state with Affogato selected) -->
+  <text x="12" y="40" font-family="monospace" font-size="12" fill="black">Iced Latte</text>
+  <text x="260" y="40" font-family="monospace" font-size="12" fill="black">x1</text>
+  <line x1="15" y1="50" x2="281" y2="50" stroke="black" stroke-width="1"/>
+  
+  <!-- Selected Menu Item -->
+  <rect x="5" y="50" width="286" height="26" fill="black"/>
+  <rect x="7" y="52" width="282" height="22" fill="white"/>
+  <text x="12" y="66" font-family="monospace" font-size="12" fill="black">Affogato</text>
+  <text x="260" y="66" font-family="monospace" font-size="12" fill="black">x0</text>
+  
+  <line x1="15" y1="76" x2="281" y2="76" stroke="black" stroke-width="1"/>
+  
+  <text x="12" y="92" font-family="monospace" font-size="12" fill="black">Shakerato</text>
+  <text x="254" y="92" font-family="monospace" font-size="12" fill="black">x0</text>
+  <line x1="15" y1="98" x2="281" y2="98" stroke="black" stroke-width="1"/>
+  
+  <text x="12" y="116" font-family="monospace" font-size="12" fill="black">Espresso Tonic</text>
+  <text x="218" y="116" font-family="monospace" font-size="12" fill="black">x0</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Auswählen</text>
+  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>

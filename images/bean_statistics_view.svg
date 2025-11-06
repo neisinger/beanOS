@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="10" y="14" font-family="monospace" font-size="8" fill="white">Bohnenstatistik</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Statistics Boxes -->
+  <!-- Pack Size Box -->
+  <rect x="5" y="28" width="286" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="6" y="29" width="284" height="20" fill="white"/>
+  <text x="10" y="43" font-family="monospace" font-size="12" fill="black">Packungsgröße: 1000g</text>
+  
+  <!-- Days per Pack Box -->
+  <rect x="5" y="52" width="286" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="6" y="53" width="284" height="20" fill="white"/>
+  <text x="10" y="67" font-family="monospace" font-size="12" fill="black">Tage/Packung: 50.8</text>
+  
+  <!-- Grams per Day Box -->
+  <rect x="5" y="76" width="286" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="6" y="77" width="284" height="20" fill="white"/>
+  <text x="10" y="91" font-family="monospace" font-size="12" fill="black">Gramm/Tag: 19.7g</text>
+  
+  <!-- Total Box (highlighted) -->
+  <rect x="5" y="100" width="286" height="22" fill="black" stroke="black" stroke-width="1"/>
+  <rect x="6" y="101" width="284" height="20" fill="black"/>
+  <text x="10" y="115" font-family="monospace" font-size="12" fill="white">Gesamt: 1394g</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Seite wechseln</text>
+</svg>

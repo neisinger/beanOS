@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>beanOS Screen Gallery - Alle Bildschirme (296x128)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .intro {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 50px;
+        }
+        .section h2 {
+            color: #444;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .screen-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .screen-item h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 16px;
+        }
+        .screen-item img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        .screen-item p {
+            margin: 10px 0 0 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🫘 beanOS Screen Gallery</h1>
+    <div class="intro">
+        <p><strong>Alle Bildschirme in originalem Seitenverhältnis: 296×128 Pixel (Badger2040 E-Ink Display)</strong></p>
+        <p>Vollständige Darstellung aller Menüebenen und Scroll-Zustände</p>
+    </div>
+
+    <div class="section">
+        <h2>📱 Hauptbildschirme</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Hauptbildschirm</h3>
+                <img src="main_screen.svg" alt="Hauptbildschirm">
+                <p>Tägliche Kaffeezähler mit Achievement-Stern</p>
+            </div>
+            <div class="screen-item">
+                <h3>Hauptmenü</h3>
+                <img src="main_menu.svg" alt="Hauptmenü">
+                <p>Hauptnavigation - Bohnen ausgewählt</p>
+            </div>
+            <div class="screen-item">
+                <h3>Hauptmenü (Scroll 2)</h3>
+                <img src="main_menu_scroll2.svg" alt="Hauptmenü Scroll 2">
+                <p>Wartungshistorie ausgewählt</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+            <div class="screen-item">
+                <h3>Hauptmenü (Scroll 3)</h3>
+                <img src="main_menu_scroll3.svg" alt="Hauptmenü Scroll 3">
+                <p>Information ausgewählt</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>☕ Getränkeauswahl</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Getränkemenü</h3>
+                <img src="drink_menu.svg" alt="Getränkemenü">
+                <p>Lungo, Iced Latte, Affogato, Shakerato...</p>
+            </div>
+            <div class="screen-item">
+                <h3>Getränkemenü (Gescrollt)</h3>
+                <img src="drink_menu_scroll2.svg" alt="Getränkemenü Scroll">
+                <p>Affogato ausgewählt</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🫘 Bohnen-Tracking</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Bean Pack Menü</h3>
+                <img src="bean_pack_menu.svg" alt="Bean Pack Menü">
+                <p>1000g Packung ausgewählt</p>
+            </div>
+            <div class="screen-item">
+                <h3>Bean Pack Menü (Gescrollt)</h3>
+                <img src="bean_pack_menu_scroll2.svg" alt="Bean Pack Scroll">
+                <p>125g Packung ausgewählt</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Statistiken</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Gesamtstatistik</h3>
+                <img src="statistics_view.svg" alt="Gesamtstatistik">
+                <p>Espresso, Cappuccino, Andere Getränke</p>
+            </div>
+            <div class="screen-item">
+                <h3>Bohnenstatistik</h3>
+                <img src="bean_statistics_view.svg" alt="Bohnenstatistik">
+                <p>Verbrauch, Tage/Packung, Gramm/Tag</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🏆 Achievements</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Achievement-Menü</h3>
+                <img src="achievements_menu.svg" alt="Achievement-Menü">
+                <p>Erreichte und laufende Achievements</p>
+            </div>
+            <div class="screen-item">
+                <h3>Achievement-Menü (Gescrollt)</h3>
+                <img src="achievements_menu_scroll2.svg" alt="Achievement Scroll">
+                <p>Weitere Achievements</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔧 Wartung</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Wartungshistorie</h3>
+                <img src="maintenance_menu.svg" alt="Wartungshistorie">
+                <p>5 Wartungstypen mit Status</p>
+            </div>
+            <div class="screen-item">
+                <h3>Wartungshistorie (Gescrollt)</h3>
+                <img src="maintenance_menu_scroll2.svg" alt="Wartung Scroll">
+                <p>Brühgruppe ausgewählt</p>
+                <span class="badge">Scroll-Zustand</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>⚙️ Einstellungen & Info</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Datum ändern</h3>
+                <img src="date_change_screen.svg" alt="Datum ändern">
+                <p>Interaktive Datumsauswahl</p>
+            </div>
+            <div class="screen-item">
+                <h3>Information</h3>
+                <img src="information_screen.svg" alt="Information">
+                <p>Version, Autor, Lizenz, Hardware</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔔 Benachrichtigungen</h2>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <h3>Achievement Freischalten</h3>
+                <img src="achievement_notification.svg" alt="Achievement Notification">
+                <p>Vollbild-Feier bei neuen Achievements</p>
+            </div>
+            <div class="screen-item">
+                <h3>Wartungs-Warnung</h3>
+                <img src="maintenance_warning.svg" alt="Wartungs-Warnung">
+                <p>Erinnerung bei fälliger Wartung</p>
+            </div>
+            <div class="screen-item">
+                <h3>Bean Pack gestartet</h3>
+                <img src="bean_pack_notification.svg" alt="Bean Pack Notification">
+                <p>Bestätigung neuer Bohnenpackung</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px; padding: 30px; background: white; border-radius: 8px;">
+        <h3>✅ Vollständige Abdeckung</h3>
+        <p><strong>19 SVG-Screenshots</strong> zeigen alle Menüebenen und Scroll-Zustände</p>
+        <p>Alle im korrekten 296×128 Pixel Seitenverhältnis (Badger2040 E-Ink Display)</p>
+    </div>
+</body>
+</html>
