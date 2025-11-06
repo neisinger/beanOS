@@ -127,14 +127,31 @@ Die Anwendung ist in folgende Hauptabschnitte gegliedert:
 
 ## 📖 Bedienung
 
+### Navigationsübersicht
+
+**Von Hauptbildschirm zu:**
+- **Getränkemenü**: Taste C drücken
+- **Hauptmenü**: Taste UP drücken
+- **Ruhemodus**: Taste DOWN drücken
+
+**Von Hauptmenü zu:**
+- **Bohnen-Tracking**: Menüpunkt "Bohnen" auswählen (Taste A)
+- **Gesamtstatistik**: Menüpunkt "Statistiken anzeigen" auswählen (Taste A)
+- **Wartungshistorie**: Menüpunkt "Wartungshistorie" auswählen (Taste A)
+- **Achievements**: Menüpunkt "Achievements" auswählen (Taste A)
+- **Zurück zum Hauptbildschirm**: Taste C drücken
+
+**Von Untermenüs zurück:**
+- **Alle Untermenüs**: Taste C drücken, um zum vorherigen Bildschirm zurückzukehren
+
 ### Hauptbildschirm
 Der Hauptbildschirm zeigt die täglichen Kaffeezähler in drei großen Boxen an.
 
 #### Tasten
 - **A**: Erhöht den Espresso-Zähler
 - **B**: Erhöht den Cappuccino-Zähler  
-- **C**: Öffnet das Hauptmenü
-- **UP**: Öffnet das Getränkemenü für zusätzliche Getränke
+- **C**: Öffnet das Getränkemenü für zusätzliche Getränke
+- **UP**: Öffnet das Hauptmenü
 - **DOWN**: Schaltet das Gerät in den Ruhemodus
 
 ### Getränkemenü
