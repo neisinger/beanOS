@@ -1,143 +1,266 @@
 # beanOS
 
-beanOS is a Micropython application designed for the Badger2040 device. It tracks and logs your coffee consumption with gamification features, providing a simple interface to view statistics, reset counts, and unlock achievements.
+beanOS ist eine MicroPython-Anwendung für das Badger2040-Gerät. Sie verfolgt und protokolliert Ihren Kaffeekonsum mit Gamification-Features und bietet eine einfache Benutzeroberfläche zur Anzeige von Statistiken, zum Zurücksetzen von Zählern und zum Freischalten von Achievements.
 
-This code must not be used by fascists! No code for the AfD or Musk or Trump!
+Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, Musk oder Trump!
 
-## Features
+## ✨ Features
 
-### ☕ Coffee Tracking
-- Track espresso, cappuccino, and 6 additional drink types
-- Daily, weekly, and total statistics
-- Bean consumption analytics
-- Automatic data logging to CSV
+### ☕ Kaffee-Tracking
+- Verfolgung von Espresso, Cappuccino und 6 zusätzlichen Getränketypen
+- Tages-, Wochen- und Gesamtstatistiken
+- Bohnenverbrauchsanalyse mit Packungsgrößen-Tracking
+- Automatische Datenprotokollierung in CSV-Format
+- Bean-Pack-Zähler mit Datum der letzten angebrochenen Packungen
 
-### 🏆 Achievement System
-- **Milestone Achievements**: Unlock rewards for 1, 10, 50, 100, 500, and 1000 coffees
-- **Streak Achievements**: Keep your coffee habit going for 7 or 30 days straight
-- **Special Drink Achievements**: Try new drinks like iced latte, affogato, or shakerato
-- **Maintenance Achievements**: Keep your machine in perfect condition
-- **Experimental Achievements**: Become a true barista by trying all drink types
-- **Progress Tracking**: Visual progress bars for streak achievements
-- **Achievement Notifications**: Full-screen celebrations when you unlock new achievements
-- **Achievement Icon**: Daily star (★) in the title bar when you unlock achievements
+### 🏆 Achievement-System
+- **Meilenstein-Achievements**: Belohnungen für 1, 10, 50, 100, 500 und 1000 Kaffees
+- **Streak-Achievements**: Halte deine Kaffeegewohnheit 7 oder 30 Tage am Laufenden
+- **Spezialgetränke-Achievements**: Probiere neue Getränke wie Iced Latte, Affogato oder Shakerato
+- **Wartungs-Achievements**: Halte deine Maschine in perfektem Zustand
+- **Experimentelle Achievements**: Werde ein echter Barista, indem du alle Getränketypen probierst
+- **Fortschrittsanzeige**: Visuelle Fortschrittsbalken für Streak-Achievements
+- **Achievement-Benachrichtigungen**: Vollbild-Feiern beim Freischalten neuer Achievements
+- **Achievement-Icon**: Täglicher Stern (★) in der Titelleiste bei freigeschalteten Achievements
 
-### 🔧 Smart Maintenance System
-- Automatic maintenance reminders based on time and usage
-- 5 different maintenance types with custom intervals
-- Visual warnings and quick completion logging
-- Maintenance history tracking
+### 🔧 Intelligentes Wartungssystem
+- Automatische Wartungserinnerungen basierend auf Zeit und Nutzung
+- 5 verschiedene Wartungstypen mit benutzerdefinierten Intervallen
+- Visuelle Warnungen und schnelle Fertigstellungsprotokollierung
+- Wartungshistorie mit Datum der letzten Durchführung
 
-## Installation
+### 🎨 Moderne Benutzeroberfläche
+- **Einheitliches Design**: Achievement-Style Layout mit schwarzen Titelbalken
+- **Große, lesbare Schrift**: Optimiert für E-Ink-Display-Lesbarkeit
+- **Intelligentes Scrolling**: Automatische Navigation in langen Menüs
+- **ASCII-kompatible Icons**: Vollständige Badger2040-Kompatibilität
+- **Responsive Layout**: Optimale Nutzung des 296x128 Pixel Displays
 
-To install beanOS on your Badger2040:
+## 📱 Screenshots der Menüs
 
-### Prerequisites
-- Pimoroni Badger2040 with MicroPython firmware
-- Thonny IDE or similar MicroPython development environment
-- USB cable for device connection
+### Hauptbildschirm
+![Hauptbildschirm](images/main_screen.svg)
 
-### Installation Steps
-1. Connect your Badger2040 to your computer via USB
-2. Open Thonny IDE and ensure the device is detected
-3. Copy the `main.py` file content into Thonny's editor
-4. Save the file to your Badger2040 as `main.py`
-5. Copy the `maintenance_config.json` file to your Badger2040 root directory
-6. Disconnect and restart the device
+*Der Hauptbildschirm zeigt die täglichen Kaffeezähler in drei großen Boxen. Der Achievement-Stern (★) erscheint bei freigeschalteten Tageszielen.*
 
-### Required Files
-- **main.py** - Main application code
-- **maintenance_config.json** - Maintenance task configuration
+### Hauptmenü
+![Hauptmenü](images/main_menu.svg)
 
-### Auto-Generated Files
-The following files will be created automatically during use:
-- **kaffee_log.csv** - Coffee consumption data log
-- **achievements.json** - Achievement progress tracking
-- **maintenance_status.json** - Maintenance completion tracking
-- **current_date.txt** - Current date persistence
-- **current_counts.txt** - Daily counter backup
+*Das zentrale Navigationsmenü mit Achievement-Style Layout. Ausgewählte Optionen werden mit schwarzen Rahmen hervorgehoben.*
 
-## Technical Architecture
+### Bohnen-Tracking-Menü
+![Bohnen-Tracking](images/bean_pack_menu.svg)
 
-### Code Structure
-The application is organized into the following main sections:
-- **Hardware Initialization** - Display, buttons, LED setup
-- **File Management** - Data persistence and configuration
-- **Menu System** - Navigation and user interface
-- **Achievement Engine** - Gamification and progress tracking
-- **Maintenance System** - Automated reminders and logging
-- **Statistics Engine** - Data analysis and reporting
-- **Notification System** - User alerts and celebrations
+*Bean-Pack-Verfolgung mit verschiedenen Packungsgrößen. Zeigt Gesamtanzahl und die letzten beiden angebrochenen Packungen mit Datum.*
 
-### Data Flow
-1. **Input**: Button presses → `button_pressed()` function
-2. **Processing**: Update counters → Check achievements → Check maintenance
-3. **Storage**: Save to CSV log and JSON status files
-4. **Display**: Update screen via `update_display()` function
+### Gesamtstatistik
+![Statistiken](images/statistics_view.svg)
 
-### Memory Management
-- Minimal RAM usage for embedded environment
-- Efficient file I/O operations
-- Smart display update strategies (TURBO vs NORMAL modes)
+*Detaillierte Verbrauchsstatistiken mit Tages-Durchschnittswerten und Bohnenverbrauchsanalyse.*
 
-## Usage
+### Achievement-Menü
+![Achievements](images/achievements_menu.svg)
 
-### Main screen
-![main screen](images/beanOS_screen-6.jpg)
-#### Buttons
-- **a:**
-Increments the espresso count
-- **b:**
-Increments the cappuccino count
-- **c:**
-Opens the additional drink menu
-- **UP:**
-Opens the main menu
-- **DOWN:**
-Switches to the next day and resets the daily counts
+*Achievement-Übersicht mit Fortschrittsbalken für unvollständige Streak-Achievements und Datum für erreichte Meilensteine.*
 
-### Drink menu
-![drink menu screen](images/beanOS_screen-5.jpg)
-#### Buttons
-- **a:**
-Chooses the selected drink
-- **c:**
-Closes the menu
-- **UP** & **DOWN:**
-Navigate the menu
+### Wartungshistorie
+![Wartungshistorie](images/maintenance_menu.svg)
 
-### Main menu
-![main menu screen](images/beanOS_screen-4.jpg)
-#### Buttons
-- **a:**
-Chooses the selected optoin
-- **c:**
-Closes the menu
-- **UP** & **DOWN:**
-Navigate the menu
+*Wartungsaufgaben mit Status-Anzeige. Überfällige Wartungen werden mit "!" markiert.*
 
+### Achievement-Benachrichtigung
+![Achievement-Benachrichtigung](images/achievement_notification.svg)
 
-#### Menu Options
+*Vollbild-Feier beim Freischalten neuer Achievements mit Trophy-Symbol und Beschreibung.*
 
-- **Bohnen**: Opens the additional drink menu (same as Button C)
-- **Statistiken anzeigen**: Displays total counts of espresso, cappuccino, and other drinks. Also shows bean consumption (grams per day, days per pack) and average coffee per day.
-- **Tagesstatistiken zurücksetzen**: Resets the daily counts for espresso, cappuccino, and other drinks.
-- **Datum ändern**: Allows you to change the current date.
-- **Wartungshistorie**: View and manually log maintenance tasks. Select a task and press Button A to mark it as completed for today.
-- **Achievements**: View your unlocked achievements organized by category. Navigate through your coffee accomplishments and see progress bars for incomplete streak achievements.
-- **Information**: Displays version information and credits.
+## 🚀 Installation
 
-### Achievement Categories
-![achievements screen](images/beanOS_achievements.jpg)
+So installieren Sie beanOS auf Ihrem Badger2040:
 
-#### 🏅 Meilensteine (Milestones)
-Unlock achievements for reaching coffee consumption milestones:
-- **[1] Erster Kaffee**: Your very first coffee!
-- **[10] Kaffee-Starter**: 10 coffees consumed
-- **[50] Kaffee-Fan**: 50 coffees consumed  
-- **[100] Kaffee-Liebhaber**: 100 coffees consumed
-- **[500] Kaffee-Experte**: 500 coffees consumed
-- **[1K] Kaffee-Meister**: 1000 coffees consumed
+### Voraussetzungen
+- Pimoroni Badger2040 mit MicroPython-Firmware
+- Thonny IDE oder ähnliche MicroPython-Entwicklungsumgebung
+- USB-Kabel für Geräteverbindung
+
+### Installationsschritte
+1. Verbinden Sie Ihr Badger2040 über USB mit Ihrem Computer
+2. Öffnen Sie Thonny IDE und stellen Sie sicher, dass das Gerät erkannt wird
+3. Kopieren Sie den Inhalt der `main.py`-Datei in Thonnys Editor
+4. Speichern Sie die Datei auf Ihrem Badger2040 als `main.py`
+5. Kopieren Sie die `maintenance_config.json`-Datei in das Stammverzeichnis Ihres Badger2040
+6. Trennen Sie die Verbindung und starten Sie das Gerät neu
+
+### Erforderliche Dateien
+- **main.py** - Hauptanwendungscode
+- **maintenance_config.json** - Wartungsaufgaben-Konfiguration
+
+### Automatisch generierte Dateien
+Die folgenden Dateien werden während der Nutzung automatisch erstellt:
+- **kaffee_log.csv** - Datenprotokoll des Kaffeekonsums
+- **achievements.json** - Verfolgung des Achievement-Fortschritts
+- **maintenance_status.json** - Verfolgung der Wartungsabschlüsse
+- **current_date.txt** - Persistierung des aktuellen Datums
+- **current_counts.txt** - Backup der täglichen Zähler
+
+## 🏗️ Technische Architektur
+
+### Code-Struktur
+Die Anwendung ist in folgende Hauptabschnitte gegliedert:
+- **Hardware-Initialisierung** - Display, Tasten, LED-Setup
+- **Dateiverwaltung** - Datenpersistierung und Konfiguration
+- **Menüsystem** - Navigation und Benutzeroberfläche
+- **Achievement-Engine** - Gamification und Fortschrittsverfolgung
+- **Wartungssystem** - Automatisierte Erinnerungen und Protokollierung
+- **Statistik-Engine** - Datenanalyse und Berichterstattung
+- **Benachrichtigungssystem** - Benutzerwarnungen und Feiern
+
+### Datenfluss
+1. **Eingabe**: Tastendruck → `button_pressed()` Funktion
+2. **Verarbeitung**: Zähler aktualisieren → Achievements prüfen → Wartung prüfen
+3. **Speicherung**: In CSV-Protokoll und JSON-Statusdateien speichern
+4. **Anzeige**: Bildschirm über `update_display()` Funktion aktualisieren
+
+### Speicherverwaltung
+- Minimaler RAM-Verbrauch für Embedded-Umgebung
+- Effiziente Datei-I/O-Operationen
+- Intelligente Display-Update-Strategien (TURBO vs NORMAL Modi)
+
+## 📖 Bedienung
+
+### Hauptbildschirm
+Der Hauptbildschirm zeigt die täglichen Kaffeezähler in drei großen Boxen an.
+
+#### Tasten
+- **A**: Erhöht den Espresso-Zähler
+- **B**: Erhöht den Cappuccino-Zähler  
+- **C**: Öffnet das Hauptmenü
+- **UP**: Öffnet das Getränkemenü für zusätzliche Getränke
+- **DOWN**: Schaltet das Gerät in den Ruhemodus
+
+### Getränkemenü
+Zusätzliche Getränketypen können über dieses Menü ausgewählt werden.
+
+#### Tasten
+- **A**: Wählt das ausgewählte Getränk aus
+- **C**: Schließt das Menü
+- **UP** & **DOWN**: Navigation im Menü
+
+### Hauptmenü
+Das zentrale Navigationsmenü mit allen Hauptfunktionen.
+
+#### Tasten
+- **A**: Wählt die ausgewählte Option aus
+- **C**: Schließt das Menü  
+- **UP** & **DOWN**: Navigation im Menü
+
+#### Menüoptionen
+
+- **Bohnen**: Öffnet das Bean-Pack-Tracking-Menü
+- **Statistiken anzeigen**: Zeigt Gesamtzähler von Espresso, Cappuccino und anderen Getränken. Auch Bohnenverbrauch (Gramm pro Tag, Tage pro Packung) und durchschnittlicher Kaffee pro Tag.
+- **Tagesstatistiken zurücksetzen**: Setzt die täglichen Zähler für Espresso, Cappuccino und andere Getränke zurück.
+- **Datum ändern**: Ermöglicht die Änderung des aktuellen Datums.
+- **Wartungshistorie**: Anzeige und manuelle Protokollierung von Wartungsaufgaben. Aufgabe auswählen und Taste A drücken, um sie für heute als erledigt zu markieren.
+- **Achievements**: Zeige deine freigeschalteten Achievements organisiert nach Kategorien. Navigiere durch deine Kaffee-Errungenschaften und sieh Fortschrittsbalken für unvollständige Streak-Achievements.
+- **Information**: Zeigt Versionsinformationen und Credits an.
+
+## 🏆 Achievement-Kategorien
+
+### 🏅 Meilensteine
+Schalte Achievements für das Erreichen von Kaffeekonsum-Meilensteinen frei:
+- **[#1] Erster Kaffee**: Dein allererster Kaffee!
+- **[#10] Kaffee-Starter**: 10 Kaffees getrunken
+- **[#50] Kaffee-Fan**: 50 Kaffees getrunken  
+- **[#100] Kaffee-Liebhaber**: 100 Kaffees getrunken
+- **[#500] Kaffee-Experte**: 500 Kaffees getrunken
+- **[#1000] Kaffee-Meister**: 1000 Kaffees getrunken
+
+### 🔥 Streaks
+Halte deine Kaffeegewohnheit am Laufenden:
+- **[=7] Consistency Expert**: 7 Tage in Folge Kaffee trinken
+- **[=30] Consistency Master**: 30 Tage in Folge Kaffee trinken
+
+### 🍹 Spezialgetränke
+Erkunde neue Geschmackserlebnisse:
+- **[~] Stay Cool**: Ersten Iced Latte getrunken
+- **[o] Dessert**: Ersten Affogato getrunken
+- **[%] Shake it!**: Ersten Shakerato getrunken
+
+### 🔧 Wartung
+Halte deine Maschine in Top-Zustand:
+- **[<>] Saubere Maschine**: Erste Wartung durchgeführt
+- **[[]] Wartungsmeister**: Alle Wartungen rechtzeitig durchgeführt
+
+### 🧪 Experimentell
+Für echte Kaffee-Enthusiasten:
+- **[>>] Barista**: Alle Getränketypen probiert
+- **[^^] Happy Bean Day**: 10 Kaffees an einem Tag
+
+## 🔧 Wartungssystem
+
+Das intelligente Wartungssystem von beanOS hilft dabei, Ihre Kaffeemaschine in optimalem Zustand zu halten:
+
+### Wartungstypen
+- **Reinigung**: Tägliche/wöchentliche Grundreinigung
+- **Entkalken**: Regelmäßige Entkalkung basierend auf Wasserqualität
+- **Brühgruppe reinigen**: Automatisch nach bestimmter Anzahl von Getränken
+- **Mühle reinigen**: Regelmäßige Reinigung des Mahlwerks
+- **Grundreinigung**: Umfassende Wartung in größeren Abständen
+
+### Intelligente Erinnerungen
+- **Zeitbasiert**: Erinnerungen basierend auf konfigurierbaren Tagesintervallen
+- **Nutzungsbasiert**: Spezielle Logik für brühgruppenbasierte Wartung
+- **Visuelle Indikatoren**: Warnungen in der Wartungshistorie und Titelleiste
+
+## 📊 Bean-Pack-Tracking
+
+Das Bean-Pack-System verfolgt Ihren Bohnenverbrauch und hilft beim Planen von Nachbestellungen:
+
+### Features
+- **Packungsgrößen**: 125g, 200g, 250g, 500g, 750g, 1000g
+- **Zähler**: Gesamtanzahl angebrochener Packungen
+- **Historie**: Datum der letzten beiden angebrochenen Packungen
+- **Sofortige Aktualisierung**: Live-Update der Anzeige bei neuen Packungen
+
+### Verwendung
+1. Wählen Sie "Bohnen" im Hauptmenü
+2. Navigieren Sie mit UP/DOWN zur gewünschten Packungsgröße
+3. Drücken Sie A, um eine neue Packung zu registrieren
+4. Das Menü bleibt offen für weitere Eingaben
+5. Drücken Sie C zum Verlassen
+
+## 🚀 Version 2.4.0 - Neue Features
+
+### UI/UX-Verbesserungen
+- **Große, lesbare Schrift**: Alle Menüs verwenden jetzt scale=2 für bessere Lesbarkeit
+- **Einheitliches Design**: Achievement-Style Layout mit schwarzen Titelbalken überall
+- **Intelligentes Scrolling**: Automatische Navigation in langen Listen
+- **ASCII-kompatible Icons**: Vollständige Badger2040-Hardware-Kompatibilität
+
+### Bean-Pack-System
+- **Verbesserte Anzeige**: Gesamtanzahl + letzte zwei Packungen mit Datum
+- **Persistent**: Menü bleibt nach Auswahl geöffnet für mehrere Eingaben
+- **Sofort-Update**: Live-Aktualisierung der Statistiken
+
+### Performance
+- **Optimiertes Scrolling**: Effiziente Navigation in allen Menüs
+- **Bessere Layouts**: Maximale Nutzung des verfügbaren Bildschirmplatzes
+- **Stabilität**: Robuste Fehlerbehandlung und Speicherverwaltung
+
+## 📝 Lizenz
+
+GNU GPLv3 - Siehe LICENSE-Datei für Details.
+
+## 👤 Autor
+
+Joao Neisinger
+
+## 🤝 Beitragen
+
+Beiträge sind willkommen! Bitte öffnen Sie ein Issue oder erstellen Sie einen Pull Request.
+
+## ⚠️ Wichtiger Hinweis
+
+Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, Musk oder Trump!
 
 #### ⚡ Streaks
 Maintain consistent coffee consumption:

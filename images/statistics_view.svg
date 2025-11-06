@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Gesamtstatistik</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Espresso Stats Box -->
+  <rect x="8" y="28" width="280" height="18" fill="black"/>
+  <rect x="10" y="30" width="276" height="14" fill="white"/>
+  <text x="14" y="40" font-family="monospace" font-size="8" fill="black">Espresso: 156</text>
+  <text x="230" y="40" font-family="monospace" font-size="7" fill="black">(2.1/Tag)</text>
+  
+  <!-- Cappuccino Stats Box -->
+  <rect x="8" y="50" width="280" height="18" fill="black"/>
+  <rect x="10" y="52" width="276" height="14" fill="white"/>
+  <text x="14" y="62" font-family="monospace" font-size="8" fill="black">Cappuccino: 89</text>
+  <text x="230" y="62" font-family="monospace" font-size="7" fill="black">(1.2/Tag)</text>
+  
+  <!-- Other Drinks Stats Box -->
+  <rect x="8" y="72" width="280" height="18" fill="black"/>
+  <rect x="10" y="74" width="276" height="14" fill="white"/>
+  <text x="14" y="84" font-family="monospace" font-size="8" fill="black">Andere: 34</text>
+  <text x="230" y="84" font-family="monospace" font-size="7" fill="black">(0.5/Tag)</text>
+  
+  <!-- Total Stats Box (highlighted) -->
+  <rect x="8" y="96" width="280" height="18" fill="black"/>
+  <text x="14" y="106" font-family="monospace" font-size="8" fill="white">Gesamt: 279 Getränke | 1394g Bohnen | 19.7g/Tag</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+</svg>

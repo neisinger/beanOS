@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">beanOS</text>
+  <text x="200" y="14" font-family="monospace" font-size="8" fill="white">★</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Counter Boxes -->
+  <!-- Espresso Box -->
+  <rect x="20" y="35" width="75" height="50" fill="white" stroke="black" stroke-width="1"/>
+  <text x="57" y="50" font-family="monospace" font-size="16" fill="black" text-anchor="middle">5</text>
+  <text x="32" y="78" font-family="monospace" font-size="7" fill="black">ESPRESSO</text>
+  
+  <!-- Cappuccino Box -->
+  <rect x="110" y="35" width="75" height="50" fill="white" stroke="black" stroke-width="1"/>
+  <text x="147" y="50" font-family="monospace" font-size="16" fill="black" text-anchor="middle">3</text>
+  <text x="120" y="78" font-family="monospace" font-size="7" fill="black">CAPPUCCINO</text>
+  
+  <!-- Other Box -->
+  <rect x="200" y="35" width="75" height="50" fill="white" stroke="black" stroke-width="1"/>
+  <text x="237" y="50" font-family="monospace" font-size="16" fill="black" text-anchor="middle">2</text>
+  <text x="225" y="78" font-family="monospace" font-size="7" fill="black">ANDERE</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Espresso</text>
+  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">B: Cappuccino</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Menü</text>
+  <text x="175" y="118" font-family="monospace" font-size="6" fill="black">UP: Andere</text>
+  <text x="230" y="118" font-family="monospace" font-size="6" fill="black">DOWN: Schlafen</text>
+</svg>

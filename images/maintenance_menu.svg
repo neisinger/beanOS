@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Wartungshistorie</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Selected Maintenance Item (Completed) -->
+  <rect x="8" y="28" width="280" height="18" fill="black"/>
+  <rect x="10" y="30" width="276" height="14" fill="white"/>
+  <text x="14" y="40" font-family="monospace" font-size="8" fill="black">Reinigung</text>
+  <text x="230" y="40" font-family="monospace" font-size="7" fill="black">01.11.'25</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="48" x2="288" y2="48" stroke="black" stroke-width="1"/>
+  
+  <!-- Overdue Maintenance (with warning) -->
+  <text x="14" y="60" font-family="monospace" font-size="8" fill="black">! Entkalken</text>
+  <text x="250" y="60" font-family="monospace" font-size="7" fill="black">--</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="65" x2="288" y2="65" stroke="black" stroke-width="1"/>
+  
+  <!-- Other Maintenance Items -->
+  <text x="14" y="77" font-family="monospace" font-size="8" fill="black">Brühgruppe reinigen</text>
+  <text x="230" y="77" font-family="monospace" font-size="7" fill="black">28.10.'25</text>
+  
+  <line x1="8" y1="82" x2="288" y2="82" stroke="black" stroke-width="1"/>
+  
+  <text x="14" y="94" font-family="monospace" font-size="8" fill="black">Mühle reinigen</text>
+  <text x="230" y="94" font-family="monospace" font-size="7" fill="black">15.10.'25</text>
+  
+  <line x1="8" y1="99" x2="288" y2="99" stroke="black" stroke-width="1"/>
+  
+  <text x="14" y="111" font-family="monospace" font-size="8" fill="black">Grundreinigung</text>
+  <text x="230" y="111" font-family="monospace" font-size="7" fill="black">10.10.'25</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Als erledigt markieren</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="200" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Achievements</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Selected Achievement (Completed) -->
+  <rect x="8" y="28" width="280" height="18" fill="black"/>
+  <rect x="10" y="30" width="276" height="14" fill="white"/>
+  <text x="14" y="40" font-family="monospace" font-size="8" fill="black">[#100] Kaffee-Liebhaber</text>
+  <text x="230" y="40" font-family="monospace" font-size="7" fill="black">25.10.2025</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="48" x2="288" y2="48" stroke="black" stroke-width="1"/>
+  
+  <!-- Incomplete Streak Achievement -->
+  <text x="14" y="60" font-family="monospace" font-size="8" fill="black">[ ] Consistency Expert</text>
+  
+  <!-- Progress Bar -->
+  <rect x="14" y="65" width="100" height="8" fill="white" stroke="black" stroke-width="1"/>
+  <!-- Filled Progress (5/7) -->
+  <rect x="15" y="66" width="71" height="6" fill="black"/>
+  <text x="120" y="71" font-family="monospace" font-size="7" fill="black">5/7</text>
+  
+  <!-- Separator Line -->
+  <line x1="8" y1="78" x2="288" y2="78" stroke="black" stroke-width="1"/>
+  
+  <!-- Other Achievements -->
+  <text x="14" y="90" font-family="monospace" font-size="8" fill="black">[~] Stay Cool</text>
+  <text x="230" y="90" font-family="monospace" font-size="7" fill="black">02.11.2025</text>
+  
+  <line x1="8" y1="95" x2="288" y2="95" stroke="black" stroke-width="1"/>
+  
+  <text x="14" y="107" font-family="monospace" font-size="8" fill="black">[>>] Barista</text>
+  <text x="230" y="107" font-family="monospace" font-size="7" fill="black">28.10.2025</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="60" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>

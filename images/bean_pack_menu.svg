@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Bohnen Tracking</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Pack Size Buttons (Left Side) -->
+  <rect x="8" y="28" width="35" height="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="25" y="38" font-family="monospace" font-size="7" fill="black" text-anchor="middle">125g</text>
+  
+  <rect x="8" y="45" width="35" height="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="25" y="55" font-family="monospace" font-size="7" fill="black" text-anchor="middle">200g</text>
+  
+  <rect x="8" y="62" width="35" height="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="25" y="72" font-family="monospace" font-size="7" fill="black" text-anchor="middle">250g</text>
+  
+  <rect x="8" y="79" width="35" height="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="25" y="89" font-family="monospace" font-size="7" fill="black" text-anchor="middle">500g</text>
+  
+  <!-- Selected 1000g Button -->
+  <rect x="8" y="96" width="35" height="14" fill="black"/>
+  <rect x="10" y="98" width="31" height="10" fill="white"/>
+  <text x="25" y="106" font-family="monospace" font-size="7" fill="black" text-anchor="middle">1000g</text>
+  
+  <!-- Pack Counter (Right Side) -->
+  <text x="60" y="38" font-family="monospace" font-size="8" fill="black">Packungen: 12</text>
+  
+  <!-- Last Two Packs -->
+  <text x="60" y="55" font-family="monospace" font-size="8" fill="black">1000g 05.11.2025</text>
+  <text x="60" y="72" font-family="monospace" font-size="8" fill="black">500g 01.11.2025</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Neue Packung</text>
+  <text x="80" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>
