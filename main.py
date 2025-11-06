@@ -113,7 +113,7 @@ menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetze
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active, view_achievements_active, bean_pack_menu_active = 0, False, False, False, False, False, False, False
 
 # Application version - update for each release
-version = "2.4.0"
+version = "2.4.1"
 # =============================================================================
 # NAVIGATION AND SELECTION VARIABLES
 # =============================================================================
