@@ -309,7 +309,7 @@ beanOS enthält eine umfassende Sammlung von SVG-Icon-Vorlagen, die speziell fü
 Die Icons werden als 1-Bit-Bitmaps (32x32 Pixel) gespeichert und direkt auf dem Display gerendert:
 
 - **Format**: Bytearray mit 4 Bytes pro Zeile (128 Bytes pro Icon)
-- **Speicherung**: In `icon_bitmaps.py` als MicroPython-kompatible Bytearrays
+- **Speicherung**: Direkt in `main.py` als MicroPython-kompatible Bytearrays
 - **Rendering**: Pixel-für-Pixel-Zeichnung mit der `draw_bitmap_icon()` Funktion
 - **Verwendung**: Achievements-Benachrichtigungen, Achievement-Menü, Titelleiste
 
@@ -420,7 +420,7 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - Rendert 32x32 Pixel Icons aus Bytearray-Daten
 - 16 vordefinierte Icons für Achievements und UI
 - E-Ink-optimiert: Nur Schwarz/Weiß, keine Graustufen
-- Icons in separatem Modul `icon_bitmaps.py`
+- Icons direkt in `main.py` eingebettet für vereinfachte Installation
 
 #### 3. Dateiverwaltung (Zeilen 99-240)
 - **Configuration Loading**: JSON-basierte Wartungskonfiguration
@@ -432,9 +432,10 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - `kaffee_log.csv` - Hauptdatenquelle für alle Statistiken
 - `achievements.json` - Persistenz freigeschalteter Achievements
 - `maintenance_status.json` - Wartungshistorie
-- `maintenance_config.json` - Wartungsintervalle (konfigurierbar)
 - `current_date.txt` - Aktuelle Datumsspeicherung
 - `current_counts.txt` - Backup täglicher Zähler
+
+**Hinweis:** Wartungsintervalle sind jetzt direkt in `main.py` eingebettet und können in der Funktion `load_maintenance_config()` angepasst werden.
 
 #### 4. Benachrichtigungssystem (Zeilen 241-469)
 ```python
@@ -486,14 +487,15 @@ def check_maintenance_warnings():
 - Manuelle Protokollierung über Menü
 - Visuelle Indikatoren ("!" bei überfälligen Tasks)
 
-**Konfiguration** (`maintenance_config.json`):
-```json
-{
-  "tasks": [
+**Konfiguration** (eingebettet in `main.py`):
+```python
+MAINTENANCE_TASKS = [
     {"name": "cleaning", "interval": 7},
-    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150}
-  ]
-}
+    {"name": "descaling", "interval": 28},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
+    {"name": "grinder_cleaning", "interval": 56},
+    {"name": "deep_cleaning", "interval": 365}
+]
 ```
 
 #### 8. Display-Update-System (Zeilen 1116-1913)
@@ -594,7 +596,7 @@ while True:
 **Flash-Speicher (2MB):**
 - Effiziente CSV-Append-Operationen
 - JSON-Dateien für strukturierte Daten
-- Bitmap-Icons in separatem Modul (shared code)
+- Bitmap-Icons direkt im Hauptcode eingebettet
 
 ### E-Ink Display-Optimierungen
 
@@ -748,7 +750,7 @@ Intelligente Wartungsprüfung basierend auf Zeit und Nutzung.
 ```
 
 **Prüflogik:**
-1. Lade `maintenance_config.json`
+1. Lade eingebettete Wartungskonfiguration
 2. Lade `maintenance_status.json`
 3. Für jeden Task:
    - Zeit-basiert: Tage seit letzter Durchführung ≥ Intervall?
@@ -1253,12 +1255,12 @@ warnings = check_maintenance_warnings()
 
 | Problem | Lösung |
 |---------|--------|
-| **"maintenance_config.json nicht gefunden"** | Datei ins Root-Directory kopieren, JSON-Syntax prüfen |
 | **Achievements schalten nicht frei** | Console-Output prüfen, Achievement-Logik in `check_achievements()` debuggen |
 | **Display aktualisiert nicht** | `update_display(True)` für Force Refresh, Update Speed Settings prüfen |
 | **Datenverlust nach Neustart** | Dateischreib-Rechte prüfen, korrupte JSON-Dateien löschen (werden neu erstellt) |
 | **CSV-Parsing-Fehler** | `kaffee_log.csv` auf korrektes Format prüfen, Header-Zeile verifizieren |
 | **Speicher voll** | Alte Log-Einträge archivieren, JSON-Dateien verkleinern |
+| **Wartungskonfiguration anpassen** | `MAINTENANCE_TASKS` in `load_maintenance_config()` in `main.py` bearbeiten |
 
 ### Datei-Recovery
 
