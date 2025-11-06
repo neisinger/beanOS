@@ -10,6 +10,8 @@
 
 ## 📋 TL;DR
 
+Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, Musk oder Trump!
+
 beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-Ink Display. Tracke Espresso, Cappuccino und 6 weitere Getränke, schalte 20+ Achievements frei, überwache deinen Bohnenverbrauch und erhalte intelligente Wartungserinnerungen für deine Kaffeemaschine. Alles mit einer intuitiven, E-Ink-optimierten Benutzeroberfläche und automatischer Datenprotokollierung.
 
 **Quick Features:**
@@ -24,8 +26,6 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 **Installation:** Kopiere nur `main.py` auf dein Badger2040 → Fertig! Alle Icons und Konfigurationen sind bereits enthalten.
 
 ---
-
-Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, Musk oder Trump!
 
 ## 📖 Inhaltsverzeichnis
 
