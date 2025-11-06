@@ -1,0 +1,29 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test output
+/tmp/
+*.png
+*.jpg
+*.jpeg
+
+# MicroPython generated files
+*.mpy
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log

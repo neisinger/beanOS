@@ -39,6 +39,7 @@ bean_pack_notification_start_time = 0  # Zeit für automatisches Ausblenden
 achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 
 import badger2040, machine, time, json, uos
+from icon_bitmaps import ICON_MAP
 
 # =============================================================================
 # HARDWARE INITIALIZATION
@@ -56,6 +57,44 @@ BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN, LED = badger2040.BUTTON_A,
 
 # Initialize LED pin for status indication
 led = machine.Pin(LED, machine.Pin.OUT)
+
+# =============================================================================
+# BITMAP ICON SUPPORT
+# =============================================================================
+
+def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
+    """
+    Draw a 1-bit bitmap icon on the display.
+    
+    Args:
+        x: X coordinate for top-left corner
+        y: Y coordinate for top-left corner
+        icon_symbol: Icon symbol string (e.g., "#1", "★", ">>")
+        width: Icon width in pixels (default: 32)
+        height: Icon height in pixels (default: 32)
+    
+    The bitmap data is stored as bytes with 8 pixels per byte.
+    A bit value of 1 means black pixel, 0 means white pixel.
+    """
+    if icon_symbol not in ICON_MAP:
+        return  # Icon not found, silently skip
+    
+    bitmap_data = ICON_MAP[icon_symbol]
+    byte_width = (width + 7) // 8  # Number of bytes per row
+    
+    for row in range(height):
+        for col in range(width):
+            byte_idx = row * byte_width + (col // 8)
+            bit_idx = 7 - (col % 8)
+            
+            if byte_idx < len(bitmap_data):
+                pixel_value = (bitmap_data[byte_idx] >> bit_idx) & 1
+                
+                # Draw pixel if it's black (bit = 1)
+                if pixel_value:
+                    display.set_pen(0)  # Black
+                    display.rectangle(x + col, y + row, 1, 1)
+
 # =============================================================================
 # FILE CONFIGURATION  
 # =============================================================================
@@ -74,7 +113,7 @@ menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetze
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active, view_achievements_active, bean_pack_menu_active = 0, False, False, False, False, False, False, False
 
 # Application version - update for each release
-version = "2.4.0"
+version = "2.4.1"
 # =============================================================================
 # NAVIGATION AND SELECTION VARIABLES
 # =============================================================================
@@ -292,11 +331,20 @@ def handle_notification_display():
         if achievement_key in definitions:
             achievement = definitions[achievement_key]
             
-            # Icon und Name zentriert
-            icon_name = f"[{achievement['icon']}] {achievement['name']}"
-            text_width = display.measure_text(icon_name, 2)
+            # Icon (bitmap) und Name zentriert
+            icon_symbol = achievement['icon']
+            
+            # Draw bitmap icon centered above the name
+            icon_size = 32
+            icon_x = (WIDTH - icon_size) // 2
+            icon_y = 45
+            draw_bitmap_icon(icon_x, icon_y, icon_symbol)
+            
+            # Name below the icon
+            name_text = achievement['name']
+            text_width = display.measure_text(name_text, 2)
             x_centered = (WIDTH - text_width) // 2
-            display.text(icon_name, x_centered, 70, scale=2)
+            display.text(name_text, x_centered, icon_y + icon_size + 5, scale=2)
         
         # Button-Hinweise
         ok_text = "OK"
@@ -1286,13 +1334,13 @@ def update_display(full_update=False):
                         # Vollständiges Achievement
                         key, achievement, date = item[1], item[2], item[3]
                         
-                        # Icon und Name mit besserem Icon-Design
-                        icon_design = f"[{achievement['icon']}]"
-                        icon_width = display.measure_text(icon_design, 2)
-                        display.text(icon_design, 12, y_pos + 2, scale=2)
+                        # Draw bitmap icon (32x32 pixels)
+                        icon_symbol = achievement['icon']
+                        draw_bitmap_icon(12, y_pos, icon_symbol, width=32, height=32)
                         
+                        # Name to the right of icon
                         name_text = achievement['name']
-                        display.text(name_text, 12 + icon_width + 4, y_pos + 2, scale=2)
+                        display.text(name_text, 12 + 32 + 4, y_pos + 8, scale=2)
                         
                         # Datum rechts ausgerichtet
                         date_width = display.measure_text(date, 1)
@@ -1433,10 +1481,24 @@ def update_display(full_update=False):
         
         # Achievement-Icon zentriert in der Titelleiste
         if daily_achievement_unlocked:
-            achievement_icon = "★"
-            icon_width = display.measure_text(achievement_icon, 1)
-            icon_x = (WIDTH - icon_width) // 2
-            display.text(achievement_icon, icon_x, 2)
+            # Draw bitmap star icon (scaled down to fit title bar)
+            # Using smaller size for title bar - draw at 16x16
+            star_size = 16
+            icon_x = (WIDTH - star_size) // 2
+            icon_y = 0
+            
+            # Draw the star bitmap (we'll scale it by drawing every other pixel)
+            star_bitmap = ICON_MAP.get("★")
+            if star_bitmap:
+                for row in range(0, 32, 2):  # Skip every other row
+                    for col in range(0, 32, 2):  # Skip every other column
+                        byte_idx = row * 4 + (col // 8)
+                        bit_idx = 7 - (col % 8)
+                        if byte_idx < len(star_bitmap):
+                            pixel_value = (star_bitmap[byte_idx] >> bit_idx) & 1
+                            if pixel_value:
+                                display.set_pen(0)
+                                display.rectangle(icon_x + col // 2, icon_y + row // 2, 1, 1)
         
         # Datum rechts
         date_str = format_date(time.localtime(current_date))

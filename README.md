@@ -33,7 +33,7 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 - **Einheitliches Design**: Achievement-Style Layout mit schwarzen Titelbalken
 - **Große, lesbare Schrift**: Optimiert für E-Ink-Display-Lesbarkeit
 - **Intelligentes Scrolling**: Automatische Navigation in langen Menüs
-- **ASCII-kompatible Icons**: Vollständige Badger2040-Kompatibilität
+- **Bitmap Icons**: Hochwertige 1-Bit-Bitmap-Icons für optimale E-Ink-Darstellung
 - **Responsive Layout**: Optimale Nutzung des 296x128 Pixel Displays
 - **SVG Icon Templates**: E-Ink-optimierte Icon-Vorlagen für Achievements und UI-Elemente ([Icon Gallery](icons/index.html))
 
@@ -74,9 +74,9 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 
 *Vollbild-Feier beim Freischalten neuer Achievements mit Trophy-Symbol und Beschreibung.*
 
-## 🎨 SVG Icon Templates
+## 🎨 SVG Icon Templates & Bitmap Integration
 
-beanOS enthält jetzt eine umfassende Sammlung von SVG-Icon-Vorlagen, die speziell für E-Ink-Displays optimiert wurden. Diese Icons bieten eine bessere Alternative zu Unicode-Zeichen auf dem Badger2040.
+beanOS enthält eine umfassende Sammlung von SVG-Icon-Vorlagen, die speziell für E-Ink-Displays optimiert wurden. Diese Icons wurden in 1-Bit-Bitmaps konvertiert und sind direkt in den Code integriert für optimale Darstellung auf dem Badger2040.
 
 ### Icon-Kategorien
 
@@ -86,6 +86,15 @@ beanOS enthält jetzt eine umfassende Sammlung von SVG-Icon-Vorlagen, die spezie
 - **Maintenance** (2 Icons): <>, []
 - **Experimental** (2 Icons): >>, ^^
 - **General** (1 Icon): ★
+
+### Bitmap-Icon-System
+
+Die Icons werden als 1-Bit-Bitmaps (32x32 Pixel) gespeichert und direkt auf dem Display gerendert:
+
+- **Format**: Bytearray mit 4 Bytes pro Zeile (128 Bytes pro Icon)
+- **Speicherung**: In `icon_bitmaps.py` als MicroPython-kompatible Bytearrays
+- **Rendering**: Pixel-für-Pixel-Zeichnung mit der `draw_bitmap_icon()` Funktion
+- **Verwendung**: Achievements-Benachrichtigungen, Achievement-Menü, Titelleiste
 
 ### Design-Prinzipien
 
@@ -117,11 +126,13 @@ So installieren Sie beanOS auf Ihrem Badger2040:
 2. Öffnen Sie Thonny IDE und stellen Sie sicher, dass das Gerät erkannt wird
 3. Kopieren Sie den Inhalt der `main.py`-Datei in Thonnys Editor
 4. Speichern Sie die Datei auf Ihrem Badger2040 als `main.py`
-5. Kopieren Sie die `maintenance_config.json`-Datei in das Stammverzeichnis Ihres Badger2040
-6. Trennen Sie die Verbindung und starten Sie das Gerät neu
+5. Kopieren Sie die `icon_bitmaps.py`-Datei in das Stammverzeichnis Ihres Badger2040
+6. Kopieren Sie die `maintenance_config.json`-Datei in das Stammverzeichnis Ihres Badger2040
+7. Trennen Sie die Verbindung und starten Sie das Gerät neu
 
 ### Erforderliche Dateien
 - **main.py** - Hauptanwendungscode
+- **icon_bitmaps.py** - 1-Bit-Bitmap-Daten für Achievement-Icons
 - **maintenance_config.json** - Wartungsaufgaben-Konfiguration
 
 ### Automatisch generierte Dateien
@@ -419,7 +430,23 @@ If data files become corrupted:
 
 ## Changelog
 
-### v2.3.3 (Current)
+### v2.4.1 (Current)
+- 🎨 **New**: 1-Bit Bitmap Icon System
+- ✅ Converted all 16 SVG icons to 1-bit bitmaps (32x32 pixels)
+- ✅ Integrated bitmap icons into main.py for native rendering
+- ✅ Created icon_bitmaps.py module with pre-rendered icon data
+- ✅ Updated achievement notifications to display bitmap icons
+- ✅ Updated achievement menu to show bitmap icons
+- ✅ Updated title bar achievement star with bitmap rendering
+- 📝 **Improved**: Icon display quality on E-Ink screen
+- 🚀 **Performance**: Direct bitmap rendering without font dependencies
+
+### v2.4.0
+- 📝 **Documentation**: Enhanced README with bitmap icon documentation
+- 🎨 **UI**: Large, readable fonts across all menus (scale=2)
+- 🏗️ **Layout**: Achievement-style design with black title bars
+
+### v2.3.3
 - 📝 **Documentation**: Comprehensive code documentation and comments
 - 🏗️ **Architecture**: Improved code structure and organization  
 - 📖 **README**: Extended technical documentation for developers
