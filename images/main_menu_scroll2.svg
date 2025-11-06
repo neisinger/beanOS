@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="296" height="128" fill="white"/>
+  
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="296" height="20" fill="black"/>
+  <text x="8" y="14" font-family="monospace" font-size="8" fill="white">Menü</text>
+  <text x="220" y="14" font-family="monospace" font-size="8" fill="white">06.11.2025</text>
+  
+  <!-- Menu Items (showing scroll state with Wartungshistorie selected) -->
+  <text x="14" y="40" font-family="monospace" font-size="12" fill="black">Tagesstatistiken zurücksetzen</text>
+  <line x1="8" y1="56" x2="288" y2="56" stroke="black" stroke-width="1"/>
+  
+  <text x="14" y="72" font-family="monospace" font-size="12" fill="black">Datum ändern</text>
+  <line x1="8" y1="84" x2="288" y2="84" stroke="black" stroke-width="1"/>
+  
+  <!-- Selected Menu Item -->
+  <rect x="5" y="86" width="286" height="30" fill="black"/>
+  <rect x="7" y="88" width="282" height="26" fill="white"/>
+  <text x="12" y="106" font-family="monospace" font-size="12" fill="black">Wartungshistorie</text>
+  
+  <!-- Button Labels -->
+  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Auswählen</text>
+  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
+</svg>
