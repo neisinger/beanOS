@@ -24,6 +24,9 @@ File Dependencies:
 - achievements.json: Achievement progress (auto-created)
 - maintenance_status.json: Maintenance tracking (auto-created)
 
+Note: Icon bitmaps and maintenance configuration are now embedded directly in this file.
+No external icon_bitmaps.py or maintenance_config.json files are needed.
+
 Author: Joao Neisinger
 License: GNU GPLv3
 Version: 2.5.0
@@ -707,6 +710,20 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 log_file, date_file, count_file = "kaffee_log.csv", "current_date.txt", "current_counts.txt"
 
 # =============================================================================
+# MAINTENANCE CONFIGURATION
+# =============================================================================
+
+# Embedded maintenance task configuration (previously in maintenance_config.json)
+# Customize intervals and drink limits here to match your coffee machine needs
+MAINTENANCE_TASKS = [
+    {"name": "cleaning", "interval": 7},
+    {"name": "descaling", "interval": 28},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
+    {"name": "grinder_cleaning", "interval": 56},
+    {"name": "deep_cleaning", "interval": 365}
+]
+
+# =============================================================================
 # MENU SYSTEM CONFIGURATION
 # =============================================================================
 
@@ -826,16 +843,8 @@ def load_maintenance_config():
     
     Note:
         Configuration is now embedded in the code for simplified installation.
-        To customize, modify the MAINTENANCE_TASKS constant below.
+        To customize, modify the MAINTENANCE_TASKS constant at the top of this file.
     """
-    # Embedded maintenance configuration (previously maintenance_config.json)
-    MAINTENANCE_TASKS = [
-        {"name": "cleaning", "interval": 7},
-        {"name": "descaling", "interval": 28},
-        {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150},
-        {"name": "grinder_cleaning", "interval": 56},
-        {"name": "deep_cleaning", "interval": 365}
-    ]
     return MAINTENANCE_TASKS
 
 # =============================================================================
