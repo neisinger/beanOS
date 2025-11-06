@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
-  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  <rect width="296" height="128" fill="white"/>
   
   <!-- Title Bar -->
   <rect x="0" y="0" width="296" height="20" fill="black"/>
@@ -28,7 +28,7 @@
   <!-- Button Labels -->
   <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Espresso</text>
   <text x="70" y="118" font-family="monospace" font-size="6" fill="black">B: Cappuccino</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Menü</text>
-  <text x="175" y="118" font-family="monospace" font-size="6" fill="black">UP: Andere</text>
-  <text x="230" y="118" font-family="monospace" font-size="6" fill="black">DOWN: Schlafen</text>
+  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Getränke</text>
+  <text x="190" y="118" font-family="monospace" font-size="6" fill="black">UP: Menü</text>
+  <text x="235" y="118" font-family="monospace" font-size="6" fill="black">DOWN: Schlafen</text>
 </svg>

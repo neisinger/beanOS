@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="296" height="128" viewBox="0 0 296 128" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
-  <rect width="296" height="128" fill="white" stroke="#000" stroke-width="1"/>
+  <rect width="296" height="128" fill="white"/>
   
   <!-- Title Bar -->
   <rect x="0" y="0" width="296" height="20" fill="black"/>
