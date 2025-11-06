@@ -50,11 +50,11 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 - Bean-Pack-Zähler mit Datum der letzten angebrochenen Packungen
 
 ### 🏆 Achievement-System
-- **Meilenstein-Achievements**: Belohnungen für 1, 10, 50, 100, 500 und 1000 Kaffees
-- **Streak-Achievements**: Halte deine Kaffeegewohnheit 7 oder 30 Tage am Laufenden
-- **Spezialgetränke-Achievements**: Probiere neue Getränke wie Iced Latte, Affogato oder Shakerato
+- **Meilenstein-Achievements**: Belohnungen für verschiedene Kaffee-Meilensteine
+- **Streak-Achievements**: Halte deine Kaffeegewohnheit am Laufenden
+- **Spezialgetränke-Achievements**: Probiere neue Getränke
 - **Wartungs-Achievements**: Halte deine Maschine in perfektem Zustand
-- **Experimentelle Achievements**: Werde ein echter Barista, indem du alle Getränketypen probierst
+- **Experimentelle Achievements**: Für echte Kaffee-Enthusiasten
 - **Fortschrittsanzeige**: Visuelle Fortschrittsbalken für Streak-Achievements
 - **Achievement-Benachrichtigungen**: Vollbild-Feiern beim Freischalten neuer Achievements
 - **Achievement-Icon**: Täglicher Stern (★) in der Titelleiste bei freigeschalteten Achievements
@@ -1026,34 +1026,14 @@ Das zentrale Navigationsmenü mit allen Hauptfunktionen.
 ## 🏆 Achievement-Kategorien
 
 ### 🏅 Meilensteine
-Schalte Achievements für das Erreichen von Kaffeekonsum-Meilensteinen frei:
-- **[#1] Erster Kaffee**: Dein allererster Kaffee!
-- **[#10] Kaffee-Starter**: 10 Kaffees getrunken
-- **[#50] Kaffee-Fan**: 50 Kaffees getrunken  
-- **[#100] Kaffee-Liebhaber**: 100 Kaffees getrunken
-- **[#500] Kaffee-Experte**: 500 Kaffees getrunken
-- **[#1000] Kaffee-Meister**: 1000 Kaffees getrunken
 
 ### 🔥 Streaks
-Halte deine Kaffeegewohnheit am Laufenden:
-- **[=7] Consistency Expert**: 7 Tage in Folge Kaffee trinken
-- **[=30] Consistency Master**: 30 Tage in Folge Kaffee trinken
 
 ### 🍹 Spezialgetränke
-Erkunde neue Geschmackserlebnisse:
-- **[~] Stay Cool**: Ersten Iced Latte getrunken
-- **[o] Dessert**: Ersten Affogato getrunken
-- **[%] Shake it!**: Ersten Shakerato getrunken
 
 ### 🔧 Wartung
-Halte deine Maschine in Top-Zustand:
-- **[<>] Saubere Maschine**: Erste Wartung durchgeführt
-- **[[]] Wartungsmeister**: Alle Wartungen rechtzeitig durchgeführt
 
 ### 🧪 Experimentell
-Für echte Kaffee-Enthusiasten:
-- **[>>] Barista**: Alle Getränketypen probiert
-- **[^^] Happy Bean Day**: 10 Kaffees an einem Tag
 
 ## 🔧 Wartungssystem
 
