@@ -31,11 +31,54 @@ This code must not be used by fascists! No code for the AfD or Musk or Trump!
 ## Installation
 
 To install beanOS on your Badger2040:
-1. Connect your Badger2040 to your computer.
-2. Open Thonny IDE.
-3. Copy the `main.py` file content into Thonny's editor.
-4. Save the file to your Badger2040 as `main.py`.
-5. Copy the file `maintenance_config.json` to your Badger2040 as well. This file is required for maintenance reminders and configuration.
+
+### Prerequisites
+- Pimoroni Badger2040 with MicroPython firmware
+- Thonny IDE or similar MicroPython development environment
+- USB cable for device connection
+
+### Installation Steps
+1. Connect your Badger2040 to your computer via USB
+2. Open Thonny IDE and ensure the device is detected
+3. Copy the `main.py` file content into Thonny's editor
+4. Save the file to your Badger2040 as `main.py`
+5. Copy the `maintenance_config.json` file to your Badger2040 root directory
+6. Disconnect and restart the device
+
+### Required Files
+- **main.py** - Main application code
+- **maintenance_config.json** - Maintenance task configuration
+
+### Auto-Generated Files
+The following files will be created automatically during use:
+- **kaffee_log.csv** - Coffee consumption data log
+- **achievements.json** - Achievement progress tracking
+- **maintenance_status.json** - Maintenance completion tracking
+- **current_date.txt** - Current date persistence
+- **current_counts.txt** - Daily counter backup
+
+## Technical Architecture
+
+### Code Structure
+The application is organized into the following main sections:
+- **Hardware Initialization** - Display, buttons, LED setup
+- **File Management** - Data persistence and configuration
+- **Menu System** - Navigation and user interface
+- **Achievement Engine** - Gamification and progress tracking
+- **Maintenance System** - Automated reminders and logging
+- **Statistics Engine** - Data analysis and reporting
+- **Notification System** - User alerts and celebrations
+
+### Data Flow
+1. **Input**: Button presses → `button_pressed()` function
+2. **Processing**: Update counters → Check achievements → Check maintenance
+3. **Storage**: Save to CSV log and JSON status files
+4. **Display**: Update screen via `update_display()` function
+
+### Memory Management
+- Minimal RAM usage for embedded environment
+- Efficient file I/O operations
+- Smart display update strategies (TURBO vs NORMAL modes)
 
 ## Usage
 
@@ -144,7 +187,80 @@ beanOS includes an intelligent maintenance reminder system that helps you keep y
 
 ## Changelog
 
-### v2.3.1 (Current)
+## Development & Customization
+
+### Adding New Achievements
+1. Add achievement definition to `get_achievement_definitions()`
+2. Implement check logic in `check_achievements()`
+3. Test with achievement notification system
+
+### Modifying Maintenance Tasks
+Edit `maintenance_config.json`:
+```json
+{
+  "tasks": [
+    {"name": "cleaning", "interval": 7},
+    {"name": "brew_group_cleaning", "interval": 42, "drink_limit": 150}
+  ]
+}
+```
+
+### Configuration Options
+- **Display Update Modes**: TURBO (fast) vs NORMAL (full refresh)
+- **Achievement Categories**: Milestones, Streaks, Special, Maintenance, Experimental
+- **Button Debouncing**: 0.2 second default debounce time
+- **Auto-Sleep**: 15 seconds of inactivity
+
+### Debug Features
+- Console output for achievement debugging
+- Error display system for configuration issues
+- Achievement progress logging
+
+### Performance Considerations
+- Use TURBO display updates for frequent refreshes
+- Minimize file I/O operations during active use
+- Efficient CSV parsing for large log files
+- Smart achievement checking (only when needed)
+
+## Troubleshooting
+
+### Common Issues
+1. **"maintenance_config.json nicht gefunden"**
+   - Ensure the file exists in the root directory
+   - Check JSON syntax validity
+
+2. **Achievements not unlocking**
+   - Check console output for debug information
+   - Verify achievement logic in `check_achievements()`
+
+3. **Display not updating**
+   - Force full refresh with `update_display(True)`
+   - Check display update speed settings
+
+4. **Data loss on restart**
+   - Verify file write permissions
+   - Check for corrupted JSON files
+
+### File Recovery
+If data files become corrupted:
+1. Delete corrupted `.json` files (they will be recreated)
+2. Backup `kaffee_log.csv` before any major changes
+3. Use debug console to verify data integrity
+
+## Changelog
+
+### v2.3.3 (Current)
+- 📝 **Documentation**: Comprehensive code documentation and comments
+- 🏗️ **Architecture**: Improved code structure and organization  
+- 📖 **README**: Extended technical documentation for developers
+- 🔧 **Code Quality**: Added docstrings and inline comments throughout
+
+### v2.3.2
+- 📝 **Achievement Renaming**
+- ✅ "Wochenentkämpfer" → "Consistency Expert" (7-day streak)
+- ✅ "Monatsmarathon" → "Consistency Master" (30-day streak)
+
+### v2.3.1
 - 🐛 **Fixed**: Button B now correctly increments cappuccino count
 - 🏆 **Improved**: Achievement checking for cappuccino button restored
 

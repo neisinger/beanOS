@@ -6,9 +6,26 @@
 2. **Heatmap for coffee consumption** (Kalender-Heatmap)
 3. **Advanced statistics** (Wochentage-Analyse, Trends)
 4. **Achievement improvements**
-   - More achievement types (time-based, pattern-based)
-   - Achievement difficulty levels
-   - Monthly/yearly challenges
+   - Pattern-based achievements (v2.4):
+     * **Weekend Warrior** - only drink coffee on weekends (Sat/Sun)
+     * **Cappuccino Purist** - X days drinking only cappuccino
+     * **Preventive Care** - do maintenance before it's due
+     * **Perfect Timing** - complete all maintenance types exactly on due date (once)
+   - Monthly challenges (v2.4):
+     * **100 Cup Month** - 100 coffees in one calendar month
+     * **Clean Machine Month** - all maintenance on time for one month
+     * **Variety Month** - each drink type at least 5x in one month
+   - Yearly challenges (v2.4):
+     * **Barista Year** - 1000 coffees in one calendar year
+     * **Seasonal Explorer** - different favorite drink each season (3 months)
+   - Achievement difficulty levels (future consideration):
+     * Bronze/Silver/Gold/Platinum tiers for existing achievements
+     * Progressive unlock system
+
+## ✅ Completed Features (v2.3.2)
+1. **📝 Achievement Renaming**
+   - ✅ "Wochenentkämpfer" → "Consistency Expert" (7-day streak)
+   - ✅ "Monatsmarathon" → "Consistency Master" (30-day streak)
 
 ## ✅ Completed Features (v2.3.1)
 1. **🐛 Button B Cappuccino Fix**
