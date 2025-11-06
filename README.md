@@ -35,6 +35,7 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 - **Intelligentes Scrolling**: Automatische Navigation in langen Menüs
 - **ASCII-kompatible Icons**: Vollständige Badger2040-Kompatibilität
 - **Responsive Layout**: Optimale Nutzung des 296x128 Pixel Displays
+- **SVG Icon Templates**: E-Ink-optimierte Icon-Vorlagen für Achievements und UI-Elemente ([Icon Gallery](icons/index.html))
 
 ## 📱 Screenshots der Menüs
 
@@ -72,6 +73,35 @@ Dieser Code darf nicht von Faschisten verwendet werden! Kein Code für die AfD, 
 ![Achievement-Benachrichtigung](images/achievement_notification.svg)
 
 *Vollbild-Feier beim Freischalten neuer Achievements mit Trophy-Symbol und Beschreibung.*
+
+## 🎨 SVG Icon Templates
+
+beanOS enthält jetzt eine umfassende Sammlung von SVG-Icon-Vorlagen, die speziell für E-Ink-Displays optimiert wurden. Diese Icons bieten eine bessere Alternative zu Unicode-Zeichen auf dem Badger2040.
+
+### Icon-Kategorien
+
+- **Milestones** (6 Icons): #1, #10, #50, #100, #500, #1000
+- **Streaks** (2 Icons): =7, =30
+- **Special Drinks** (3 Icons): ~, o, %
+- **Maintenance** (2 Icons): <>, []
+- **Experimental** (2 Icons): >>, ^^
+- **General** (1 Icon): ★
+
+### Design-Prinzipien
+
+Alle Icons folgen strengen Design-Richtlinien für optimale E-Ink-Darstellung:
+
+- ✅ **Hoher Kontrast**: Nur Schwarz und Weiß, keine Gradienten
+- ✅ **Einfache Geometrie**: Klare, kräftige Formen, die bei kleinen Größen gut lesbar sind
+- ✅ **Konsistente Größe**: Alle Icons haben eine 32x32px ViewBox
+- ✅ **Strichstärke**: Mindestens 2px Strichstärke für bessere Sichtbarkeit
+- ✅ **E-Ink-optimiert**: Speziell für das Badger2040-Display (296x128px) entwickelt
+
+### Icon-Galerie
+
+Besuche die [Icon Gallery](icons/index.html) für eine vollständige Übersicht aller verfügbaren Icons mit Vorschau.
+
+Weitere Details und technische Spezifikationen findest du in der [Icons README](icons/README.md).
 
 ## 🚀 Installation
 
