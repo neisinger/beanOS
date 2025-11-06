@@ -29,7 +29,4 @@
   <!-- Total Stats Box (highlighted) -->
   <rect x="8" y="96" width="280" height="18" fill="black"/>
   <text x="14" y="106" font-family="monospace" font-size="8" fill="white">Gesamt: 279 Getränke | 1394g Bohnen | 19.7g/Tag</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
 </svg>

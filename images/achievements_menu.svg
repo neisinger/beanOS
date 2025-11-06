@@ -37,8 +37,4 @@
   
   <text x="14" y="107" font-family="monospace" font-size="8" fill="black">[>>] Barista</text>
   <text x="230" y="107" font-family="monospace" font-size="7" fill="black">28.10.2025</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="60" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

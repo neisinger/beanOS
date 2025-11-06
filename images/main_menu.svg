@@ -25,9 +25,4 @@
   
   <text x="14" y="94" font-family="monospace" font-size="8" fill="black">Datum ändern</text>
   <line x1="8" y1="99" x2="288" y2="99" stroke="black" stroke-width="1"/>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Auswählen</text>
-  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

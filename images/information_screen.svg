@@ -23,7 +23,4 @@
   <!-- Hardware -->
   <text x="12" y="98" font-family="monospace" font-size="8" fill="black">Hardware:</text>
   <text x="120" y="98" font-family="monospace" font-size="8" fill="black">Badger2040</text>
-  
-  <!-- Button Labels -->
-  <text x="235" y="113" font-family="monospace" font-size="8" fill="black">C: Zurück</text>
 </svg>

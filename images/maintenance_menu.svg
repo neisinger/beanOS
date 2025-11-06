@@ -37,9 +37,4 @@
   
   <text x="14" y="111" font-family="monospace" font-size="8" fill="black">Grundreinigung</text>
   <text x="230" y="111" font-family="monospace" font-size="7" fill="black">10.10.'25</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">A: Als erledigt markieren</text>
-  <text x="140" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="200" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Navigation</text>
 </svg>

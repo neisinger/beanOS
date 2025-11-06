@@ -28,8 +28,4 @@
   <rect x="5" y="100" width="286" height="22" fill="black" stroke="black" stroke-width="1"/>
   <rect x="6" y="101" width="284" height="20" fill="black"/>
   <text x="10" y="115" font-family="monospace" font-size="12" fill="white">Gesamt: 1394g</text>
-  
-  <!-- Button Labels -->
-  <text x="8" y="118" font-family="monospace" font-size="6" fill="black">C: Zurück</text>
-  <text x="70" y="118" font-family="monospace" font-size="6" fill="black">UP/DOWN: Seite wechseln</text>
 </svg>
