@@ -2676,12 +2676,12 @@ def button_pressed(pin):
                 save_data(format_date(time.localtime(current_date)), espresso_count, cappuccino_count, drink_counts)
                 check_achievements()  # Prüfe Achievements nach Getränk
             drink_menu_active = False  # Menü schließen
-            menu_active = True  # Zurück zum Hauptmenü
+            menu_active = False  # Zurück zum Hauptbildschirm
             update_display(True)
             return
         elif display.pressed(BUTTON_C):
             drink_menu_active = False
-            menu_active = True
+            menu_active = False
             update_display(True)
             return
 
