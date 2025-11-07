@@ -2065,7 +2065,9 @@ def update_display(full_update=False):
         display.update()
         return
 
-    display.set_update_speed(badger2040.UPDATE_NORMAL if full_update or refresh_count >= 14 else badger2040.UPDATE_TURBO)
+    # Use TURBO mode (partial updates) more frequently for better fluidity
+    # Full refresh only every 30 updates or when explicitly requested
+    display.set_update_speed(badger2040.UPDATE_NORMAL if full_update or refresh_count >= 30 else badger2040.UPDATE_TURBO)
     refresh_count = 0 if full_update else refresh_count + 1
     display.set_pen(15)
     display.clear()
@@ -2728,7 +2730,7 @@ def button_pressed(pin):
             menu_active = True
             update_display(True)
             return
-        update_display(True)
+        # No changes made, no update needed
         return
 
     if view_achievements_active:
@@ -2771,7 +2773,7 @@ def button_pressed(pin):
             achievement_selected = 0  # Reset selection
             update_display(True)
             return
-        update_display(True)
+        # No changes made, no update needed
         return
 
     if display.pressed(BUTTON_UP):
@@ -2794,6 +2796,10 @@ def button_pressed(pin):
             button_press_count = 0
             daily_achievement_unlocked = False  # Achievement-Icon für neuen Tag zurücksetzen
             update_display(True)
+        else:
+            # Menu navigation uses partial update for fluid scrolling
+            update_display(False)
+            return
 
     if display.pressed(BUTTON_A):
         if menu_active:
