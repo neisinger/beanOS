@@ -2741,19 +2741,20 @@ def button_pressed(pin):
         # Erstelle die gleiche Liste wie im Display
         display_items = []
         
-        # Unvollständige Streaks
-        current_streak = calculate_coffee_streak()
-        for key in ["streak_7", "streak_30"]:
-            if key not in achievements:
-                display_items.append(("incomplete", key, definitions[key], current_streak))
-        
-        # Erreichte Achievements (nach Datum sortiert)
+        # Erreichte Achievements sammeln (nach Datum sortiert)
         reached_achievements = []
         for key, achievement in definitions.items():
             if key in achievements:
                 reached_achievements.append((key, achievements[key], achievement))
         reached_achievements.sort(key=lambda x: x[1], reverse=True)
         
+        # Unvollständige Streaks hinzufügen
+        current_streak = calculate_coffee_streak()
+        for key in ["streak_7", "streak_30"]:
+            if key not in achievements:
+                display_items.append(("incomplete", key, definitions[key], current_streak))
+        
+        # Erreichte Achievements hinzufügen
         for key, date, achievement in reached_achievements:
             display_items.append(("complete", key, achievement, date))
         
