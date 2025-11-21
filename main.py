@@ -2882,14 +2882,13 @@ if __name__ == "__main__":
     led.value(1)
     update_display(True)
     last_interaction_time = time.time()
-    debounce_time = 0.2
+    debounce_time = 0.1
     last_button_press_time = {BUTTON_A: 0, BUTTON_B: 0, BUTTON_C: 0, BUTTON_UP: 0, BUTTON_DOWN: 0}
 
     while True:
         current_time = time.time()
         for btn in [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_UP, BUTTON_DOWN]:
             if display.pressed(btn):
-                time.sleep(0.05)
                 if display.pressed(btn) and (current_time - last_button_press_time[btn] > debounce_time):
                     button_pressed(btn)
                     last_button_press_time[btn] = current_time
