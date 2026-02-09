@@ -29,7 +29,7 @@ No external icon_bitmaps.py or maintenance_config.json files are needed.
 
 Author: Joao Neisinger
 License: GNU GPLv3
-Version: 2.5.0
+Version: 2.6.1
 Repository: https://github.com/neisinger/beanOS
 
 This code must not be used by fascists! No code for the AfD or Musk or Trump!
@@ -734,7 +734,114 @@ menu_options = ["Bohnen", "Statistiken anzeigen", "Tagesstatistiken zurücksetze
 current_menu_option, menu_active, change_date_active, view_statistics_active, view_info_active, view_maintenance_history_active, view_achievements_active, bean_pack_menu_active = 0, False, False, False, False, False, False, False
 
 # Application version - update for each release
-version = "2.5.0"
+version = "2.6.1"
+
+# Debug logging (set to True for verbose serial output)
+DEBUG = False
+
+def debug(msg):
+    if DEBUG:
+        print(msg)
+
+# File system cache
+fs_cache_key = 0
+fs_dir_cache = None
+
+def invalidate_fs_cache():
+    global fs_cache_key, fs_dir_cache
+    fs_cache_key += 1
+    fs_dir_cache = None
+
+def listdir_cached():
+    global fs_dir_cache
+    if fs_dir_cache is None:
+        fs_dir_cache = uos.listdir()
+    return fs_dir_cache
+
+def file_exists(name, restore_backup=True):
+    entries = listdir_cached()
+    if name in entries:
+        return True
+    if restore_backup:
+        backup_name = name + ".bak"
+        if backup_name in entries:
+            try:
+                uos.rename(backup_name, name)
+                invalidate_fs_cache()
+                return True
+            except Exception as e:
+                debug(f"DEBUG: Failed to restore backup {backup_name}: {e}")
+    return False
+
+def safe_write_file(path, content):
+    tmp_path = path + ".tmp"
+    bak_path = path + ".bak"
+    invalidate_fs_cache()
+
+    try:
+        if file_exists(tmp_path, restore_backup=False):
+            uos.remove(tmp_path)
+
+        with open(tmp_path, 'w') as f:
+            f.write(content)
+
+        if file_exists(path):
+            if file_exists(bak_path, restore_backup=False):
+                uos.remove(bak_path)
+            try:
+                uos.rename(path, bak_path)
+            except Exception as e:
+                debug(f"DEBUG: Failed to move {path} to backup: {e}")
+
+        uos.rename(tmp_path, path)
+
+        if file_exists(bak_path, restore_backup=False):
+            uos.remove(bak_path)
+
+        invalidate_fs_cache()
+        return True
+    except Exception as e:
+        debug(f"DEBUG: safe_write_file failed for {path}: {e}")
+        return False
+
+# Maintenance warning cache
+maintenance_cache_key = None
+maintenance_cache_value = None
+maintenance_status_write_counter = 0
+
+def invalidate_maintenance_cache():
+    global maintenance_cache_key, maintenance_cache_value
+    maintenance_cache_key = None
+    maintenance_cache_value = None
+
+# Log parsing cache
+log_cache_key = None
+log_cache_value = None
+log_write_counter = 0
+achievements_write_counter = 0
+
+def invalidate_log_cache():
+    global log_write_counter, log_cache_key, log_cache_value
+    log_write_counter += 1
+    log_cache_key = None
+    log_cache_value = None
+    invalidate_fs_cache()
+    mark_ui_dirty()
+
+# UI dirty flag
+ui_dirty = True
+last_render_screen = None
+last_render_signature = None
+
+def mark_ui_dirty():
+    global ui_dirty
+    ui_dirty = True
+
+def finalize_render(screen, signature):
+    global ui_dirty, last_render_screen, last_render_signature
+    ui_dirty = False
+    last_render_screen = screen
+    last_render_signature = signature
 # =============================================================================
 # NAVIGATION AND SELECTION VARIABLES
 # =============================================================================
@@ -808,7 +915,7 @@ def load_maintenance_status():
         - Missing file: Returns empty dict
         - JSON corruption: Shows error message and returns empty dict
     """
-    if maintenance_status_file in uos.listdir():
+    if file_exists(maintenance_status_file):
         try:
             with open(maintenance_status_file, 'r') as f:
                 return json.load(f)
@@ -828,8 +935,12 @@ def save_maintenance_status(status):
     Note:
         Overwrites existing file completely. No error handling for write failures.
     """
-    with open(maintenance_status_file, 'w') as f:
-        json.dump(status, f)
+    global maintenance_status_write_counter
+    content = json.dumps(status)
+    safe_write_file(maintenance_status_file, content)
+    maintenance_status_write_counter += 1
+    invalidate_maintenance_cache()
+    mark_ui_dirty()
 
 def load_maintenance_config():
     """
@@ -865,6 +976,7 @@ def show_notification(notification_type, data):
     global notification_active, notification_data, bean_pack_notification_start_time, achievement_notification_start_time
     notification_active = True
     notification_data = {"type": notification_type, "data": data}
+    mark_ui_dirty()
     
     # Speichere Startzeit für Bean Pack Notifications
     if notification_type == "bean_pack":
@@ -1040,12 +1152,12 @@ def handle_notification_input():
                     status["brew_group_cleaning_drinks"] = total_drinks
                 
                 wartung_eintrag = f'{format_date(time.localtime(current_date))},WARTUNG:{task}'
-                if log_file not in uos.listdir():
-                    with open(log_file, 'w') as file:
-                        headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-                        file.write(headers + "\n")
+                if not file_exists(log_file):
+                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                    safe_write_file(log_file, headers + "\n")
                 with open(log_file, 'a') as file:
                     file.write(wartung_eintrag + "\n")
+                invalidate_log_cache()
             
             save_maintenance_status(status)
             maintenance_warning_hidden = False
@@ -1071,7 +1183,7 @@ def handle_notification_input():
     
     return False
 def load_achievements():
-    if achievements_file in uos.listdir():
+    if file_exists(achievements_file):
         try:
             with open(achievements_file, 'r') as f:
                 return json.load(f)
@@ -1082,8 +1194,11 @@ def load_achievements():
 
 def save_achievements(achievements):
     try:
-        with open(achievements_file, 'w') as f:
-            json.dump(achievements, f)
+        global achievements_write_counter
+        content = json.dumps(achievements)
+        safe_write_file(achievements_file, content)
+        achievements_write_counter += 1
+        mark_ui_dirty()
     except Exception as e:
         print(f"Fehler beim Speichern von achievements.json: {e}")
 
@@ -1123,7 +1238,7 @@ def check_achievements():
     
     # Gesamtkaffee-Statistiken berechnen
     total_coffee = calculate_total_coffee_count()
-    print(f"DEBUG: Total coffee count: {total_coffee}")
+    debug(f"DEBUG: Total coffee count: {total_coffee}")
     
     # Meilenstein-Achievements
     milestones = [1, 10, 50, 100, 500, 1000]
@@ -1132,15 +1247,15 @@ def check_achievements():
     for i, milestone in enumerate(milestones):
         key = achievement_keys[i]
         already_has = key in achievements
-        print(f"DEBUG: Checking {key} - milestone: {milestone}, total: {total_coffee}, has: {already_has}")
+        debug(f"DEBUG: Checking {key} - milestone: {milestone}, total: {total_coffee}, has: {already_has}")
         if total_coffee >= milestone and key not in achievements:
             achievements[key] = format_date(time.localtime(current_date))
             new_achievements.append(key)
-            print(f"DEBUG: NEW ACHIEVEMENT: {key}")
+            debug(f"DEBUG: NEW ACHIEVEMENT: {key}")
     
     # Happy Bean Day Debug
     today_drinks = espresso_count + cappuccino_count + sum(drink_counts)
-    print(f"DEBUG: Today drinks: {today_drinks}, Happy Bean Day check: {all_drinks_today()}")
+    debug(f"DEBUG: Today drinks: {today_drinks}, Happy Bean Day check: {all_drinks_today()}")
     
     # Getränke-spezifische Achievements
     if has_drunk_drink("iced latte") and "stay_cool" not in achievements:
@@ -1184,7 +1299,7 @@ def check_achievements():
     if new_achievements:
         save_achievements(achievements)
         show_notification("achievement", new_achievements[0])  # Zeige das erste neue Achievement
-        print(f"DEBUG: Showing achievement notification for: {new_achievements[0]}")
+        debug(f"DEBUG: Showing achievement notification for: {new_achievements[0]}")
     
     return new_achievements
 
@@ -1205,22 +1320,93 @@ def calculate_total_coffee_count():
     else:
         return total_espresso + total_cappuccino + total_other
 
+def get_log_cache():
+    global log_cache_key, log_cache_value
+
+    cache_key = log_write_counter
+    if log_cache_key == cache_key and log_cache_value is not None:
+        return log_cache_value
+
+    data = {
+        "day_entries": [],
+        "day_totals": {},
+        "totals": (0, 0, 0),
+        "first_date": None,
+        "drink_seen": {drink: False for drink in drink_menu_options},
+        "maintenance_entries": [],
+        "bean_packs": [],
+        "last_day_counts": None,
+    }
+
+    if not file_exists(log_file):
+        log_cache_key = cache_key
+        log_cache_value = data
+        return data
+
+    try:
+        with open(log_file, 'r') as file:
+            lines = file.readlines()
+
+        data_lines = lines[1:] if len(lines) > 1 and lines[0].startswith("Datum,") else lines
+
+        total_espresso = 0
+        total_cappuccino = 0
+        total_other = 0
+
+        for line in data_lines:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(',')
+
+            if len(parts) == 2 and parts[1].startswith("WARTUNG:"):
+                data["maintenance_entries"].append((parts[0], parts[1][8:]))
+                continue
+
+            if len(parts) == 2 and parts[1].startswith("NEUE_PACKUNG:"):
+                data["bean_packs"].append((parts[0], parts[1][13:]))
+                continue
+
+            if len(parts) >= 3:
+                date = parts[0]
+                espresso = int(parts[1]) if parts[1].isdigit() else 0
+                cappuccino = int(parts[2]) if parts[2].isdigit() else 0
+
+                other_counts = []
+                for i in range(3, 3 + len(drink_menu_options)):
+                    if i < len(parts) and parts[i].isdigit():
+                        other_counts.append(int(parts[i]))
+                    else:
+                        other_counts.append(0)
+
+                total_espresso += espresso
+                total_cappuccino += cappuccino
+                total_other += sum(other_counts)
+
+                data["day_entries"].append((date, espresso, cappuccino, other_counts))
+                data["day_totals"][date] = espresso + cappuccino + sum(other_counts)
+                data["last_day_counts"] = (espresso, cappuccino, other_counts)
+
+                if data["first_date"] is None:
+                    data["first_date"] = date
+
+                for i, count in enumerate(other_counts):
+                    if count > 0:
+                        data["drink_seen"][drink_menu_options[i]] = True
+
+    except Exception as e:
+        debug(f"DEBUG: Error reading log file for cache: {e}")
+
+    data["totals"] = (total_espresso, total_cappuccino, total_other)
+    log_cache_key = cache_key
+    log_cache_value = data
+    return data
+
 def has_drunk_drink(drink_name):
-    if log_file not in uos.listdir():
+    if drink_name not in drink_menu_options:
         return False
-    
-    drink_index = drink_menu_options.index(drink_name) if drink_name in drink_menu_options else -1
-    if drink_index == -1:
-        return False
-    
-    with open(log_file, 'r') as file:
-        lines = file.readlines()[1:]  # Skip header
-        for line in lines:
-            parts = line.strip().split(',')
-            if len(parts) > 3 + drink_index and not parts[1].startswith("WARTUNG:"):
-                if int(parts[3 + drink_index]) > 0:
-                    return True
-    return False
+    cache = get_log_cache()
+    return cache["drink_seen"].get(drink_name, False)
 
 def all_drinks_tried():
     for drink in drink_menu_options:
@@ -1238,27 +1424,16 @@ def all_drinks_today():
     # Get current live counters (most accurate)
     current_total = espresso_count + cappuccino_count + sum(drink_counts)
     
-    print(f"DEBUG Happy Bean Day: current_total = {current_total}")
-    print(f"DEBUG: espresso={espresso_count}, cappuccino={cappuccino_count}, other={sum(drink_counts)}")
+    debug(f"DEBUG Happy Bean Day: current_total = {current_total}")
+    debug(f"DEBUG: espresso={espresso_count}, cappuccino={cappuccino_count}, other={sum(drink_counts)}")
     
     return current_total >= 10
 
 def has_done_maintenance():
-    if log_file not in uos.listdir():
-        return False
-    
-    with open(log_file, 'r') as file:
-        lines = file.readlines()[1:]  # Skip header
-        for line in lines:
-            parts = line.strip().split(',')
-            if len(parts) == 2 and parts[1].startswith("WARTUNG:"):
-                return True
-    return False
+    cache = get_log_cache()
+    return len(cache["maintenance_entries"]) > 0
 
 def calculate_coffee_streak():
-    if log_file not in uos.listdir():
-        return 0
-    
     streak = 0
     current_check_date = current_date
     
@@ -1275,20 +1450,8 @@ def calculate_coffee_streak():
     return streak
 
 def get_day_total_coffee(date_str):
-    if log_file not in uos.listdir():
-        return 0
-    
-    with open(log_file, 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            if line.startswith(date_str):
-                parts = line.strip().split(',')
-                if len(parts) >= 3 and not parts[1].startswith("WARTUNG:"):
-                    espresso = int(parts[1]) if parts[1].isdigit() else 0
-                    cappuccino = int(parts[2]) if parts[2].isdigit() else 0
-                    other = sum(int(parts[i]) for i in range(3, len(parts)) if parts[i].isdigit())
-                    return espresso + cappuccino + other
-    return 0
+    cache = get_log_cache()
+    return cache["day_totals"].get(date_str, 0)
 
 def draw_progress_bar(x, y, current, maximum):
     """Zeichnet einen Fortschrittsbalken mit kleinen Kästchen"""
@@ -1328,6 +1491,8 @@ def show_error(msg):
 
 def debug_display_content():
     """Debug-Funktion: Gibt den aktuellen Bildschirminhalt in der Konsole aus"""
+    if not DEBUG:
+        return
     print("=== DISPLAY DEBUG ===")
     print("Achievement Screen Content:")
     
@@ -1399,7 +1564,7 @@ def parse_date(date_str):
         return None
 
 def get_from_file(file, default, parser=lambda x: x):
-    if file in uos.listdir():
+    if file_exists(file):
         with open(file, 'r') as f:
             return parser(f.readline().strip())
     return default
@@ -1407,19 +1572,43 @@ def get_from_file(file, default, parser=lambda x: x):
 def format_date(t): return f"{t[2]:02d}.{t[1]:02d}.{t[0]}"
 
 def save_data(date, espresso, cappuccino, drink_counts):
-    if log_file not in uos.listdir():
-        with open(log_file, 'w') as file:
-            headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-            file.write(headers + "\n")
+    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+    expected_cols = 3 + len(drink_menu_options)
+
+    if not file_exists(log_file):
+        safe_write_file(log_file, headers + "\n")
+
     lines = []
     with open(log_file, 'r') as file:
         lines = file.readlines()
+
+    # Ensure header matches current drink options and migrate old rows
+    if not lines:
+        lines = [headers + "\n"]
+    else:
+        first_line = lines[0].strip()
+        if not first_line.startswith("Datum,Espresso,Cappuccino"):
+            lines = [headers + "\n"] + lines
+        else:
+            header_parts = first_line.split(',')
+            if len(header_parts) < expected_cols:
+                lines[0] = headers + "\n"
+
+    # Pad older day rows so indexing is safe
+    for i in range(1, len(lines)):
+        parts = lines[i].strip().split(',')
+        if len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
+            if len(parts) < expected_cols:
+                parts += ["0"] * (expected_cols - len(parts))
+                lines[i] = ','.join(parts) + "\n"
     
     updated = False
     for i, line in enumerate(lines):
         parts = line.strip().split(',')
         # Nur Tageszeilen (mindestens 3 Felder, kein Wartungseintrag)
         if line.startswith(date) and len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
+            if len(parts) < expected_cols:
+                parts += ["0"] * (expected_cols - len(parts))
             parts[1] = str(espresso)
             parts[2] = str(cappuccino)
             for j in range(3, 3 + len(drink_counts)):
@@ -1432,13 +1621,14 @@ def save_data(date, espresso, cappuccino, drink_counts):
         drink_counts_str = ",".join(map(str, drink_counts))
         lines.append(f'{date},{espresso},{cappuccino},{drink_counts_str}\n')
     
-    with open(log_file, 'w') as file:
-        file.write(''.join(lines))
-    print(f"Data saved: {date}, {espresso}, {cappuccino}, {drink_counts}")
+    safe_write_file(log_file, ''.join(lines))
+    save_counts()
+    invalidate_log_cache()
+    debug(f"Data saved: {date}, {espresso}, {cappuccino}, {drink_counts}")
 
 def nap():
     global menu_active, view_statistics_active, change_date_active, view_info_active, drink_menu_active, bean_pack_menu_active
-    print("System will turn off in 5 seconds...")
+    debug("System will turn off in 5 seconds...")
     # Alle Menüs deaktivieren
     menu_active = False
     view_statistics_active = False
@@ -1501,7 +1691,7 @@ def nap():
     display.update()
     
     for i in range(5, 0, -1):
-        print(f"{i}...")
+        debug(f"{i}...")
         for _ in range(5):
             led.value(1)
             time.sleep(0.1)
@@ -1521,15 +1711,17 @@ def nap():
     display.update()
     time.sleep(1)
 
-    print("System turned off")
+    debug("System turned off")
     display.halt()
 
     # Nach dem Aufwachen Zähler aus Logdatei laden
     load_counters_from_log(log_file)
 
 def update_file(file, content):
-    with open(file, 'w') as f:
-        f.write(content)
+    safe_write_file(file, content)
+
+def save_counts():
+    update_file(count_file, f"{espresso_count},{cappuccino_count},{battery_reminder_count}")
 
 current_date = get_from_file(date_file, time.mktime((2025, 2, 5, 0, 0, 0, 0, 0, -1)), parse_date)
 count_values = get_from_file(count_file, "0,0,0").split(',')
@@ -1540,21 +1732,23 @@ battery_reminder_count = int(count_values[2]) if len(count_values) > 2 else 0
 button_press_count, temp_date, refresh_count = 0, current_date, 0
 
 def clear_log_file(file, date):
-    if file in uos.listdir():
+    if file_exists(file):
         with open(file, 'r') as f:
             lines = f.readlines()
         
-        with open(file, 'w') as f:
-            for line in lines:
-                if line.startswith(date):
-                    parts = line.strip().split(',')
-                    parts[1] = '0'  # Reset espresso count
-                    parts[2] = '0'  # Reset cappuccino count
-                    for j in range(3, len(parts)):
-                        parts[j] = '0'  # Reset additional counts
-                    f.write(','.join(parts) + '\n')
-                else:
-                    f.write(line)
+        new_lines = []
+        for line in lines:
+            if line.startswith(date):
+                parts = line.strip().split(',')
+                parts[1] = '0'  # Reset espresso count
+                parts[2] = '0'  # Reset cappuccino count
+                for j in range(3, len(parts)):
+                    parts[j] = '0'  # Reset additional counts
+                new_lines.append(','.join(parts) + '\n')
+            else:
+                new_lines.append(line)
+        safe_write_file(file, ''.join(new_lines))
+        invalidate_log_cache()
     # Nach dem Zurücksetzen auch die aktuellen Zähler im RAM zurücksetzen
     global espresso_count, cappuccino_count, drink_counts
     espresso_count = 0
@@ -1568,22 +1762,8 @@ def calculate_bean_pack_count():
     Returns:
         int: Anzahl der gestarteten Packungen
     """
-    if log_file not in uos.listdir():
-        return 0
-    
-    pack_count = 0
-    try:
-        with open(log_file, 'r') as file:
-            lines = file.readlines()[1:]  # Skip header
-            for line in lines:
-                parts = line.strip().split(',')
-                if len(parts) == 2 and parts[1].startswith("NEUE_PACKUNG:"):
-                    pack_count += 1
-    except Exception as e:
-        print(f"DEBUG: Error counting bean packs: {e}")
-        return 0
-    
-    return pack_count
+    cache = get_log_cache()
+    return len(cache["bean_packs"])
 
 def get_last_bean_packs():
     """
@@ -1592,24 +1772,8 @@ def get_last_bean_packs():
     Returns:
         list: Liste der letzten beiden Packungen als (datum, groesse) Tupel
     """
-    if log_file not in uos.listdir():
-        return []
-    
-    bean_packs = []
-    try:
-        with open(log_file, 'r') as file:
-            lines = file.readlines()[1:]  # Skip header
-            for line in lines:
-                parts = line.strip().split(',')
-                if len(parts) == 2 and parts[1].startswith("NEUE_PACKUNG:"):
-                    datum = parts[0]
-                    groesse = parts[1][13:]  # Remove "NEUE_PACKUNG:" prefix
-                    bean_packs.append((datum, groesse))
-    except Exception as e:
-        print(f"DEBUG: Error reading bean packs: {e}")
-        return []
-    
-    # Rückgabe der letzten beiden Packungen (neueste zuerst)
+    cache = get_log_cache()
+    bean_packs = cache["bean_packs"]
     return bean_packs[-2:] if len(bean_packs) >= 2 else bean_packs
 
 def calculate_total_statistics_and_first_date():
@@ -1620,62 +1784,9 @@ def calculate_total_statistics_and_first_date():
         tuple: (total_espresso, total_cappuccino, total_other, first_date)
                Returns (0, 0, 0, None) if log file doesn't exist
     """
-    if log_file not in uos.listdir():
-        print("DEBUG: Log file not found")
-        return 0, 0, 0, None
-        
-    total_espresso, total_cappuccino, total_other = 0, 0, 0
-    first_date = None
-    
-    try:
-        with open(log_file, 'r') as file:
-            lines = file.readlines()
-            print(f"DEBUG: Found {len(lines)} lines in log file")
-            
-            # Skip header line if it exists
-            data_lines = lines[1:] if len(lines) > 1 else lines
-            
-            for i, line in enumerate(data_lines):
-                line = line.strip()
-                if not line:  # Skip empty lines
-                    continue
-                    
-                parts = line.split(',')
-                print(f"DEBUG: Line {i+2}: {parts}")
-                
-                # Only process day entries (not maintenance entries)
-                if len(parts) >= 3 and not parts[1].startswith("WARTUNG:"):
-                    try:
-                        date = parts[0]
-                        espresso = int(parts[1]) if parts[1].isdigit() else 0
-                        cappuccino = int(parts[2]) if parts[2].isdigit() else 0
-                        
-                        # Handle additional drink counts safely
-                        other_drinks = []
-                        for j in range(3, len(parts)):
-                            if parts[j].isdigit():
-                                other_drinks.append(int(parts[j]))
-                            else:
-                                other_drinks.append(0)
-                        
-                        total_espresso += espresso
-                        total_cappuccino += cappuccino
-                        total_other += sum(other_drinks)
-                        
-                        if first_date is None:
-                            first_date = date
-                            
-                        print(f"DEBUG: Processed day {date}: E={espresso}, C={cappuccino}, O={sum(other_drinks)}")
-                        
-                    except (ValueError, IndexError) as e:
-                        print(f"DEBUG: Error processing line {i+2}: {e}")
-                        continue
-                        
-    except Exception as e:
-        print(f"DEBUG: Error reading log file: {e}")
-        return 0, 0, 0, None
-    
-    print(f"DEBUG: Final totals: E={total_espresso}, C={total_cappuccino}, O={total_other}, First={first_date}")
+    cache = get_log_cache()
+    total_espresso, total_cappuccino, total_other = cache["totals"]
+    first_date = cache["first_date"]
     return total_espresso, total_cappuccino, total_other, first_date
 
 # Wartungswarnung-Status
@@ -1683,25 +1794,27 @@ maintenance_warning_hidden = False
 maintenance_warning_tasks = []
 
 def check_maintenance_warnings():
-    global maintenance_warning_tasks
+    global maintenance_warning_tasks, maintenance_cache_key, maintenance_cache_value
     tasks = load_maintenance_config()
     status = load_maintenance_status()
     warnings = []
     today = int(time.mktime(time.localtime(current_date)) // 86400)  # Tag als Zahl
     total_drinks = espresso_count + cappuccino_count + sum(drink_counts)
+
+    cache_key = (today, total_drinks, log_write_counter, maintenance_status_write_counter)
+    if maintenance_cache_key == cache_key and maintenance_cache_value is not None:
+        maintenance_warning_tasks = maintenance_cache_value
+        return maintenance_cache_value
     # Finde das erste Tagesdatum im Logfile
     first_day = today
-    if log_file in uos.listdir():
-        with open(log_file, 'r') as file:
-            lines = file.readlines()[1:]
-            for line in lines:
-                parts = line.strip().split(',')
-                if len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
-                    try:
-                        first_day = int(time.mktime(time.strptime(parts[0], "%d.%m.%Y")) // 86400)
-                    except Exception:
-                        first_day = today
-                    break
+    if file_exists(log_file):
+        cache = get_log_cache()
+        if cache["day_entries"]:
+            first_date = cache["day_entries"][0][0]
+            try:
+                first_day = int(time.mktime(time.strptime(first_date, "%d.%m.%Y")) // 86400)
+            except Exception:
+                first_day = today
     for task in tasks:
         last_done = status.get(task["name"], first_day)
         interval = task["interval"]
@@ -1714,7 +1827,54 @@ def check_maintenance_warnings():
             if today - last_done >= interval:
                 warnings.append(task["name"])
     maintenance_warning_tasks = warnings
+    maintenance_cache_key = cache_key
+    maintenance_cache_value = warnings
     return warnings
+
+def build_render_signature(screen, maintenance_warnings):
+    if screen == "maintenance_history":
+        return (
+            current_date,
+            maintenance_history_selected,
+            maintenance_history_scroll,
+            log_write_counter,
+            maintenance_status_write_counter,
+            tuple(maintenance_warnings),
+        )
+    if screen == "achievements":
+        return (
+            achievement_selected,
+            achievements_write_counter,
+            log_write_counter,
+        )
+    if screen == "bean_pack":
+        return (
+            bean_pack_size_index,
+            bean_pack_count,
+            log_write_counter,
+            current_date,
+        )
+    if screen == "battery":
+        return (battery_reminder_active, battery_reminder_count)
+    if screen == "change_date":
+        return (current_date, temp_date)
+    if screen == "statistics":
+        return (statistics_page, bean_pack_size_index, log_write_counter, current_date)
+    if screen == "info":
+        return (version, current_date)
+    if screen == "drink_menu":
+        return (current_drink_menu_option, tuple(drink_counts), current_date)
+    if screen == "menu":
+        return (current_menu_option, current_date)
+    return (
+        current_date,
+        espresso_count,
+        cappuccino_count,
+        tuple(drink_counts),
+        daily_achievement_unlocked,
+        maintenance_warning_hidden,
+        tuple(maintenance_warnings),
+    )
 
 def update_display(full_update=False):
     global statistics_page, menu_active, achievement_selected, maintenance_history_scroll
@@ -1722,6 +1882,35 @@ def update_display(full_update=False):
     # Prüfe zuerst auf Benachrichtigungen
     if handle_notification_display():
         return
+
+    maintenance_warnings = check_maintenance_warnings()
+
+    if view_maintenance_history_active:
+        screen = "maintenance_history"
+    elif view_achievements_active:
+        screen = "achievements"
+    elif bean_pack_menu_active:
+        screen = "bean_pack"
+    elif battery_reminder_active:
+        screen = "battery"
+    elif change_date_active:
+        screen = "change_date"
+    elif view_statistics_active:
+        screen = "statistics"
+    elif view_info_active:
+        screen = "info"
+    elif drink_menu_active:
+        screen = "drink_menu"
+    elif menu_active:
+        screen = "menu"
+    else:
+        screen = "main"
+
+    signature = build_render_signature(screen, maintenance_warnings)
+
+    if not full_update and not ui_dirty:
+        if screen == last_render_screen and signature == last_render_signature:
+            return
     
     if view_maintenance_history_active:
         menu_active = False
@@ -1745,14 +1934,9 @@ def update_display(full_update=False):
         display.rectangle(0, 20, WIDTH, HEIGHT-20)
         display.set_pen(0)
         wartung_dict = {}
-        if log_file in uos.listdir():
-            with open(log_file, 'r') as file:
-                lines = file.readlines()[1:]
-                for line in lines:
-                    parts = line.strip().split(',')
-                    if len(parts) == 2 and parts[1].startswith("WARTUNG:"):
-                        typ = parts[1][8:]
-                        wartung_dict[typ] = parts[0]
+        cache = get_log_cache()
+        for date, typ in cache["maintenance_entries"]:
+            wartung_dict[typ] = date
         wartungstypen = [
             ("cleaning", "Reinigung"),
             ("descaling", "Entkalken"),
@@ -1761,7 +1945,7 @@ def update_display(full_update=False):
             ("deep_cleaning", "Grundreinigung")
         ]
         # Aktuelle Warnungen abrufen für die Markierung
-        current_warnings = check_maintenance_warnings()
+        current_warnings = maintenance_warnings
         
         # Scrolling-Berechnung
         items_per_page = (HEIGHT - 26) // 24  # Verfügbare Höhe geteilt durch Item-Höhe
@@ -1816,6 +2000,7 @@ def update_display(full_update=False):
             y_pos += 24
         
         display.update()
+        finalize_render(screen, signature)
         return
     if view_achievements_active:
         menu_active = False
@@ -1957,6 +2142,7 @@ def update_display(full_update=False):
                     y_pos += 38
             
         display.update()
+        finalize_render(screen, signature)
         return
     if bean_pack_menu_active:
         menu_active = False
@@ -1983,18 +2169,12 @@ def update_display(full_update=False):
         
         # Berechne Bohnenverbrauch
         bean_pack_size = bean_pack_sizes[bean_pack_size_index]
-        log_days = 0
+        cache = get_log_cache()
+        log_days = len(cache["day_entries"])
         total_beans_used = 0
-        if log_file in uos.listdir():
-            with open(log_file, 'r') as file:
-                lines = file.readlines()[1:]
-                for line in lines:
-                    parts = line.strip().split(',')
-                    if len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
-                        log_days += 1
-                        date, espresso, cappuccino, *other = parts
-                        daily_beans = int(espresso)*8 + int(cappuccino)*16 + sum(map(int, other))*10
-                        total_beans_used += daily_beans
+        for _, espresso, cappuccino, other_counts in cache["day_entries"]:
+            daily_beans = int(espresso) * 8 + int(cappuccino) * 16 + sum(other_counts) * 10
+            total_beans_used += daily_beans
         
         days_per_pack = bean_pack_size / (total_beans_used / log_days) if log_days > 0 and total_beans_used > 0 else 0
         grams_per_day = total_beans_used / log_days if log_days > 0 else 0
@@ -2046,11 +2226,10 @@ def update_display(full_update=False):
             display.text("Keine Packungen", stats_x, y_offset, scale=1)
         
         display.update()
+        finalize_render(screen, signature)
         return
     global refresh_count, maintenance_warning_hidden
     # Wartungswarnungen prüfen (nur einmal)
-    maintenance_warnings = check_maintenance_warnings()
-    
     # Zeige Wartungswarnung über das Notification-System
     if maintenance_warnings and not maintenance_warning_hidden and not notification_active:
         show_notification("maintenance", maintenance_warnings)
@@ -2063,6 +2242,7 @@ def update_display(full_update=False):
         display.set_pen(15)
         display.text("Batterien wechseln!", 10, 50, scale=2)
         display.update()
+        finalize_render(screen, signature)
         return
 
     # Use TURBO mode (partial updates) more frequently for better fluidity
@@ -2110,7 +2290,6 @@ def update_display(full_update=False):
         display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
         
         # Kleines Wartungsicon links vom Datum
-        maintenance_warnings = check_maintenance_warnings()
         if maintenance_warnings and maintenance_warning_hidden:
             display.text("!", WIDTH - display.measure_text(date_str, 1) - 60, 2)
 
@@ -2149,6 +2328,7 @@ def update_display(full_update=False):
         display.text("UP/DOWN: Datum  A: Übernehmen  C: Abbrechen", 10, HEIGHT - 15, scale=1)
         
         display.update()
+        finalize_render(screen, signature)
         return
     elif view_statistics_active:
         menu_active = False
@@ -2184,12 +2364,9 @@ def update_display(full_update=False):
             # Seite 0: Gesamtstatistik mit schönem Layout
             total_espresso, total_cappuccino, total_other, first_date = calculate_total_statistics_and_first_date()
             # Tagesschnitt berechnen
-            log_days = 0
+            cache = get_log_cache()
+            log_days = len(cache["day_entries"])
             espresso_avg = cappuccino_avg = other_avg = 0
-            if log_file in uos.listdir():
-                with open(log_file, 'r') as file:
-                    lines = file.readlines()[1:]
-                    log_days = len([l for l in lines if len(l.strip().split(',')) > 2 and not l.strip().split(',')[1].startswith("WARTUNG:")])
             espresso_avg = total_espresso / log_days if log_days > 0 else 0
             cappuccino_avg = total_cappuccino / log_days if log_days > 0 else 0
             other_avg = total_other / log_days if log_days > 0 else 0
@@ -2243,18 +2420,11 @@ def update_display(full_update=False):
         elif statistics_page == 1:
             # Seite 1: Bohnenstatistik
             bean_pack_size = bean_pack_sizes[bean_pack_size_index]
-            log_days = 0
+            cache = get_log_cache()
+            log_days = len(cache["day_entries"])
             total_beans_used = 0
-            if log_file in uos.listdir():
-                with open(log_file, 'r') as file:
-                    lines = file.readlines()[1:]
-                    for line in lines:
-                        parts = line.strip().split(',')
-                        # Nur Tageszeilen (mindestens 3 Felder, kein Wartungseintrag)
-                        if len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
-                            log_days += 1
-                            date, espresso, cappuccino, *other = parts
-                            total_beans_used += int(espresso)*8 + int(cappuccino)*16 + sum(map(int, other))*10
+            for _, espresso, cappuccino, other_counts in cache["day_entries"]:
+                total_beans_used += int(espresso) * 8 + int(cappuccino) * 16 + sum(other_counts) * 10
             days_per_pack = bean_pack_size / (total_beans_used / log_days) if log_days > 0 and total_beans_used > 0 else 0
             grams_per_day = total_beans_used / log_days if log_days > 0 else 0
             
@@ -2296,6 +2466,7 @@ def update_display(full_update=False):
             display.text("Unbekannte Statistik-Seite", 10, 30)
         
         display.update()
+        finalize_render(screen, signature)
         return
     elif view_info_active:
         menu_active = False
@@ -2346,6 +2517,7 @@ def update_display(full_update=False):
         display.text("C: Zurück", WIDTH - display.measure_text("C: Zurück", 1) - 12, HEIGHT - 15, scale=1)
         
         display.update()
+        finalize_render(screen, signature)
         return
     elif drink_menu_active:
         menu_active = False
@@ -2416,8 +2588,9 @@ def update_display(full_update=False):
                 y_pos += 26
         
         
-        display.update()
-        return
+                display.update()
+                finalize_render(screen, signature)
+                return
     elif menu_active:
         # Vollständiges Clearing für Hauptmenü-Anzeige
         display.set_pen(15)
@@ -2479,6 +2652,7 @@ def update_display(full_update=False):
             y_pos += 30
         
         display.update()
+        finalize_render(screen, signature)
         return
     else:
         # Hauptbildschirm - Zähler im schönen Design        
@@ -2514,23 +2688,26 @@ def update_display(full_update=False):
             display.text(term, label_x, box_y + box_height - 15, scale=1)
 
     display.update()
+    finalize_render(screen, signature)
 
 def clear_today_log_entries(log_file, date):
-    if log_file in uos.listdir():
+    if file_exists(log_file):
         with open(log_file, 'r') as file:
             lines = file.readlines()
 
-        with open(log_file, 'w') as file:
-            for line in lines:
-                if line.startswith(date):
-                    parts = line.strip().split(',')
-                    parts[1] = '0'  # Reset espresso count
-                    parts[2] = '0'  # Reset cappuccino count
-                    for j in range(3, len(parts)):
-                        parts[j] = '0'  # Reset additional counts
-                    file.write(','.join(parts) + '\n')
-                else:
-                    file.write(line)
+        new_lines = []
+        for line in lines:
+            if line.startswith(date):
+                parts = line.strip().split(',')
+                parts[1] = '0'  # Reset espresso count
+                parts[2] = '0'  # Reset cappuccino count
+                for j in range(3, len(parts)):
+                    parts[j] = '0'  # Reset additional counts
+                new_lines.append(','.join(parts) + '\n')
+            else:
+                new_lines.append(line)
+        safe_write_file(log_file, ''.join(new_lines))
+        invalidate_log_cache()
     # Nach dem Zurücksetzen auch die aktuellen Zähler im RAM zurücksetzen
     global espresso_count, cappuccino_count, drink_counts
     espresso_count = 0
@@ -2539,29 +2716,23 @@ def clear_today_log_entries(log_file, date):
 
 def load_counters_from_log(log_file):
     global espresso_count, cappuccino_count, drink_counts
-    if log_file in uos.listdir():
-        with open(log_file, 'r') as file:
-            lines = file.readlines()
-            # Suche die letzte Tageszeile (kein "WARTUNG:" im zweiten Feld)
-            for line in reversed(lines[1:]):  # Überspringe Header
-                parts = line.strip().split(',')
-                if len(parts) > 2 and not parts[1].startswith("WARTUNG:"):
-                    try:
-                        espresso_count = int(parts[1])
-                        cappuccino_count = int(parts[2])
-                        drink_counts = list(map(int, parts[3:]))
-                    except Exception:
-                        espresso_count = 0
-                        cappuccino_count = 0
-                        drink_counts = [0] * len(drink_menu_options)
-                    break
+    cache = get_log_cache()
+    last_day_counts = cache["last_day_counts"]
+    if last_day_counts:
+        espresso_count, cappuccino_count, other_counts = last_day_counts
+        drink_counts = other_counts[:]
+    else:
+        espresso_count = 0
+        cappuccino_count = 0
+        drink_counts = [0] * len(drink_menu_options)
 
 def button_pressed(pin):
     global espresso_count, cappuccino_count, current_date, button_press_count, menu_active, current_menu_option, change_date_active, view_statistics_active, view_info_active, battery_reminder_active, drink_menu_active, current_drink_menu_option, drink_counts, battery_reminder_count, temp_date, last_interaction_time, maintenance_warning_hidden, maintenance_warning_tasks, view_maintenance_history_active, view_achievements_active, notification_active, notification_data, achievement_selected, statistics_page, daily_achievement_unlocked, bean_pack_menu_active, bean_pack_size_index, bean_pack_notification_start_time, achievement_notification_start_time
 
     last_interaction_time = time.time()  # Update last interaction time on button press
+    mark_ui_dirty()
     button_name = {BUTTON_A: "A", BUTTON_B: "B", BUTTON_C: "C", BUTTON_UP: "UP", BUTTON_DOWN: "DOWN"}.get(pin, "Unknown")
-    print(f"Button pressed: {button_name}, last interaction time updated")
+    debug(f"Button pressed: {button_name}, last interaction time updated")
 
     # Notification-System (muss ganz am Anfang stehen)
     if notification_active:
@@ -2612,49 +2783,49 @@ def button_pressed(pin):
         return
 
     if bean_pack_menu_active:
-        print(f"DEBUG: bean_pack_menu_active is True, button pressed: {button_name}")
+        debug(f"DEBUG: bean_pack_menu_active is True, button pressed: {button_name}")
         if display.pressed(BUTTON_UP):
             # Packungsgröße verringern
             bean_pack_size_index = (bean_pack_size_index - 1) % len(bean_pack_sizes)
-            print(f"DEBUG: BUTTON_UP - bean_pack_size_index: {bean_pack_size_index}")
+            debug(f"DEBUG: BUTTON_UP - bean_pack_size_index: {bean_pack_size_index}")
             update_display(False)
             return
         elif display.pressed(BUTTON_DOWN):
             # Packungsgröße erhöhen
             bean_pack_size_index = (bean_pack_size_index + 1) % len(bean_pack_sizes)
-            print(f"DEBUG: BUTTON_DOWN - bean_pack_size_index: {bean_pack_size_index}")
+            debug(f"DEBUG: BUTTON_DOWN - bean_pack_size_index: {bean_pack_size_index}")
             update_display(False)
             return
         elif display.pressed(BUTTON_A):
-            print(f"DEBUG: BUTTON_A pressed in bean_pack_menu_active")
+            debug(f"DEBUG: BUTTON_A pressed in bean_pack_menu_active")
             # Neue Packung beginnen - logge die ausgewählte Packungsgröße
             global bean_pack_count
             selected_size = bean_pack_sizes[bean_pack_size_index]
             pack_entry = f'{format_date(time.localtime(current_date))},NEUE_PACKUNG:{selected_size}g'
             
             # Stelle sicher, dass das Logfile existiert
-            if log_file not in uos.listdir():
-                with open(log_file, 'w') as file:
-                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-                    file.write(headers + "\n")
+            if not file_exists(log_file):
+                headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                safe_write_file(log_file, headers + "\n")
             
             # Füge den Packungseintrag hinzu
             with open(log_file, 'a') as file:
                 file.write(pack_entry + "\n")
+            invalidate_log_cache()
             
             # Erhöhe Bean Pack Counter
             bean_pack_count += 1
-            print(f"Bean pack count incremented: {bean_pack_count}")
+            debug(f"Bean pack count incremented: {bean_pack_count}")
             
             # Zeige sofortige Bestätigung 
             show_notification("bean_pack", {"size": selected_size})
             
             # Aktualisiere Anzeige sofort für neue Packung in der Liste
             update_display(True)
-            print(f"DEBUG: Added new pack entry: {pack_entry}")
+            debug(f"DEBUG: Added new pack entry: {pack_entry}")
             return
         elif display.pressed(BUTTON_C):
-            print(f"DEBUG: BUTTON_C pressed in bean_pack_menu_active")
+            debug(f"DEBUG: BUTTON_C pressed in bean_pack_menu_active")
             bean_pack_menu_active = False
             menu_active = True
             update_display(True)
@@ -2663,7 +2834,7 @@ def button_pressed(pin):
     if drink_menu_active:
         if display.pressed(BUTTON_UP):
             current_drink_menu_option = (current_drink_menu_option - 1) % len(drink_menu_options)
-            print(f"BUTTON_UP pressed in drink_menu_active: {current_drink_menu_option}")
+            debug(f"BUTTON_UP pressed in drink_menu_active: {current_drink_menu_option}")
             update_display(False)
             return
         elif display.pressed(BUTTON_DOWN):
@@ -2707,12 +2878,12 @@ def button_pressed(pin):
             typ = wartungstypen[maintenance_history_selected][0]
             datum = format_date(time.localtime(current_date))
             wartung_eintrag = f'{datum},WARTUNG:{typ}'
-            if log_file not in uos.listdir():
-                with open(log_file, 'w') as file:
-                    headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
-                    file.write(headers + "\n")
+            if not file_exists(log_file):
+                headers = "Datum,Espresso,Cappuccino," + ",".join(drink_menu_options)
+                safe_write_file(log_file, headers + "\n")
             with open(log_file, 'a') as file:
                 file.write(wartung_eintrag + "\n")
+            invalidate_log_cache()
             status = load_maintenance_status()
             today_num = int(time.mktime(time.localtime(current_date)) // 86400)
             status[typ] = today_num
@@ -2780,7 +2951,7 @@ def button_pressed(pin):
     if display.pressed(BUTTON_UP):
         current_menu_option = (current_menu_option - 1) % len(menu_options) if menu_active else 0
         menu_active = True if not menu_active else menu_active
-        print(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
+        debug(f"BUTTON_UP pressed: {current_menu_option}, menu_active: {menu_active}")
         update_display(False)
         return
     if display.pressed(BUTTON_DOWN):
@@ -2875,9 +3046,9 @@ if __name__ == "__main__":
     
     # Lade Bean Pack Counter
     bean_pack_count = calculate_bean_pack_count()
-    print(f"Bean pack count initialized: {bean_pack_count}")
+    debug(f"Bean pack count initialized: {bean_pack_count}")
     
-    print("Counters initialized")
+    debug("Counters initialized")
 
     led.value(1)
     update_display(True)

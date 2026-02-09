@@ -1276,7 +1276,25 @@ Bei korrupten Dateien:
 
 ## 📜 Changelog
 
-### v2.5.0 (Current)
+### v2.6.1 (Current)
+- 🧠 **Caching**: Screen-Signaturen fuer gezieltes Redraw, weniger Display-Updates
+- 🗃️ **FS**: File-Exists-Cache konsequenter genutzt
+
+### v2.6.0
+- 🧠 **Caching**: Zentrales Log-Parsing mit Cache, weniger Dateizugriffe
+- 🛡️ **Data Safety**: Atomare Writes mit Backup-Strategie fuer Kern-Dateien
+- 🖥️ **UI**: Dirty-Flag verhindert unnoetige Redraws
+
+### v2.5.2
+- 🧭 **Roadmap**: Optimierungen priorisiert und als v2.5.x Fokus aufgenommen
+
+### v2.5.1
+- ⚡ **Performance**: Maintenance-Warnungen werden gecached und nur bei relevanten Aenderungen neu berechnet
+- 🛠️ **Robustheit**: CSV-Logs werden beim Speichern automatisch auf das aktuelle Spaltenformat migriert
+- 🧾 **Persistenz**: Zaehlerspeicher (battery reminder) wird in `current_counts.txt` gesichert
+- 🔍 **Debug**: Serielle Logs sind ueber `DEBUG` schaltbar
+
+### v2.5.0
 - 📦 **Simplified Installation**: Konsolidierung aller Dateien in eine einzige `main.py`
 - ✅ Icon-Bitmap-Daten jetzt eingebettet (keine separate `icon_bitmaps.py` mehr nötig)
 - ✅ Wartungskonfiguration jetzt eingebettet (keine separate `maintenance_config.json` mehr nötig)
@@ -1354,7 +1372,7 @@ Beiträge sind willkommen! Bitte öffnen Sie ein Issue oder erstellen Sie einen 
 
 Für eine vollständige Version-History, siehe [Changelog](#-changelog) oben.
 
-**Aktuell:** v2.5.0 - Vereinfachte Installation (Single-File)
+**Aktuell:** v2.6.1 - Screen-Cache und FS-Cache
 **Stabil:** v2.4.1 - Bitmap Icon System
 
 ---

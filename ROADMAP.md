@@ -1,11 +1,15 @@
 
 # Roadmap / ToDo (Priorisiert)
 
-## 🎯 Current Focus (v2.4)
-1. **Battery indicator** (Akkustand anzeigen)
-2. **Heatmap for coffee consumption** (Kalender-Heatmap)
-3. **Advanced statistics** (Wochentage-Analyse, Trends)
-4. **Achievement improvements**
+## 🎯 Current Focus (v2.5.x)
+1. **Performance/Optimization**
+   - Reduce repeated file existence checks (small file-exists cache)
+   - Consolidate log parsing to avoid multiple full scans
+   - Render only on state changes (screen-level dirty flags)
+2. **Battery indicator** (Akkustand anzeigen)
+3. **Heatmap for coffee consumption** (Kalender-Heatmap)
+4. **Advanced statistics** (Wochentage-Analyse, Trends)
+5. **Achievement improvements**
    - Pattern-based achievements (v2.4):
      * **Weekend Warrior** - only drink coffee on weekends (Sat/Sun)
      * **Cappuccino Purist** - X days drinking only cappuccino
