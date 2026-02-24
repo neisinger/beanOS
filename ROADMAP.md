@@ -65,4 +65,13 @@
 - **Social features**: Achievement sharing
 - **Export functionality**: Data export to external systems
 - **Machine integration**: Direct sensor readings
-- **Mobile companion**: Optional smartphone integration
+
+## 📱 Android Companion App (v3.0+)
+- ✅ **Kivy-based Android app** – [`android/`](android/) directory with full Python/Kivy implementation
+  - ✅ 8 drink types (same as Badger2040 version)
+  - ✅ 15 achievements (identical definitions)
+  - ✅ Statistics screen (today, totals, streak, caffeine & bean consumption)
+  - ✅ Local JSON data persistence
+  - ✅ Buildozer build config for APK generation
+- [ ] **Data sync** – Sync logs between Badger2040 (CSV) and Android app (JSON) via USB/BLE
+- [ ] **Push reminders** – Morning notification to log your first coffee
