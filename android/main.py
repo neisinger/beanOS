@@ -426,13 +426,22 @@ class HomeScreen(Screen):
         # Black title bar (full width, white text) – Badger2040 style
         root.add_widget(_title_bar("beanOS", date.today().strftime("%d.%m.%y")))
 
-        # Three bordered counter boxes: ESPRESSO | CAPPUCCINO | GESAMT
+        # ── Landscape main area ──────────────────────────────────────────────
+        # Left column: three bordered counter boxes + info strip
+        # Right column: two large quick-add buttons (portrait buttons side-by-side)
+        body = BoxLayout(orientation="horizontal", spacing=0)
+        _set_bg(body, COLOR_PAPER)
+
+        # Left column: counters + streak/caffeine
+        left_column = BoxLayout(orientation="vertical", spacing=0,
+                                size_hint_x=0.6)
+        _set_bg(left_column, COLOR_PAPER)
+
         counter_row = BoxLayout(
             orientation="horizontal",
-            size_hint_y=None,
-            height=dp(100),
-            spacing=dp(8),
-            padding=(dp(8), dp(8)),
+            size_hint_y=0.6,
+            spacing=dp(6),
+            padding=(dp(6), dp(6)),
         )
         _set_bg(counter_row, COLOR_PAPER)
         for attr, caption in (
@@ -441,60 +450,55 @@ class HomeScreen(Screen):
             ("total_lbl", "GESAMT"),
         ):
             outer, inner = _bordered_box()
-            count_lbl = _label("0", font_size=dp(32), bold=True, color=COLOR_INK)
-            name_lbl = _label(caption, font_size=dp(10), color=COLOR_INK)
+            count_lbl = _label("0", font_size=dp(28), bold=True, color=COLOR_INK)
+            name_lbl = _label(caption, font_size=dp(9), color=COLOR_INK)
             inner.add_widget(count_lbl)
             inner.add_widget(name_lbl)
             counter_row.add_widget(outer)
             setattr(self, attr, count_lbl)
-        root.add_widget(counter_row)
-        root.add_widget(_separator())
+        left_column.add_widget(counter_row)
+        left_column.add_widget(_separator())
 
-        # Info strip: streak + caffeine
         info_box = BoxLayout(
-            orientation="vertical",
-            size_hint_y=None,
-            height=dp(52),
-            padding=(dp(12), dp(6)),
-            spacing=dp(2),
+            orientation="horizontal",
+            size_hint_y=0.4,
+            padding=(dp(10), dp(4)),
+            spacing=dp(16),
         )
         _set_bg(info_box, COLOR_PAPER)
-        self.streak_label = _label("Streak: 0 Tage", font_size=dp(14),
-                                   color=COLOR_INK)
-        self.caffeine_label = _label("Koffein: ~0 mg", font_size=dp(13),
-                                     color=COLOR_INK_DIM)
+        self.streak_label = _label("Streak: 0 Tage", font_size=dp(13),
+                                   color=COLOR_INK, halign="left")
+        self.caffeine_label = _label("Koffein: ~0 mg", font_size=dp(12),
+                                     color=COLOR_INK_DIM, halign="right")
         info_box.add_widget(self.streak_label)
         info_box.add_widget(self.caffeine_label)
-        root.add_widget(info_box)
-        root.add_widget(_separator())
+        left_column.add_widget(info_box)
 
-        # Quick-add buttons (large black, white text)
-        quick_box = BoxLayout(
-            orientation="vertical",
-            size_hint_y=None,
-            height=dp(108),
-            padding=(dp(8), dp(8)),
-            spacing=dp(6),
-        )
-        _set_bg(quick_box, COLOR_PAPER)
-        for drink in ("Espresso", "Cappuccino"):
-            d = drink
+        body.add_widget(left_column)
+
+        # Vertical separator between columns
+        vsep = BoxLayout(size_hint_x=None, width=dp(1))
+        _set_bg(vsep, COLOR_INK)
+        body.add_widget(vsep)
+
+        # Right column: two large quick-add buttons stacked vertically
+        quick_add_column = BoxLayout(orientation="vertical", spacing=0,
+                                     size_hint_x=0.4)
+        _set_bg(quick_add_column, COLOR_PAPER)
+        for i, drink in enumerate(("Espresso", "Cappuccino")):
             btn = _button(
-                f"+ {d.upper()}",
-                on_press=lambda _, drink=d: self._add(drink),
+                f"+ {drink.upper()}",
+                on_press=lambda _, d=drink: self._add(d),
                 bg=COLOR_INK,
                 text_color=COLOR_PAPER,
-                font_size=dp(17),
-                size_hint_y=None,
-                height=dp(44),
+                font_size=dp(16),
             )
-            quick_box.add_widget(btn)
-        root.add_widget(quick_box)
+            quick_add_column.add_widget(btn)
+            if i == 0:
+                quick_add_column.add_widget(_separator())
+        body.add_widget(quick_add_column)
 
-        spacer = BoxLayout()
-        _set_bg(spacer, COLOR_PAPER)
-        root.add_widget(spacer)
-
+        root.add_widget(body)
         root.add_widget(_nav_bar(self, "home"))
         self.add_widget(root)
 

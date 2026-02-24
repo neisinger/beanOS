@@ -19,7 +19,7 @@ requirements = python3,kivy==2.3.0
 # presplash.filename = %(source.dir)s/data/presplash.png
 
 # Android orientation
-orientation = portrait
+orientation = landscape
 
 # Permissions (none needed for local-only data storage)
 android.permissions =
