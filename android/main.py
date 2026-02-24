@@ -7,6 +7,9 @@ A Kivy-based Android companion app for beanOS.
 Tracks coffee consumption, achievements and statistics –
 the same data model as the Badger2040 version.
 
+Visual style: E-Paper / E-Ink (white background, black ink, bordered boxes,
+separator lines), mirroring the Pimoroni Badger2040 display aesthetic.
+
 Build for Android:
     pip install buildozer
     cd android && buildozer android debug
@@ -24,13 +27,13 @@ from datetime import date, timedelta
 
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.graphics import Color, Rectangle
 from kivy.metrics import dp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.progressbar import ProgressBar
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.scrollview import ScrollView
 
@@ -76,16 +79,12 @@ BEAN_GRAMS = {
 }
 
 # ---------------------------------------------------------------------------
-# Colour palette (matching beanOS dark-coffee theme)
+# E-Paper colour palette (Badger2040 E-Ink display aesthetics)
 # ---------------------------------------------------------------------------
 
-COLOR_BG = (0.12, 0.07, 0.04, 1)       # very dark brown
-COLOR_CARD = (0.22, 0.13, 0.07, 1)     # medium dark brown
-COLOR_ACCENT = (0.80, 0.50, 0.10, 1)   # golden amber
-COLOR_TEXT = (0.95, 0.90, 0.80, 1)     # cream
-COLOR_SUCCESS = (0.20, 0.65, 0.30, 1)  # green
-COLOR_WARN = (0.85, 0.35, 0.10, 1)     # orange-red
-COLOR_BTN = (0.35, 0.20, 0.08, 1)      # mid brown
+COLOR_PAPER = (1, 1, 1, 1)               # white paper
+COLOR_INK = (0, 0, 0, 1)                 # black ink
+COLOR_INK_DIM = (0.45, 0.45, 0.45, 1)   # gray (secondary / locked)
 
 # ---------------------------------------------------------------------------
 # Achievement definitions (identical to Badger2040 version)
@@ -237,26 +236,35 @@ def check_achievements(data: dict) -> list:
 
 
 # ---------------------------------------------------------------------------
-# UI helpers
+# UI helpers – E-Paper style
 # ---------------------------------------------------------------------------
 
-def _label(text, font_size=dp(16), bold=False, color=COLOR_TEXT, **kw):
-    return Label(
-        text=text,
-        font_size=font_size,
-        bold=bold,
-        color=color,
-        **kw,
+def _set_bg(widget, color):
+    """Attach a solid background colour to a widget via canvas.before."""
+    with widget.canvas.before:
+        Color(*color)
+        r = Rectangle(pos=widget.pos, size=widget.size)
+    widget.bind(
+        pos=lambda w, v: setattr(r, "pos", v),
+        size=lambda w, v: setattr(r, "size", v),
     )
 
 
-def _button(text, on_press=None, bg=COLOR_BTN, font_size=dp(15), **kw):
+def _label(text, font_size=dp(15), bold=False, color=COLOR_INK, **kw):
+    lbl = Label(text=text, font_size=font_size, bold=bold, color=color, **kw)
+    if kw.get("halign") in ("left", "right"):
+        lbl.bind(size=lambda w, _: setattr(w, "text_size", (w.width, None)))
+    return lbl
+
+
+def _button(text, on_press=None, bg=COLOR_INK, text_color=COLOR_PAPER,
+            font_size=dp(15), **kw):
     btn = Button(
         text=text,
         font_size=font_size,
         background_normal="",
         background_color=bg,
-        color=COLOR_TEXT,
+        color=text_color,
         **kw,
     )
     if on_press:
@@ -264,46 +272,140 @@ def _button(text, on_press=None, bg=COLOR_BTN, font_size=dp(15), **kw):
     return btn
 
 
-def _nav_bar(screen_manager, current):
-    """Bottom navigation bar shared by all screens."""
-    bar = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(52))
+def _title_bar(text, right_text=""):
+    """Full-width black title bar with white text – mirrors Badger2040 style."""
+    bar = BoxLayout(
+        orientation="horizontal",
+        size_hint_y=None,
+        height=dp(44),
+        padding=(dp(10), dp(6)),
+        spacing=dp(4),
+    )
+    _set_bg(bar, COLOR_INK)
+    bar.add_widget(_label(text, font_size=dp(17), bold=True, color=COLOR_PAPER,
+                          halign="left"))
+    if right_text:
+        bar.add_widget(_label(right_text, font_size=dp(12), color=COLOR_PAPER,
+                              halign="right"))
+    return bar
+
+
+def _section_header(text):
+    """Smaller black bar for sub-section headings."""
+    bar = BoxLayout(size_hint_y=None, height=dp(28), padding=(dp(8), dp(4)))
+    _set_bg(bar, COLOR_INK)
+    bar.add_widget(_label(text, font_size=dp(13), bold=True, color=COLOR_PAPER))
+    return bar
+
+
+def _separator():
+    """1 dp horizontal black line – matches E-Ink separator style."""
+    sep = BoxLayout(size_hint_y=None, height=dp(1))
+    _set_bg(sep, COLOR_INK)
+    return sep
+
+
+def _bordered_box(**kw):
+    """Return (outer, inner): 1 dp black border around a white interior card."""
+    outer = BoxLayout(padding=dp(1), **kw)
+    _set_bg(outer, COLOR_INK)
+    inner = BoxLayout(orientation="vertical", padding=dp(6), spacing=dp(2))
+    _set_bg(inner, COLOR_PAPER)
+    outer.add_widget(inner)
+    return outer, inner
+
+
+def _eink_progress_bar(current, maximum):
+    """E-Ink progress bar: white box, black outline, black fill."""
+    outer = BoxLayout(size_hint_y=None, height=dp(16), padding=dp(1))
+    _set_bg(outer, COLOR_INK)
+    inner = BoxLayout()
+    _set_bg(inner, COLOR_PAPER)
+    ratio = min(current / maximum, 1.0) if maximum > 0 else 0.0
+    if ratio > 0:
+        fill = BoxLayout(size_hint_x=ratio)
+        _set_bg(fill, COLOR_INK)
+        inner.add_widget(fill)
+    remainder = max(0.0, 1.0 - ratio)
+    if remainder > 0:
+        space = BoxLayout(size_hint_x=remainder)
+        _set_bg(space, COLOR_PAPER)
+        inner.add_widget(space)
+    outer.add_widget(inner)
+    return outer
+
+
+def _nav_bar(screen, current):
+    """Bottom nav bar: white background, black top border, active tab inverted."""
+    wrapper = BoxLayout(orientation="vertical", size_hint_y=None, height=dp(56))
+    _set_bg(wrapper, COLOR_PAPER)
+    wrapper.add_widget(_separator())
+
+    bar = BoxLayout(orientation="horizontal")
+    _set_bg(bar, COLOR_PAPER)
+
     screens = [
-        ("🏠 Home",         "home"),
-        ("☕ Getränke",     "drinks"),
-        ("📊 Statistiken",  "stats"),
-        ("🏆 Achievements", "achievements"),
+        ("Home",         "home"),
+        ("Getränke",     "drinks"),
+        ("Statistik",    "stats"),
+        ("Achievements", "achievements"),
     ]
-    for label, name in screens:
-        color = COLOR_ACCENT if name == current else COLOR_BTN
-        btn = _button(label, bg=color, font_size=dp(13))
+    for i, (lbl_text, name) in enumerate(screens):
+        if name == current:
+            btn = _button(lbl_text, bg=COLOR_INK, text_color=COLOR_PAPER,
+                          font_size=dp(12))
+        else:
+            btn = _button(lbl_text, bg=COLOR_PAPER, text_color=COLOR_INK,
+                          font_size=dp(12))
         btn.screen_name = name
 
-        def _go(instance, sm=screen_manager):
-            sm.current = instance.screen_name
+        def _go(instance, s=screen):
+            if s.manager:
+                s.manager.current = instance.screen_name
 
         btn.bind(on_press=_go)
         bar.add_widget(btn)
-    return bar
+
+        if i < len(screens) - 1:
+            vsep = BoxLayout(size_hint_x=None, width=dp(1))
+            _set_bg(vsep, COLOR_INK)
+            bar.add_widget(vsep)
+
+    wrapper.add_widget(bar)
+    return wrapper
 
 
 def _show_achievement_popup(key):
     defn = ACHIEVEMENT_DEFINITIONS.get(key, {})
     name = defn.get("name", key)
     desc = defn.get("desc", "")
-    content = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(8))
-    content.add_widget(_label("🏆 Achievement freigeschaltet!", font_size=dp(18), bold=True, color=COLOR_ACCENT))
-    content.add_widget(_label(name, font_size=dp(20), bold=True))
-    content.add_widget(_label(desc, font_size=dp(15)))
+
+    content = BoxLayout(orientation="vertical", padding=0, spacing=0)
+    _set_bg(content, COLOR_PAPER)
+    content.add_widget(_title_bar("[*] Achievement freigeschaltet!"))
+
+    body = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(8))
+    _set_bg(body, COLOR_PAPER)
+    body.add_widget(_label(name, font_size=dp(20), bold=True, color=COLOR_INK))
+    body.add_widget(_separator())
+    body.add_widget(_label(desc, font_size=dp(14), color=COLOR_INK))
+    body.add_widget(BoxLayout())  # spacer
+
+    ok_btn = _button("OK", bg=COLOR_INK, text_color=COLOR_PAPER,
+                     size_hint_y=None, height=dp(40))
+    body.add_widget(ok_btn)
+    content.add_widget(body)
+
     popup = Popup(
         title="",
         content=content,
-        size_hint=(0.85, 0.45),
-        background_color=COLOR_CARD,
-        separator_color=COLOR_ACCENT,
+        size_hint=(0.88, 0.52),
+        background_color=COLOR_PAPER,
+        separator_height=0,
+        title_size=0,
     )
-    content.add_widget(_button("OK 🎉", on_press=lambda *_: popup.dismiss(), bg=COLOR_SUCCESS))
+    ok_btn.bind(on_press=lambda *_: popup.dismiss())
     popup.open()
-    # Auto-close after 4 seconds
     Clock.schedule_once(lambda dt: popup.dismiss(), 4)
 
 
@@ -318,57 +420,82 @@ class HomeScreen(Screen):
         self._build()
 
     def _build(self):
-        root = BoxLayout(orientation="vertical", padding=dp(12), spacing=dp(8))
+        root = BoxLayout(orientation="vertical", spacing=0)
+        _set_bg(root, COLOR_PAPER)
 
-        # Title bar
-        title_bar = BoxLayout(
+        # Black title bar (full width, white text) – Badger2040 style
+        root.add_widget(_title_bar("beanOS", date.today().strftime("%d.%m.%y")))
+
+        # Three bordered counter boxes: ESPRESSO | CAPPUCCINO | GESAMT
+        counter_row = BoxLayout(
             orientation="horizontal",
             size_hint_y=None,
-            height=dp(56),
+            height=dp(100),
+            spacing=dp(8),
+            padding=(dp(8), dp(8)),
         )
-        title_bar.add_widget(
-            _label("☕ beanOS", font_size=dp(26), bold=True, color=COLOR_ACCENT)
-        )
-        root.add_widget(title_bar)
+        _set_bg(counter_row, COLOR_PAPER)
+        for attr, caption in (
+            ("espresso_lbl", "ESPRESSO"),
+            ("cappuccino_lbl", "CAPPUCCINO"),
+            ("total_lbl", "GESAMT"),
+        ):
+            outer, inner = _bordered_box()
+            count_lbl = _label("0", font_size=dp(32), bold=True, color=COLOR_INK)
+            name_lbl = _label(caption, font_size=dp(10), color=COLOR_INK)
+            inner.add_widget(count_lbl)
+            inner.add_widget(name_lbl)
+            counter_row.add_widget(outer)
+            setattr(self, attr, count_lbl)
+        root.add_widget(counter_row)
+        root.add_widget(_separator())
 
-        # Today summary card
-        self.today_label = _label("", font_size=dp(22), bold=True)
-        self.streak_label = _label("", font_size=dp(15), color=COLOR_ACCENT)
-        self.caffeine_label = _label("", font_size=dp(14))
-
-        card = BoxLayout(
+        # Info strip: streak + caffeine
+        info_box = BoxLayout(
             orientation="vertical",
-            spacing=dp(4),
-            padding=dp(12),
             size_hint_y=None,
-            height=dp(110),
+            height=dp(52),
+            padding=(dp(12), dp(6)),
+            spacing=dp(2),
         )
-        card.add_widget(self.today_label)
-        card.add_widget(self.streak_label)
-        card.add_widget(self.caffeine_label)
-        root.add_widget(card)
+        _set_bg(info_box, COLOR_PAPER)
+        self.streak_label = _label("Streak: 0 Tage", font_size=dp(14),
+                                   color=COLOR_INK)
+        self.caffeine_label = _label("Koffein: ~0 mg", font_size=dp(13),
+                                     color=COLOR_INK_DIM)
+        info_box.add_widget(self.streak_label)
+        info_box.add_widget(self.caffeine_label)
+        root.add_widget(info_box)
+        root.add_widget(_separator())
 
-        # Quick-add buttons for the two most common drinks
-        quick_label = _label("Schnell hinzufügen:", font_size=dp(15), size_hint_y=None, height=dp(28))
-        root.add_widget(quick_label)
-
-        quick_grid = GridLayout(cols=2, spacing=dp(8), size_hint_y=None, height=dp(80))
+        # Quick-add buttons (large black, white text)
+        quick_box = BoxLayout(
+            orientation="vertical",
+            size_hint_y=None,
+            height=dp(108),
+            padding=(dp(8), dp(8)),
+            spacing=dp(6),
+        )
+        _set_bg(quick_box, COLOR_PAPER)
         for drink in ("Espresso", "Cappuccino"):
             d = drink
             btn = _button(
-                f"+ {d}",
+                f"+ {d.upper()}",
                 on_press=lambda _, drink=d: self._add(drink),
-                bg=COLOR_ACCENT,
-                font_size=dp(18),
+                bg=COLOR_INK,
+                text_color=COLOR_PAPER,
+                font_size=dp(17),
+                size_hint_y=None,
+                height=dp(44),
             )
-            quick_grid.add_widget(btn)
-        root.add_widget(quick_grid)
+            quick_box.add_widget(btn)
+        root.add_widget(quick_box)
 
-        # Spacer
-        root.add_widget(Label())
+        spacer = BoxLayout()
+        _set_bg(spacer, COLOR_PAPER)
+        root.add_widget(spacer)
 
-        # Nav bar
-        root.add_widget(_nav_bar(self.manager, "home"))
+        root.add_widget(_nav_bar(self, "home"))
         self.add_widget(root)
 
     def on_pre_enter(self, *_):
@@ -376,18 +503,15 @@ class HomeScreen(Screen):
 
     def _refresh(self):
         data = self.app.data
-        tc_today = sum(today_counts(data).values())
-        tc_total = total_coffee(data)
+        t = today_counts(data)
         streak = calculate_streak(data)
 
-        self.today_label.text = f"Heute: {tc_today} ☕   |   Gesamt: {tc_total}"
-        self.streak_label.text = f"🔥 Streak: {streak} Tage"
-
-        caffeine_today = sum(
-            CAFFEINE_MG.get(d, 63) * c
-            for d, c in today_counts(data).items()
-        )
-        self.caffeine_label.text = f"⚡ Koffein heute: ~{caffeine_today} mg"
+        self.espresso_lbl.text = str(t.get("Espresso", 0))
+        self.cappuccino_lbl.text = str(t.get("Cappuccino", 0))
+        self.total_lbl.text = str(sum(t.values()))
+        self.streak_label.text = f"Streak: {streak} Tage"
+        caffeine = sum(CAFFEINE_MG.get(d, 63) * c for d, c in t.items())
+        self.caffeine_label.text = f"Koffein heute: ~{caffeine} mg"
 
     def _add(self, drink):
         add_drink(self.app.data, drink)
@@ -405,46 +529,49 @@ class DrinksScreen(Screen):
         self._build()
 
     def _build(self):
-        root = BoxLayout(orientation="vertical", padding=dp(12), spacing=dp(8))
-
-        root.add_widget(
-            _label("☕ Getränke hinzufügen", font_size=dp(20), bold=True,
-                   size_hint_y=None, height=dp(44))
-        )
+        root = BoxLayout(orientation="vertical", spacing=0)
+        _set_bg(root, COLOR_PAPER)
+        root.add_widget(_title_bar("GETRÄNKE", date.today().strftime("%d.%m.%y")))
 
         scroll = ScrollView()
-        grid = GridLayout(cols=2, spacing=dp(8), size_hint_y=None, padding=dp(4))
-        grid.bind(minimum_height=grid.setter("height"))
+        container = BoxLayout(orientation="vertical", size_hint_y=None, spacing=0)
+        container.bind(minimum_height=container.setter("height"))
+        _set_bg(container, COLOR_PAPER)
 
         self.count_labels = {}
         for drink in DRINKS:
             d = drink
-            card = BoxLayout(
-                orientation="vertical",
-                spacing=dp(4),
-                padding=dp(8),
+            row = BoxLayout(
+                orientation="horizontal",
                 size_hint_y=None,
-                height=dp(90),
+                height=dp(52),
+                padding=(dp(12), dp(8)),
+                spacing=dp(8),
             )
-            name_lbl = _label(d, font_size=dp(15), bold=True, size_hint_y=None, height=dp(24))
-            count_lbl = _label("0", font_size=dp(20), color=COLOR_ACCENT,
-                               size_hint_y=None, height=dp(28))
-            add_btn = _button(
-                "+ Hinzufügen",
-                on_press=lambda _, drink=d: self._add(drink),
-                bg=COLOR_BTN,
-                size_hint_y=None,
-                height=dp(30),
-            )
-            card.add_widget(name_lbl)
-            card.add_widget(count_lbl)
-            card.add_widget(add_btn)
-            grid.add_widget(card)
+            _set_bg(row, COLOR_PAPER)
+            row.add_widget(_label(d, font_size=dp(15), color=COLOR_INK,
+                                  halign="left"))
+            count_lbl = _label("0", font_size=dp(15), bold=True, color=COLOR_INK,
+                               size_hint_x=None, width=dp(36))
+            row.add_widget(count_lbl)
             self.count_labels[d] = count_lbl
 
-        scroll.add_widget(grid)
+            add_btn = _button(
+                "+",
+                on_press=lambda _, drink=d: self._add(drink),
+                bg=COLOR_INK,
+                text_color=COLOR_PAPER,
+                font_size=dp(20),
+                size_hint_x=None,
+                width=dp(44),
+            )
+            row.add_widget(add_btn)
+            container.add_widget(row)
+            container.add_widget(_separator())
+
+        scroll.add_widget(container)
         root.add_widget(scroll)
-        root.add_widget(_nav_bar(self.manager, "drinks"))
+        root.add_widget(_nav_bar(self, "drinks"))
         self.add_widget(root)
 
     def on_pre_enter(self, *_):
@@ -471,23 +598,18 @@ class StatsScreen(Screen):
         self._build()
 
     def _build(self):
-        root = BoxLayout(orientation="vertical", padding=dp(12), spacing=dp(8))
-        root.add_widget(
-            _label("📊 Statistiken", font_size=dp(20), bold=True,
-                   size_hint_y=None, height=dp(44))
-        )
+        root = BoxLayout(orientation="vertical", spacing=0)
+        _set_bg(root, COLOR_PAPER)
+        root.add_widget(_title_bar("STATISTIKEN", date.today().strftime("%d.%m.%y")))
 
         scroll = ScrollView()
-        self.stats_layout = BoxLayout(
-            orientation="vertical",
-            spacing=dp(6),
-            size_hint_y=None,
-            padding=dp(4),
-        )
+        self.stats_layout = BoxLayout(orientation="vertical", size_hint_y=None,
+                                      spacing=0)
         self.stats_layout.bind(minimum_height=self.stats_layout.setter("height"))
+        _set_bg(self.stats_layout, COLOR_PAPER)
         scroll.add_widget(self.stats_layout)
         root.add_widget(scroll)
-        root.add_widget(_nav_bar(self.manager, "stats"))
+        root.add_widget(_nav_bar(self, "stats"))
         self.add_widget(root)
 
     def on_pre_enter(self, *_):
@@ -496,72 +618,77 @@ class StatsScreen(Screen):
     def _refresh(self):
         self.stats_layout.clear_widgets()
         data = self.app.data
-        today = _today()
         t_counts = today_counts(data)
         tot_counts = total_counts(data)
         streak = calculate_streak(data)
         total_days = len(data["log"])
         tc_total = total_coffee(data)
 
-        def row(text, value, color=COLOR_TEXT):
+        def _row(text, value, dim=False):
             box = BoxLayout(
                 orientation="horizontal",
                 size_hint_y=None,
-                height=dp(32),
+                height=dp(40),
+                padding=(dp(12), dp(6)),
             )
-            box.add_widget(_label(text, font_size=dp(15), halign="left"))
-            box.add_widget(_label(str(value), font_size=dp(15), bold=True,
-                                  color=color, halign="right"))
+            _set_bg(box, COLOR_PAPER)
+            c = COLOR_INK_DIM if dim else COLOR_INK
+            box.add_widget(_label(text, font_size=dp(14), color=c, halign="left"))
+            box.add_widget(_label(str(value), font_size=dp(14), bold=True,
+                                  color=c, halign="right"))
             return box
 
-        self.stats_layout.add_widget(
-            _label("— Heute —", font_size=dp(16), bold=True, color=COLOR_ACCENT,
-                   size_hint_y=None, height=dp(30))
-        )
+        self.stats_layout.add_widget(_section_header("HEUTE"))
         for drink in DRINKS:
             c = t_counts.get(drink, 0)
-            if c:
-                self.stats_layout.add_widget(row(drink, c, COLOR_ACCENT))
+            self.stats_layout.add_widget(_row(drink, c if c else "-", dim=(c == 0)))
+            self.stats_layout.add_widget(_separator())
 
         today_total = sum(t_counts.values())
         caffeine_today = sum(CAFFEINE_MG.get(d, 63) * c for d, c in t_counts.items())
         beans_today = sum(BEAN_GRAMS.get(d, 7) * c for d, c in t_counts.items())
-        self.stats_layout.add_widget(row("Gesamt heute", today_total))
-        self.stats_layout.add_widget(row("Koffein heute", f"~{caffeine_today} mg"))
-        self.stats_layout.add_widget(row("Bohnen heute", f"~{beans_today} g"))
+        self.stats_layout.add_widget(_row("GESAMT HEUTE", today_total))
+        self.stats_layout.add_widget(_separator())
+        self.stats_layout.add_widget(_row("Koffein", f"~{caffeine_today} mg"))
+        self.stats_layout.add_widget(_separator())
+        self.stats_layout.add_widget(_row("Bohnen heute", f"~{beans_today} g"))
+        self.stats_layout.add_widget(_separator())
 
-        self.stats_layout.add_widget(
-            _label("— Gesamt —", font_size=dp(16), bold=True, color=COLOR_ACCENT,
-                   size_hint_y=None, height=dp(30))
-        )
-        for drink in DRINKS:
-            c = tot_counts.get(drink, 0)
-            if c:
-                self.stats_layout.add_widget(row(drink, c))
+        self.stats_layout.add_widget(_section_header("GESAMT"))
+        self.stats_layout.add_widget(_row("Alle Kaffees", tc_total))
+        self.stats_layout.add_widget(_separator())
+        self.stats_layout.add_widget(_row("Tage erfasst", total_days))
+        self.stats_layout.add_widget(_separator())
+        self.stats_layout.add_widget(_row("Aktueller Streak", f"{streak} Tage"))
+        self.stats_layout.add_widget(_separator())
 
         total_beans = sum(BEAN_GRAMS.get(d, 7) * c for d, c in tot_counts.items())
-        bean_packs = total_beans / 250  # assuming 250 g packs
+        bean_packs = total_beans / 250
+        self.stats_layout.add_widget(_row("Bohnen gesamt", f"~{total_beans} g"))
+        self.stats_layout.add_widget(_separator())
+        self.stats_layout.add_widget(_row("Bohnenpakete (250g)", f"~{bean_packs:.1f}"))
+        self.stats_layout.add_widget(_separator())
 
-        self.stats_layout.add_widget(row("Alle Kaffees", tc_total, COLOR_ACCENT))
-        self.stats_layout.add_widget(row("Tage erfasst", total_days))
-        self.stats_layout.add_widget(row("Aktueller Streak", f"{streak} Tage", COLOR_ACCENT))
-        self.stats_layout.add_widget(row("Bohnen gesamt", f"~{total_beans} g"))
-        self.stats_layout.add_widget(row("Bohnenpakete (250 g)", f"~{bean_packs:.1f}"))
-
-        # Streak progress bar towards next milestone
+        # E-Ink style streak progress bar
         next_milestone = 7 if streak < 7 else 30 if streak < 30 else None
         if next_milestone:
             self.stats_layout.add_widget(
-                _label(f"Streak → {next_milestone} Tage", font_size=dp(14),
-                       size_hint_y=None, height=dp(24))
+                _section_header(f"STREAK ZIEL: {next_milestone} TAGE")
             )
-            pb = ProgressBar(
-                max=next_milestone,
-                value=min(streak, next_milestone),
+            pb_row = BoxLayout(
+                orientation="horizontal",
                 size_hint_y=None,
-                height=dp(18),
+                height=dp(26),
+                padding=(dp(8), dp(4)),
+                spacing=dp(6),
             )
-            self.stats_layout.add_widget(pb)
+            _set_bg(pb_row, COLOR_PAPER)
+            pb_row.add_widget(_eink_progress_bar(streak, next_milestone))
+            pb_row.add_widget(
+                _label(f"{streak}/{next_milestone}", font_size=dp(12),
+                       color=COLOR_INK, size_hint_x=None, width=dp(52))
+            )
+            self.stats_layout.add_widget(pb_row)
 
 
 class AchievementsScreen(Screen):
@@ -571,23 +698,18 @@ class AchievementsScreen(Screen):
         self._build()
 
     def _build(self):
-        root = BoxLayout(orientation="vertical", padding=dp(12), spacing=dp(8))
-        root.add_widget(
-            _label("🏆 Achievements", font_size=dp(20), bold=True,
-                   size_hint_y=None, height=dp(44))
-        )
+        root = BoxLayout(orientation="vertical", spacing=0)
+        _set_bg(root, COLOR_PAPER)
+        root.add_widget(_title_bar("ACHIEVEMENTS", date.today().strftime("%d.%m.%y")))
 
         scroll = ScrollView()
-        self.ach_layout = BoxLayout(
-            orientation="vertical",
-            spacing=dp(4),
-            size_hint_y=None,
-            padding=dp(4),
-        )
+        self.ach_layout = BoxLayout(orientation="vertical", size_hint_y=None,
+                                    spacing=0)
         self.ach_layout.bind(minimum_height=self.ach_layout.setter("height"))
+        _set_bg(self.ach_layout, COLOR_PAPER)
         scroll.add_widget(self.ach_layout)
         root.add_widget(scroll)
-        root.add_widget(_nav_bar(self.manager, "achievements"))
+        root.add_widget(_nav_bar(self, "achievements"))
         self.add_widget(root)
 
     def on_pre_enter(self, *_):
@@ -600,53 +722,56 @@ class AchievementsScreen(Screen):
         total = len(ACHIEVEMENT_DEFINITIONS)
         done = len(unlocked)
 
-        self.ach_layout.add_widget(
-            _label(f"{done}/{total} freigeschaltet", font_size=dp(15),
-                   color=COLOR_ACCENT, size_hint_y=None, height=dp(28))
+        summary = BoxLayout(size_hint_y=None, height=dp(30), padding=(dp(8), dp(6)))
+        _set_bg(summary, COLOR_PAPER)
+        summary.add_widget(
+            _label(f"{done}/{total} freigeschaltet", font_size=dp(13),
+                   color=COLOR_INK)
         )
+        self.ach_layout.add_widget(summary)
 
-        pb = ProgressBar(max=total, value=done, size_hint_y=None, height=dp(14))
-        self.ach_layout.add_widget(pb)
+        pb_row = BoxLayout(size_hint_y=None, height=dp(22), padding=(dp(8), dp(3)))
+        _set_bg(pb_row, COLOR_PAPER)
+        pb_row.add_widget(_eink_progress_bar(done, total))
+        self.ach_layout.add_widget(pb_row)
+        self.ach_layout.add_widget(_separator())
 
         categories = {}
         for key, defn in ACHIEVEMENT_DEFINITIONS.items():
-            cat = defn["category"]
-            categories.setdefault(cat, []).append(key)
+            categories.setdefault(defn["category"], []).append(key)
 
         for cat, keys in categories.items():
-            self.ach_layout.add_widget(
-                _label(f"— {cat} —", font_size=dp(15), bold=True,
-                       color=COLOR_ACCENT, size_hint_y=None, height=dp(30))
-            )
+            self.ach_layout.add_widget(_section_header(cat.upper()))
             for key in keys:
                 defn = ACHIEVEMENT_DEFINITIONS[key]
-                if key in unlocked:
-                    icon = "✅"
-                    color = COLOR_SUCCESS
-                    date_str = f"  ({unlocked[key]})"
-                else:
-                    icon = "🔒"
-                    color = (0.5, 0.5, 0.5, 1)
-                    date_str = ""
+                is_unlocked = key in unlocked
 
                 row = BoxLayout(
                     orientation="horizontal",
                     size_hint_y=None,
-                    height=dp(48),
+                    height=dp(44),
+                    padding=(dp(8), dp(6)),
                     spacing=dp(6),
                 )
-                row.add_widget(_label(icon, font_size=dp(18), size_hint_x=None, width=dp(30)))
-                info = BoxLayout(orientation="vertical")
-                info.add_widget(
-                    _label(defn["name"] + date_str, font_size=dp(14), bold=True,
+                _set_bg(row, COLOR_PAPER)
+
+                icon_text = "[*]" if is_unlocked else "[ ]"
+                color = COLOR_INK if is_unlocked else COLOR_INK_DIM
+                row.add_widget(
+                    _label(icon_text, font_size=dp(12), color=color,
+                           size_hint_x=None, width=dp(30))
+                )
+                row.add_widget(
+                    _label(defn["name"], font_size=dp(14), bold=is_unlocked,
                            color=color, halign="left")
                 )
-                info.add_widget(
-                    _label(defn["desc"], font_size=dp(12),
-                           color=(0.75, 0.70, 0.60, 1), halign="left")
+                right = unlocked[key] if is_unlocked else defn["desc"]
+                row.add_widget(
+                    _label(right, font_size=dp(11), color=COLOR_INK_DIM,
+                           halign="right")
                 )
-                row.add_widget(info)
                 self.ach_layout.add_widget(row)
+                self.ach_layout.add_widget(_separator())
 
 
 # ---------------------------------------------------------------------------
@@ -657,6 +782,7 @@ class BeanOSApp(App):
     def build(self):
         self.title = "beanOS"
         self.data = load_data()
+        Window.clearcolor = COLOR_PAPER
 
         sm = ScreenManager()
 
