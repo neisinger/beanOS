@@ -22,8 +22,11 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 - 📦 Bean-Pack-Tracking mit Verbrauchsanalyse
 - 🎨 E-Ink-optimierte Bitmap-Icons
 - 💾 Automatische CSV-Protokollierung
+- 📱 **Android App** – Kivy-basierte Companion App (siehe [`android/`](android/))
 
-**Installation:** Kopiere nur `main.py` auf dein Badger2040 → Fertig! Alle Icons und Konfigurationen sind bereits enthalten.
+**Installation (Badger2040):** Kopiere nur `main.py` auf dein Badger2040 → Fertig! Alle Icons und Konfigurationen sind bereits enthalten.
+
+**Installation (Android):** Siehe [`android/README.md`](android/README.md) für Build-Anleitung.
 
 ---
 
