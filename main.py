@@ -42,6 +42,51 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 
 import badger2040, machine, time, json, uos
 
+# Battery monitoring for the Badger2040's VSYS input
+# Two AAA cells are roughly 3.0V empty and 3.2V full under load, so use a
+# device-specific scale for the display instead of the LiPo 4.2V full value.
+BATTERY_ADC_PIN = 29
+BATTERY_FULL_VOLTAGE = 3.2
+BATTERY_EMPTY_VOLTAGE = 2.0
+BATTERY_DIVIDER_FACTOR = 3.0
+
+try:
+    _battery_adc = machine.ADC(BATTERY_ADC_PIN) if hasattr(machine, "ADC") else None
+except Exception:
+    _battery_adc = None
+
+
+def read_battery_voltage():
+    """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
+    if _battery_adc is None:
+        return None
+    try:
+        raw = _battery_adc.read_u16()
+        return raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
+    except Exception:
+        return None
+
+
+def get_battery_percent():
+    """Return a battery percent in the range 0..100, or None if no reading is available."""
+    voltage = read_battery_voltage()
+    if voltage is None:
+        return None
+    if voltage <= BATTERY_EMPTY_VOLTAGE:
+        return 0
+    if voltage >= BATTERY_FULL_VOLTAGE:
+        return 100
+    span = BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE
+    percent = ((voltage - BATTERY_EMPTY_VOLTAGE) / span) * 100
+    return max(0, min(100, int(percent)))
+
+
+def get_battery_label():
+    percent = get_battery_percent()
+    if percent is None:
+        return "BAT --"
+    return f"BAT {percent}%"
+
 # =============================================================================
 # ICON BITMAP DATA
 # =============================================================================
@@ -685,21 +730,35 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
     """
     if icon_symbol not in ICON_MAP:
         return  # Icon not found, silently skip
-    
+
     bitmap_data = ICON_MAP[icon_symbol]
     byte_width = (width + 7) // 8  # Number of bytes per row
-    
+    display.set_pen(0)
+
+    # Fast path for the common 32x32 icons used throughout the UI.
+    if width == 32 and height == 32 and byte_width == 4:
+        for row in range(height):
+            row_start = row * byte_width
+            row_bytes = bitmap_data[row_start:row_start + byte_width]
+            if len(row_bytes) < byte_width:
+                continue
+            for col in range(width):
+                byte = row_bytes[col // 8]
+                bit_idx = 7 - (col % 8)
+                if (byte >> bit_idx) & 1:
+                    display.rectangle(x + col, y + row, 1, 1)
+        return
+
     for row in range(height):
         for col in range(width):
             byte_idx = row * byte_width + (col // 8)
             bit_idx = 7 - (col % 8)
-            
+
             if byte_idx < len(bitmap_data):
                 pixel_value = (bitmap_data[byte_idx] >> bit_idx) & 1
-                
+
                 # Draw pixel if it's black (bit = 1)
                 if pixel_value:
-                    display.set_pen(0)  # Black
                     display.rectangle(x + col, y + row, 1, 1)
 
 # =============================================================================
@@ -2287,7 +2346,13 @@ def update_display(full_update=False):
         
         # Datum rechts
         date_str = format_date(time.localtime(current_date))
-        display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
+        date_x = WIDTH - display.measure_text(date_str, 1) - 49
+        display.text(date_str, date_x, 2)
+
+        # Batterieanzeige rechts neben dem Datum
+        battery_text = get_battery_label()
+        battery_width = display.measure_text(battery_text, 1)
+        display.text(battery_text, max(6, date_x - battery_width - 8), 2)
         
         # Kleines Wartungsicon links vom Datum
         if maintenance_warnings and maintenance_warning_hidden:
