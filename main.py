@@ -48,13 +48,28 @@ import badger2040, machine, time, json, uos
 # reject impossible ADC readings (e.g. a disconnected/incorrectly inserted pack)
 # so a real battery swap does not show as 0%.
 BATTERY_ADC_PIN = 29
+BATTERY_ADC_CHANNEL = 3
+BATTERY_ENABLE_PIN = 25
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
 BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
 BATTERY_DIVIDER_FACTOR = 3.0
+BATTERY_SAMPLE_COUNT = 3
 
 try:
-    _battery_adc = machine.ADC(BATTERY_ADC_PIN) if hasattr(machine, "ADC") else None
+    _battery_enable_pin = machine.Pin(BATTERY_ENABLE_PIN, machine.Pin.OUT)
+    _battery_enable_pin.value(1)
+except Exception:
+    _battery_enable_pin = None
+
+try:
+    if hasattr(machine, "ADC"):
+        try:
+            _battery_adc = machine.ADC(BATTERY_ADC_PIN)
+        except Exception:
+            _battery_adc = machine.ADC(BATTERY_ADC_CHANNEL)
+    else:
+        _battery_adc = None
 except Exception:
     _battery_adc = None
 
@@ -64,7 +79,13 @@ def read_battery_voltage():
     if _battery_adc is None:
         return None
     try:
-        raw = _battery_adc.read_u16()
+        if _battery_enable_pin is not None:
+            _battery_enable_pin.value(1)
+            time.sleep_ms(5)
+        samples = [_battery_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
+        raw = max(samples)
+        if raw <= 0:
+            return None
         voltage = raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
         if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
             return None
@@ -1292,7 +1313,7 @@ def get_achievement_definitions():
         
         # Experimentell
         "barista": {"name": "Barista", "desc": "Alle Getränketypen probiert", "icon": ">>", "category": "Experimentell"},
-        "happy_bean_day": {"name": "Happy Bean Day", "desc": "10 Kaffees an einem Tag", "icon": "^^", "category": "Experimentell"}
+        "happy_bean_day": {"name": "Happy bean Day", "desc": "10 Kaffees an einem Tag", "icon": "^^", "category": "Experimentell"}
     }
 
 def check_achievements():
@@ -1766,7 +1787,7 @@ def nap():
     # Sleep-Screen mit neutralem, nerdy Status-Text
     display.set_update_speed(badger2040.UPDATE_FAST)
     display.set_pen(4)
-    text1 = "Bean there,"
+    text1 = "bean there,"
     text2 = "tracked that"
     text_width1 = display.measure_text(text1, 2)
     text_width2 = display.measure_text(text2, 2)
