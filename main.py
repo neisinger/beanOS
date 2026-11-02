@@ -84,8 +84,8 @@ def get_battery_percent():
 def get_battery_label():
     percent = get_battery_percent()
     if percent is None:
-        return "BAT --"
-    return f"BAT {percent}%"
+        return "--%"
+    return f"{percent}%"
 
 # =============================================================================
 # ICON BITMAP DATA
@@ -2349,10 +2349,14 @@ def update_display(full_update=False):
         date_x = WIDTH - display.measure_text(date_str, 1) - 49
         display.text(date_str, date_x, 2)
 
-        # Batterieanzeige rechts neben dem Datum
+        # Batterieanzeige links vom Datum (zentriert im verfügbaren Bereich)
         battery_text = get_battery_label()
         battery_width = display.measure_text(battery_text, 1)
-        display.text(battery_text, max(6, date_x - battery_width - 8), 2)
+        battery_area_left = 6
+        battery_area_right = max(battery_area_left, date_x - 8)
+        battery_area_width = max(0, battery_area_right - battery_area_left)
+        battery_x = battery_area_left + max(0, (battery_area_width - battery_width) // 2)
+        display.text(battery_text, battery_x, 2)
         
         # Kleines Wartungsicon links vom Datum
         if maintenance_warnings and maintenance_warning_hidden:
@@ -2651,11 +2655,9 @@ def update_display(full_update=False):
                     display.rectangle(15, line_y, WIDTH - 30, 1)
                 
                 y_pos += 26
-        
-        
-                display.update()
-                finalize_render(screen, signature)
-                return
+        display.update()
+        finalize_render(screen, signature)
+        return
     elif menu_active:
         # Vollständiges Clearing für Hauptmenü-Anzeige
         display.set_pen(15)
