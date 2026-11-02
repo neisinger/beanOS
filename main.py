@@ -42,12 +42,15 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 
 import badger2040, machine, time, json, uos
 
-# Battery monitoring for the Badger2040's VSYS input
-# Two AAA cells are roughly 3.0V empty and 3.2V full under load, so use a
-# device-specific scale for the display instead of the LiPo 4.2V full value.
+# Battery monitoring for the Badger2040's VSYS input.
+# A fresh 2xAAA pack is typically around 3.0-3.2V, while a depleted pack is
+# around 2.0V. We therefore model the display range between these values, but
+# reject impossible ADC readings (e.g. a disconnected/incorrectly inserted pack)
+# so a real battery swap does not show as 0%.
 BATTERY_ADC_PIN = 29
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
+BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
 BATTERY_DIVIDER_FACTOR = 3.0
 
 try:
@@ -62,7 +65,10 @@ def read_battery_voltage():
         return None
     try:
         raw = _battery_adc.read_u16()
-        return raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
+        voltage = raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
+        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
+            return None
+        return voltage
     except Exception:
         return None
 
@@ -1757,11 +1763,11 @@ def nap():
             led.value(0)
             time.sleep(0.1)
     
-    # Sleep-Screen mit "wake me up" Text
+    # Sleep-Screen mit neutralem, nerdy Status-Text
     display.set_update_speed(badger2040.UPDATE_FAST)
     display.set_pen(4)
-    text1 = "wake me up"
-    text2 = "when the caffeine ends"
+    text1 = "Bean there,"
+    text2 = "tracked that"
     text_width1 = display.measure_text(text1, 2)
     text_width2 = display.measure_text(text2, 2)
     # Text nach oben verschieben, damit er nicht vor den Zählern steht
