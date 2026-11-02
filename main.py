@@ -160,10 +160,10 @@ def get_battery_percent():
 
 
 def get_battery_label():
+    if is_usb_power_present():
+        return "USB"
     percent = get_battery_percent()
     if percent is None:
-        if is_usb_power_present():
-            return "USB"
         return "--%"
     return f"{percent}%"
 
