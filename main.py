@@ -88,9 +88,11 @@ def read_battery_voltage_from_badger_os():
         return None
     try:
         battery_value = str(badger_os.get_battery_level()).strip().lower()
-        if battery_value.endswith("%"):
+        is_percent_value = battery_value.endswith("%")
+        is_voltage_value = battery_value.endswith("v")
+        if is_percent_value:
             battery_value = battery_value[:-1]
-        if battery_value.endswith("v"):
+        if is_voltage_value:
             battery_value = battery_value[:-1]
         battery_level = float(battery_value)
 
@@ -99,17 +101,45 @@ def read_battery_voltage_from_badger_os():
         # - 0..100 percent
         # - voltage in volts (e.g. 3.8)
         # - voltage in millivolts (e.g. 3800)
-        if 0.0 <= battery_level <= 1.0:
-            battery_level *= 100.0
-        if 0.0 <= battery_level <= 100.0:
-            return BATTERY_EMPTY_VOLTAGE + (battery_level / 100.0) * (BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE)
         if 1000.0 <= battery_level <= 5000.0:
             battery_level /= 1000.0
+        if is_percent_value and 0.0 <= battery_level <= 100.0:
+            return BATTERY_EMPTY_VOLTAGE + (battery_level / 100.0) * (BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE)
+        if is_voltage_value and battery_level >= BATTERY_MIN_REASONABLE_VOLTAGE:
+            return battery_level
+        if 0.0 <= battery_level <= 1.0:
+            battery_level *= 100.0
+        if BATTERY_EMPTY_VOLTAGE <= battery_level <= 5.0:
+            return battery_level
+        if 0.0 <= battery_level <= 100.0:
+            return BATTERY_EMPTY_VOLTAGE + (battery_level / 100.0) * (BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE)
         if battery_level < BATTERY_MIN_REASONABLE_VOLTAGE:
             return None
         return battery_level
     except Exception:
         return None
+
+
+def choose_best_battery_voltage(adc_voltage, os_voltage):
+    if adc_voltage is None:
+        return os_voltage
+    if os_voltage is None:
+        return adc_voltage
+
+    if adc_voltage < BATTERY_EMPTY_VOLTAGE <= os_voltage:
+        return os_voltage
+
+    voltage_gap = abs(adc_voltage - os_voltage)
+    if voltage_gap >= 0.35:
+        adc_in_range = (BATTERY_EMPTY_VOLTAGE - 0.1) <= adc_voltage <= (BATTERY_FULL_VOLTAGE + 0.8)
+        os_in_range = (BATTERY_EMPTY_VOLTAGE - 0.1) <= os_voltage <= (BATTERY_FULL_VOLTAGE + 0.8)
+        if os_in_range and not adc_in_range:
+            return os_voltage
+        if adc_in_range and not os_in_range:
+            return adc_voltage
+        return max(adc_voltage, os_voltage)
+
+    return adc_voltage
 
 
 try:
@@ -143,8 +173,9 @@ except Exception:
 
 def read_battery_voltage():
     """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
+    os_voltage = read_battery_voltage_from_badger_os()
     if _battery_adc is None or _battery_vref_adc is None:
-        return read_battery_voltage_from_badger_os()
+        return os_voltage
     try:
         if _battery_vref_enable_pin is not None:
             _battery_vref_enable_pin.value(1)
@@ -154,14 +185,14 @@ def read_battery_voltage():
         raw = sum(battery_samples) // BATTERY_SAMPLE_COUNT
         vref_raw = sum(vref_samples) // BATTERY_SAMPLE_COUNT
         if raw <= 0 or vref_raw <= 0:
-            return read_battery_voltage_from_badger_os()
+            return os_voltage
         vdd = BATTERY_REFERENCE_VOLTAGE * (65535 / vref_raw)
         voltage = (raw / 65535) * vdd * BATTERY_DIVIDER_FACTOR
-        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
-            return read_battery_voltage_from_badger_os()
-        return voltage
+        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE or voltage > 6.0:
+            voltage = None
+        return choose_best_battery_voltage(voltage, os_voltage)
     except Exception:
-        return read_battery_voltage_from_badger_os()
+        return os_voltage
 
 
 def is_usb_power_present():
@@ -199,15 +230,18 @@ def get_battery_percent():
     return 0
 
 
-def get_battery_label():
-    percent = get_battery_percent()
-    if is_usb_power_present():
+def format_battery_label(percent, usb_power):
+    if usb_power:
         if percent is None:
             return "USB"
         return f"USB {percent}%"
     if percent is None:
         return "--%"
     return f"{percent}%"
+
+
+def get_battery_label():
+    return format_battery_label(get_battery_percent(), is_usb_power_present())
 
 # =============================================================================
 # ICON BITMAP DATA
@@ -882,6 +916,37 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
                 # Draw pixel if it's black (bit = 1)
                 if pixel_value:
                     display.rectangle(x + col, y + row, 1, 1)
+
+
+def draw_battery_status_icon(x, y, percent, usb_power):
+    body_width = 14
+    body_height = 8
+    cap_width = 2
+    inner_width = body_width - 4
+    inner_height = body_height - 4
+
+    display.set_pen(0)
+    display.rectangle(x, y, body_width, body_height)
+    display.rectangle(x + body_width, y + 2, cap_width, body_height - 4)
+
+    display.set_pen(15)
+    display.rectangle(x + 1, y + 1, body_width - 2, body_height - 2)
+
+    display.set_pen(0)
+    if percent is None:
+        display.rectangle(x + 4, y + 3, body_width - 8, 2)
+    else:
+        level = max(0, min(100, int(percent)))
+        fill_width = (inner_width * level) // 100
+        if level > 0 and fill_width == 0:
+            fill_width = 1
+        if fill_width > 0:
+            display.rectangle(x + 2, y + 2, fill_width, inner_height)
+
+    if usb_power:
+        display.rectangle(x + 6, y + 2, 2, 2)
+        display.rectangle(x + 5, y + 4, 2, 2)
+        display.rectangle(x + 7, y + 4, 2, 2)
 
 # =============================================================================
 # FILE CONFIGURATION  
@@ -2472,13 +2537,18 @@ def update_display(full_update=False):
         display.text(date_str, date_x, 2)
 
         # Batterieanzeige links vom Datum (zentriert im verfügbaren Bereich)
-        battery_text = get_battery_label()
+        battery_percent = get_battery_percent()
+        usb_power = is_usb_power_present()
+        battery_text = format_battery_label(battery_percent, usb_power)
         battery_width = display.measure_text(battery_text, 1)
+        battery_icon_width = 16
+        battery_group_width = battery_icon_width + 4 + battery_width
         battery_area_left = 6
         battery_area_right = max(battery_area_left, date_x - 8)
         battery_area_width = max(0, battery_area_right - battery_area_left)
-        battery_x = battery_area_left + max(0, (battery_area_width - battery_width) // 2)
-        display.text(battery_text, battery_x, 2)
+        battery_x = battery_area_left + max(0, (battery_area_width - battery_group_width) // 2)
+        draw_battery_status_icon(battery_x, 6, battery_percent, usb_power)
+        display.text(battery_text, battery_x + battery_icon_width + 4, 2)
         
         # Kleines Wartungsicon links vom Datum
         if maintenance_warnings and maintenance_warning_hidden:
