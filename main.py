@@ -1763,11 +1763,11 @@ def nap():
             led.value(0)
             time.sleep(0.1)
     
-    # Sleep-Screen mit "wake me up" Text
+    # Sleep-Screen mit neutralem, nerdy Status-Text
     display.set_update_speed(badger2040.UPDATE_FAST)
     display.set_pen(4)
-    text1 = "wake me up"
-    text2 = "when the caffeine ends"
+    text1 = "Bean there,"
+    text2 = "tracked that"
     text_width1 = display.measure_text(text1, 2)
     text_width2 = display.measure_text(text2, 2)
     # Text nach oben verschieben, damit er nicht vor den Zählern steht
