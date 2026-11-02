@@ -58,11 +58,21 @@ BATTERY_VREF_ADC_CHANNEL = 2
 BATTERY_VREF_ENABLE_PIN = 27
 USB_DETECT_PIN = 24
 BATTERY_REFERENCE_VOLTAGE = 1.24
+# Calibration tuned for 2x AAA alkaline (e.g. Energizer Max).
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
 BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
 BATTERY_DIVIDER_FACTOR = 3.0
 BATTERY_SAMPLE_COUNT = 3
+BATTERY_PERCENT_CURVE = (
+    (3.20, 100),
+    (3.00, 90),
+    (2.80, 75),
+    (2.60, 50),
+    (2.40, 25),
+    (2.20, 10),
+    (2.00, 0),
+)
 
 
 def sleep_ms(milliseconds):
@@ -171,9 +181,19 @@ def get_battery_percent():
         return 0
     if voltage >= BATTERY_FULL_VOLTAGE:
         return 100
-    span = BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE
-    percent = ((voltage - BATTERY_EMPTY_VOLTAGE) / span) * 100
-    return max(0, min(100, int(percent)))
+
+    for i in range(len(BATTERY_PERCENT_CURVE) - 1):
+        upper_v, upper_percent = BATTERY_PERCENT_CURVE[i]
+        lower_v, lower_percent = BATTERY_PERCENT_CURVE[i + 1]
+        if lower_v <= voltage <= upper_v:
+            span_v = upper_v - lower_v
+            if span_v <= 0:
+                return int(lower_percent)
+            ratio = (voltage - lower_v) / span_v
+            percent = lower_percent + ratio * (upper_percent - lower_percent)
+            return max(0, min(100, int(percent)))
+
+    return 0
 
 
 def get_battery_label():
