@@ -64,6 +64,7 @@ BATTERY_EMPTY_VOLTAGE = 2.0
 BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
 BATTERY_DIVIDER_FACTOR = 3.0
 BATTERY_SAMPLE_COUNT = 3
+BATTERY_PERCENT_STEP = 5
 BATTERY_PERCENT_CURVE = (
     (3.20, 100),
     (3.00, 90),
@@ -191,7 +192,9 @@ def get_battery_percent():
                 return int(lower_percent)
             ratio = (voltage - lower_v) / span_v
             percent = lower_percent + ratio * (upper_percent - lower_percent)
-            return max(0, min(100, int(percent)))
+            percent = max(0, min(100, int(percent)))
+            stepped_percent = int((percent + (BATTERY_PERCENT_STEP / 2)) // BATTERY_PERCENT_STEP) * BATTERY_PERCENT_STEP
+            return max(0, min(100, stepped_percent))
 
     return 0
 
