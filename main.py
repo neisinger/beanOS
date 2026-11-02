@@ -685,21 +685,35 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
     """
     if icon_symbol not in ICON_MAP:
         return  # Icon not found, silently skip
-    
+
     bitmap_data = ICON_MAP[icon_symbol]
     byte_width = (width + 7) // 8  # Number of bytes per row
-    
+    display.set_pen(0)
+
+    # Fast path for the common 32x32 icons used throughout the UI.
+    if width == 32 and height == 32 and byte_width == 4:
+        for row in range(height):
+            row_start = row * byte_width
+            row_bytes = bitmap_data[row_start:row_start + byte_width]
+            if len(row_bytes) < byte_width:
+                continue
+            for col in range(width):
+                byte = row_bytes[col // 8]
+                bit_idx = 7 - (col % 8)
+                if (byte >> bit_idx) & 1:
+                    display.rectangle(x + col, y + row, 1, 1)
+        return
+
     for row in range(height):
         for col in range(width):
             byte_idx = row * byte_width + (col // 8)
             bit_idx = 7 - (col % 8)
-            
+
             if byte_idx < len(bitmap_data):
                 pixel_value = (bitmap_data[byte_idx] >> bit_idx) & 1
-                
+
                 # Draw pixel if it's black (bit = 1)
                 if pixel_value:
-                    display.set_pen(0)  # Black
                     display.rectangle(x + col, y + row, 1, 1)
 
 # =============================================================================
