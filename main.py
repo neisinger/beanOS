@@ -120,6 +120,28 @@ def read_battery_voltage_from_badger_os():
         return None
 
 
+def choose_best_battery_voltage(adc_voltage, os_voltage):
+    if adc_voltage is None:
+        return os_voltage
+    if os_voltage is None:
+        return adc_voltage
+
+    if adc_voltage < BATTERY_EMPTY_VOLTAGE <= os_voltage:
+        return os_voltage
+
+    voltage_gap = abs(adc_voltage - os_voltage)
+    if voltage_gap >= 0.35:
+        adc_in_range = (BATTERY_EMPTY_VOLTAGE - 0.1) <= adc_voltage <= (BATTERY_FULL_VOLTAGE + 0.8)
+        os_in_range = (BATTERY_EMPTY_VOLTAGE - 0.1) <= os_voltage <= (BATTERY_FULL_VOLTAGE + 0.8)
+        if os_in_range and not adc_in_range:
+            return os_voltage
+        if adc_in_range and not os_in_range:
+            return adc_voltage
+        return max(adc_voltage, os_voltage)
+
+    return adc_voltage
+
+
 try:
     _battery_vref_enable_pin = machine.Pin(BATTERY_VREF_ENABLE_PIN, machine.Pin.OUT)
     _battery_vref_enable_pin.value(1)
@@ -151,8 +173,9 @@ except Exception:
 
 def read_battery_voltage():
     """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
+    os_voltage = read_battery_voltage_from_badger_os()
     if _battery_adc is None or _battery_vref_adc is None:
-        return read_battery_voltage_from_badger_os()
+        return os_voltage
     try:
         if _battery_vref_enable_pin is not None:
             _battery_vref_enable_pin.value(1)
@@ -162,14 +185,14 @@ def read_battery_voltage():
         raw = sum(battery_samples) // BATTERY_SAMPLE_COUNT
         vref_raw = sum(vref_samples) // BATTERY_SAMPLE_COUNT
         if raw <= 0 or vref_raw <= 0:
-            return read_battery_voltage_from_badger_os()
+            return os_voltage
         vdd = BATTERY_REFERENCE_VOLTAGE * (65535 / vref_raw)
         voltage = (raw / 65535) * vdd * BATTERY_DIVIDER_FACTOR
-        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
-            return read_battery_voltage_from_badger_os()
-        return voltage
+        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE or voltage > 6.0:
+            voltage = None
+        return choose_best_battery_voltage(voltage, os_voltage)
     except Exception:
-        return read_battery_voltage_from_badger_os()
+        return os_voltage
 
 
 def is_usb_power_present():
