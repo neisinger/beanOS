@@ -204,9 +204,8 @@ def is_usb_power_present():
         return False
 
 
-def get_battery_percent():
-    """Return a battery percent in the range 0..100, or None if no reading is available."""
-    voltage = read_battery_voltage()
+def voltage_to_percent(voltage):
+    """Convert a battery voltage to the calibrated 2x AAA alkaline percentage."""
     if voltage is None:
         return None
     if voltage <= BATTERY_EMPTY_VOLTAGE:
@@ -228,6 +227,11 @@ def get_battery_percent():
             return max(0, min(100, stepped_percent))
 
     return 0
+
+
+def get_battery_percent():
+    """Return a battery percent in the range 0..100, or None if no reading is available."""
+    return voltage_to_percent(read_battery_voltage())
 
 
 def format_battery_label(percent, usb_power):
@@ -2536,19 +2540,13 @@ def update_display(full_update=False):
         date_x = WIDTH - display.measure_text(date_str, 1) - 49
         display.text(date_str, date_x, 2)
 
-        # Batterieanzeige links vom Datum (zentriert im verfügbaren Bereich)
+        # Reine Prozentanzeige ohne Batterie-Icon, nur Text
         battery_percent = get_battery_percent()
         usb_power = is_usb_power_present()
         battery_text = format_battery_label(battery_percent, usb_power)
         battery_width = display.measure_text(battery_text, 1)
-        battery_icon_width = 16
-        battery_group_width = battery_icon_width + 4 + battery_width
-        battery_area_left = 6
-        battery_area_right = max(battery_area_left, date_x - 8)
-        battery_area_width = max(0, battery_area_right - battery_area_left)
-        battery_x = battery_area_left + max(0, (battery_area_width - battery_group_width) // 2)
-        draw_battery_status_icon(battery_x, 6, battery_percent, usb_power)
-        display.text(battery_text, battery_x + battery_icon_width + 4, 2)
+        battery_x = max(6, date_x - battery_width - 8)
+        display.text(battery_text, battery_x, 2)
         
         # Kleines Wartungsicon links vom Datum
         if maintenance_warnings and maintenance_warning_hidden:
