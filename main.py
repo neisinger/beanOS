@@ -43,9 +43,11 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 import badger2040, machine, time, json, uos
 
 # Battery monitoring for the Badger2040's VSYS input
+# Two AAA cells are roughly 3.0V empty and 3.2V full under load, so use a
+# device-specific scale for the display instead of the LiPo 4.2V full value.
 BATTERY_ADC_PIN = 29
-BATTERY_FULL_VOLTAGE = 4.2
-BATTERY_EMPTY_VOLTAGE = 3.0
+BATTERY_FULL_VOLTAGE = 3.2
+BATTERY_EMPTY_VOLTAGE = 2.0
 BATTERY_DIVIDER_FACTOR = 3.0
 
 try:
