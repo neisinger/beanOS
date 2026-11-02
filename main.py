@@ -42,6 +42,49 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 
 import badger2040, machine, time, json, uos
 
+# Battery monitoring for the Badger2040's VSYS input
+BATTERY_ADC_PIN = 29
+BATTERY_FULL_VOLTAGE = 4.2
+BATTERY_EMPTY_VOLTAGE = 3.0
+BATTERY_DIVIDER_FACTOR = 3.0
+
+try:
+    _battery_adc = machine.ADC(BATTERY_ADC_PIN) if hasattr(machine, "ADC") else None
+except Exception:
+    _battery_adc = None
+
+
+def read_battery_voltage():
+    """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
+    if _battery_adc is None:
+        return None
+    try:
+        raw = _battery_adc.read_u16()
+        return raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
+    except Exception:
+        return None
+
+
+def get_battery_percent():
+    """Return a battery percent in the range 0..100, or None if no reading is available."""
+    voltage = read_battery_voltage()
+    if voltage is None:
+        return None
+    if voltage <= BATTERY_EMPTY_VOLTAGE:
+        return 0
+    if voltage >= BATTERY_FULL_VOLTAGE:
+        return 100
+    span = BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE
+    percent = ((voltage - BATTERY_EMPTY_VOLTAGE) / span) * 100
+    return max(0, min(100, int(percent)))
+
+
+def get_battery_label():
+    percent = get_battery_percent()
+    if percent is None:
+        return "BAT --"
+    return f"BAT {percent}%"
+
 # =============================================================================
 # ICON BITMAP DATA
 # =============================================================================
@@ -2301,7 +2344,13 @@ def update_display(full_update=False):
         
         # Datum rechts
         date_str = format_date(time.localtime(current_date))
-        display.text(date_str, WIDTH - display.measure_text(date_str, 1) - 49, 2)
+        date_x = WIDTH - display.measure_text(date_str, 1) - 49
+        display.text(date_str, date_x, 2)
+
+        # Batterieanzeige rechts neben dem Datum
+        battery_text = get_battery_label()
+        battery_width = display.measure_text(battery_text, 1)
+        display.text(battery_text, max(6, date_x - battery_width - 8), 2)
         
         # Kleines Wartungsicon links vom Datum
         if maintenance_warnings and maintenance_warning_hidden:
