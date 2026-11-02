@@ -42,6 +42,11 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 
 import badger2040, machine, time, json, uos
 
+try:
+    import badger_os
+except Exception:
+    badger_os = None
+
 # Battery monitoring for the Badger2040's VSYS input.
 # Badger2040 exposes battery sense on ADC29 and a reference voltage on ADC28
 # (enabled via GPIO27). Reading both avoids incorrect percentages when 3V3 is
@@ -51,6 +56,7 @@ BATTERY_ADC_CHANNEL = 3
 BATTERY_VREF_ADC_PIN = 28
 BATTERY_VREF_ADC_CHANNEL = 2
 BATTERY_VREF_ENABLE_PIN = 27
+USB_DETECT_PIN = 24
 BATTERY_REFERENCE_VOLTAGE = 1.24
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
@@ -58,11 +64,36 @@ BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
 BATTERY_DIVIDER_FACTOR = 3.0
 BATTERY_SAMPLE_COUNT = 3
 
+
+def sleep_ms(milliseconds):
+    try:
+        time.sleep_ms(milliseconds)
+    except AttributeError:
+        time.sleep(milliseconds / 1000)
+
+
+def read_battery_voltage_from_badger_os():
+    if badger_os is None or not hasattr(badger_os, "get_battery_level"):
+        return None
+    try:
+        voltage = float(badger_os.get_battery_level())
+        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
+            return None
+        return voltage
+    except Exception:
+        return None
+
+
 try:
     _battery_vref_enable_pin = machine.Pin(BATTERY_VREF_ENABLE_PIN, machine.Pin.OUT)
     _battery_vref_enable_pin.value(1)
 except Exception:
     _battery_vref_enable_pin = None
+
+try:
+    _usb_detect_pin = machine.Pin(USB_DETECT_PIN, machine.Pin.IN)
+except Exception:
+    _usb_detect_pin = None
 
 try:
     if hasattr(machine, "ADC"):
@@ -85,24 +116,33 @@ except Exception:
 def read_battery_voltage():
     """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
     if _battery_adc is None or _battery_vref_adc is None:
-        return None
+        return read_battery_voltage_from_badger_os()
     try:
         if _battery_vref_enable_pin is not None:
             _battery_vref_enable_pin.value(1)
-            time.sleep_ms(5)
+            sleep_ms(5)
         battery_samples = [_battery_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
         vref_samples = [_battery_vref_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
         raw = sum(battery_samples) // BATTERY_SAMPLE_COUNT
         vref_raw = sum(vref_samples) // BATTERY_SAMPLE_COUNT
         if raw <= 0 or vref_raw <= 0:
-            return None
+            return read_battery_voltage_from_badger_os()
         vdd = BATTERY_REFERENCE_VOLTAGE * (65535 / vref_raw)
         voltage = (raw / 65535) * vdd * BATTERY_DIVIDER_FACTOR
         if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
-            return None
+            return read_battery_voltage_from_badger_os()
         return voltage
     except Exception:
-        return None
+        return read_battery_voltage_from_badger_os()
+
+
+def is_usb_power_present():
+    if _usb_detect_pin is None:
+        return False
+    try:
+        return bool(_usb_detect_pin.value())
+    except Exception:
+        return False
 
 
 def get_battery_percent():
@@ -120,6 +160,8 @@ def get_battery_percent():
 
 
 def get_battery_label():
+    if is_usb_power_present():
+        return "USB"
     percent = get_battery_percent()
     if percent is None:
         return "--%"
