@@ -204,9 +204,8 @@ def is_usb_power_present():
         return False
 
 
-def get_battery_percent():
-    """Return a battery percent in the range 0..100, or None if no reading is available."""
-    voltage = read_battery_voltage()
+def voltage_to_percent(voltage):
+    """Convert a battery voltage to the calibrated 2x AAA alkaline percentage."""
     if voltage is None:
         return None
     if voltage <= BATTERY_EMPTY_VOLTAGE:
@@ -228,6 +227,11 @@ def get_battery_percent():
             return max(0, min(100, stepped_percent))
 
     return 0
+
+
+def get_battery_percent():
+    """Return a battery percent in the range 0..100, or None if no reading is available."""
+    return voltage_to_percent(read_battery_voltage())
 
 
 def format_battery_label(percent, usb_power):
