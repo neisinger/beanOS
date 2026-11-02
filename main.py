@@ -43,13 +43,15 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 import badger2040, machine, time, json, uos
 
 # Battery monitoring for the Badger2040's VSYS input.
-# A fresh 2xAAA pack is typically around 3.0-3.2V, while a depleted pack is
-# around 2.0V. We therefore model the display range between these values, but
-# reject impossible ADC readings (e.g. a disconnected/incorrectly inserted pack)
-# so a real battery swap does not show as 0%.
+# Badger2040 exposes battery sense on ADC29 and a reference voltage on ADC28
+# (enabled via GPIO27). Reading both avoids incorrect percentages when 3V3 is
+# not exactly 3.3V.
 BATTERY_ADC_PIN = 29
 BATTERY_ADC_CHANNEL = 3
-BATTERY_ENABLE_PIN = 25
+BATTERY_VREF_ADC_PIN = 28
+BATTERY_VREF_ADC_CHANNEL = 2
+BATTERY_VREF_ENABLE_PIN = 27
+BATTERY_REFERENCE_VOLTAGE = 1.24
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
 BATTERY_MIN_REASONABLE_VOLTAGE = 1.0
@@ -57,10 +59,10 @@ BATTERY_DIVIDER_FACTOR = 3.0
 BATTERY_SAMPLE_COUNT = 3
 
 try:
-    _battery_enable_pin = machine.Pin(BATTERY_ENABLE_PIN, machine.Pin.OUT)
-    _battery_enable_pin.value(1)
+    _battery_vref_enable_pin = machine.Pin(BATTERY_VREF_ENABLE_PIN, machine.Pin.OUT)
+    _battery_vref_enable_pin.value(1)
 except Exception:
-    _battery_enable_pin = None
+    _battery_vref_enable_pin = None
 
 try:
     if hasattr(machine, "ADC"):
@@ -68,25 +70,34 @@ try:
             _battery_adc = machine.ADC(BATTERY_ADC_PIN)
         except Exception:
             _battery_adc = machine.ADC(BATTERY_ADC_CHANNEL)
+        try:
+            _battery_vref_adc = machine.ADC(BATTERY_VREF_ADC_PIN)
+        except Exception:
+            _battery_vref_adc = machine.ADC(BATTERY_VREF_ADC_CHANNEL)
     else:
         _battery_adc = None
+        _battery_vref_adc = None
 except Exception:
     _battery_adc = None
+    _battery_vref_adc = None
 
 
 def read_battery_voltage():
     """Read the current battery voltage from the Pimoroni Badger2040 VSYS ADC input."""
-    if _battery_adc is None:
+    if _battery_adc is None or _battery_vref_adc is None:
         return None
     try:
-        if _battery_enable_pin is not None:
-            _battery_enable_pin.value(1)
+        if _battery_vref_enable_pin is not None:
+            _battery_vref_enable_pin.value(1)
             time.sleep_ms(5)
-        samples = [_battery_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
-        raw = max(samples)
-        if raw <= 0:
+        battery_samples = [_battery_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
+        vref_samples = [_battery_vref_adc.read_u16() for _ in range(BATTERY_SAMPLE_COUNT)]
+        raw = sum(battery_samples) // BATTERY_SAMPLE_COUNT
+        vref_raw = sum(vref_samples) // BATTERY_SAMPLE_COUNT
+        if raw <= 0 or vref_raw <= 0:
             return None
-        voltage = raw * (3.3 / 65535) * BATTERY_DIVIDER_FACTOR
+        vdd = BATTERY_REFERENCE_VOLTAGE * (65535 / vref_raw)
+        voltage = (raw / 65535) * vdd * BATTERY_DIVIDER_FACTOR
         if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
             return None
         return voltage

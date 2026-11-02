@@ -19,6 +19,7 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 - 🔧 Intelligentes Wartungssystem
 - 📦 Bean-Pack-Tracking mit Verbrauchsanalyse
 - 🔋 Anzeige des aktuellen Batteriestands
+  - Messung über Badger2040 VSYS (ADC29) mit VREF-Kompensation (ADC28/GPIO27)
 - 🎨 E-Ink-optimierte Bitmap-Icons
 - 💾 Automatische CSV-Protokollierung
 
