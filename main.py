@@ -76,10 +76,18 @@ def read_battery_voltage_from_badger_os():
     if badger_os is None or not hasattr(badger_os, "get_battery_level"):
         return None
     try:
-        voltage = float(badger_os.get_battery_level())
-        if voltage < BATTERY_MIN_REASONABLE_VOLTAGE:
+        battery_value = str(badger_os.get_battery_level()).strip()
+        if battery_value.endswith("%"):
+            battery_value = battery_value[:-1]
+        battery_level = float(battery_value)
+
+        # BadgerOS may report either a raw voltage (e.g. 3.8V) or a percent
+        # (0..100). Accept both and convert percent back to a voltage range.
+        if 0 <= battery_level <= 100:
+            return BATTERY_EMPTY_VOLTAGE + (battery_level / 100.0) * (BATTERY_FULL_VOLTAGE - BATTERY_EMPTY_VOLTAGE)
+        if battery_level < BATTERY_MIN_REASONABLE_VOLTAGE:
             return None
-        return voltage
+        return battery_level
     except Exception:
         return None
 
