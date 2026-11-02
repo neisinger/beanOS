@@ -56,6 +56,7 @@ BATTERY_ADC_CHANNEL = 3
 BATTERY_VREF_ADC_PIN = 28
 BATTERY_VREF_ADC_CHANNEL = 2
 BATTERY_VREF_ENABLE_PIN = 27
+USB_DETECT_PIN = 24
 BATTERY_REFERENCE_VOLTAGE = 1.24
 BATTERY_FULL_VOLTAGE = 3.2
 BATTERY_EMPTY_VOLTAGE = 2.0
@@ -88,6 +89,11 @@ try:
     _battery_vref_enable_pin.value(1)
 except Exception:
     _battery_vref_enable_pin = None
+
+try:
+    _usb_detect_pin = machine.Pin(USB_DETECT_PIN, machine.Pin.IN)
+except Exception:
+    _usb_detect_pin = None
 
 try:
     if hasattr(machine, "ADC"):
@@ -130,6 +136,15 @@ def read_battery_voltage():
         return read_battery_voltage_from_badger_os()
 
 
+def is_usb_power_present():
+    if _usb_detect_pin is None:
+        return False
+    try:
+        return bool(_usb_detect_pin.value())
+    except Exception:
+        return False
+
+
 def get_battery_percent():
     """Return a battery percent in the range 0..100, or None if no reading is available."""
     voltage = read_battery_voltage()
@@ -147,6 +162,8 @@ def get_battery_percent():
 def get_battery_label():
     percent = get_battery_percent()
     if percent is None:
+        if is_usb_power_present():
+            return "USB"
         return "--%"
     return f"{percent}%"
 
