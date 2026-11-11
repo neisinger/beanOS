@@ -43,6 +43,11 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 import badger2040, machine, time, json, uos
 
 try:
+    from ui_bitmaps import NOTIF_BG_296x128
+except ImportError:
+    NOTIF_BG_296x128 = None
+
+try:
     import badger_os
 except Exception:
     badger_os = None
@@ -948,6 +953,22 @@ def draw_battery_status_icon(x, y, percent, usb_power):
         display.rectangle(x + 5, y + 4, 2, 2)
         display.rectangle(x + 7, y + 4, 2, 2)
 
+
+def draw_bitmap_from_array(x, y, bitmap_data, width, height):
+    """Draw a 1-bit bitmap stored as a bytearray with 8 pixels per byte."""
+    byte_width = (width + 7) // 8
+    display.set_pen(0)
+    for row in range(height):
+        row_start = row * byte_width
+        row_bytes = bitmap_data[row_start:row_start + byte_width]
+        if len(row_bytes) < byte_width:
+            continue
+        for col in range(width):
+            byte = row_bytes[col // 8]
+            bit_idx = 7 - (col % 8)
+            if (byte >> bit_idx) & 1:
+                display.rectangle(x + col, y + row, 1, 1)
+
 # =============================================================================
 # FILE CONFIGURATION  
 # =============================================================================
@@ -1270,104 +1291,110 @@ def handle_notification_display():
     display.set_pen(15)
     display.clear()
     
-    # Schwarzer Rahmen um die Benachrichtigung
-    display.set_pen(0)
-    display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
-    display.set_pen(15)
-    display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
-    display.set_pen(0)
+    # Hintergrundgrafik für Benachrichtigungen rendern, falls vorhanden.
+    if NOTIF_BG_296x128 is not None:
+        draw_bitmap_from_array(0, 0, NOTIF_BG_296x128, 296, 128)
+        display.set_pen(15)
+    else:
+        # Fallback: altes Rechteck-Design
+        display.set_pen(0)
+        display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
+        display.set_pen(15)
+        display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
+        display.set_pen(0)
     
     if notification_data["type"] == "achievement":
         # Achievement-Benachrichtigung
         achievement_key = notification_data["data"]
-        
+
+        # Text nur auf der großen weißen Fläche rendern.
+        text_left = 25
+        text_top = 36
+        max_text_width = WIDTH - 2 * text_left
+
         # Titel zentrieren
         title_text = "!! ACHIEVEMENT !!"
         title_width = display.measure_text(title_text, 2)
-        title_x = (WIDTH - title_width) // 2
-        display.text(title_text, title_x, 40, scale=2)
-        
+        title_x = (max_text_width - title_width) // 2 + text_left
+        display.text(title_text, title_x, text_top, scale=2)
+
         # Achievement anzeigen
         definitions = get_achievement_definitions()
         if achievement_key in definitions:
             achievement = definitions[achievement_key]
-            
-            # Icon (bitmap) und Name zentriert
+
             icon_symbol = achievement['icon']
-            
-            # Draw bitmap icon centered above the name
             icon_size = 32
-            icon_x = (WIDTH - icon_size) // 2
-            icon_y = 45
+            icon_x = (max_text_width - icon_size) // 2 + text_left
+            icon_y = text_top + 22
             draw_bitmap_icon(icon_x, icon_y, icon_symbol)
-            
-            # Name below the icon
+
             name_text = achievement['name']
             text_width = display.measure_text(name_text, 2)
-            x_centered = (WIDTH - text_width) // 2
+            x_centered = (max_text_width - text_width) // 2 + text_left
             display.text(name_text, x_centered, icon_y + icon_size + 5, scale=2)
-        
-        # Button-Hinweise
+
         ok_text = "OK"
-        ok_x = 41 - display.measure_text(ok_text, 1) // 2  # A-Button Position
+        ok_x = text_left + 15 - display.measure_text(ok_text, 1) // 2
         display.text(ok_text, ok_x, HEIGHT - 15, scale=1)
-        
+
     elif notification_data["type"] == "maintenance":
         # Wartungs-Benachrichtigung
         maintenance_warnings = notification_data["data"]
-        
-        # Titel zentrieren
+
+        text_left = 26
+        text_top = 38
+        max_text_width = WIDTH - 2 * text_left
+
         title_text = "!! WARTUNG FÄLLIG !!"
         title_width = display.measure_text(title_text, 2)
-        title_x = (WIDTH - title_width) // 2
-        display.text(title_text, title_x, 40, scale=2)
-        
-        # Wartungsaufgaben zentriert anzeigen
-        y_pos = 70
-        for i, warn in enumerate(maintenance_warnings):
+        title_x = (max_text_width - title_width) // 2 + text_left
+        display.text(title_text, title_x, text_top, scale=2)
+
+        y_pos = text_top + 28
+        for warn in maintenance_warnings:
             warn_names = {
                 "cleaning": "Maschine reinigen",
-                "descaling": "Maschine entkalken", 
+                "descaling": "Maschine entkalken",
                 "brew_group_cleaning": "Brühgruppe reinigen",
                 "grinder_cleaning": "Mahlwerk reinigen",
                 "deep_cleaning": "Grundreinigung"
             }
             warn_display = warn_names.get(warn, warn)
             text_width = display.measure_text(warn_display, 2)
-            x_centered = (WIDTH - text_width) // 2
+            x_centered = (max_text_width - text_width) // 2 + text_left
             display.text(warn_display, x_centered, y_pos, scale=2)
             y_pos += 25
-        
-        # Button-Hinweise
+
         erledigt_text = "Erledigt"
-        erledigt_x = 41 - display.measure_text(erledigt_text, 1) // 2
+        erledigt_x = text_left + 10 - display.measure_text(erledigt_text, 1) // 2
         display.text(erledigt_text, erledigt_x, HEIGHT - 15, scale=1)
-        
+
         verstecken_text = "Verstecken"
-        verstecken_x = 253 - display.measure_text(verstecken_text, 1) // 2
+        verstecken_x = WIDTH - text_left - 10 - display.measure_text(verstecken_text, 1) // 2
         display.text(verstecken_text, verstecken_x, HEIGHT - 15, scale=1)
-        
+
     elif notification_data["type"] == "bean_pack":
         # Bean Pack Benachrichtigung
         pack_size = notification_data["data"]["size"]
-        
-        # Titel zentrieren
+
+        text_left = 26
+        text_top = 38
+        max_text_width = WIDTH - 2 * text_left
+
         title_text = "Neue Packung gestartet!"
         title_width = display.measure_text(title_text, 2)
-        title_x = (WIDTH - title_width) // 2
-        display.text(title_text, title_x, 40, scale=2)
-        
-        # Packungsgröße anzeigen
+        title_x = (max_text_width - title_width) // 2 + text_left
+        display.text(title_text, title_x, text_top, scale=2)
+
         size_text = f"{pack_size}g Bohnen"
         size_width = display.measure_text(size_text, 2)
-        size_x = (WIDTH - size_width) // 2
-        display.text(size_text, size_x, 70, scale=2)
-        
-        # Button-Hinweise
+        size_x = (max_text_width - size_width) // 2 + text_left
+        display.text(size_text, size_x, text_top + 32, scale=2)
+
         ok_text = "OK"
-        ok_x = 41 - display.measure_text(ok_text, 1) // 2
-        display.text(ok_text, ok_x, HEIGHT - 15, scale=1)
-    
+        ok_x = text_left + 15 - display.measure_text(ok_text, 1) // 2
+        display.text(ok_text, ok_x, HEIGHT - 15, scale=1)    
     display.update()
     return True
 
