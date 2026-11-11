@@ -43,11 +43,6 @@ achievement_notification_start_time = 0  # Zeit für Achievement Auto-Hide
 import badger2040, machine, time, json, uos
 
 try:
-    from ui_bitmaps import NOTIF_BG_296x128
-except ImportError:
-    NOTIF_BG_296x128 = None
-
-try:
     import badger_os
 except Exception:
     badger_os = None
@@ -693,18 +688,13 @@ def handle_notification_display():
     display.set_update_speed(badger2040.UPDATE_NORMAL)
     display.set_pen(15)
     display.clear()
-    
-    # Hintergrundgrafik für Benachrichtigungen rendern, falls vorhanden.
-    if NOTIF_BG_296x128 is not None:
-        draw_bitmap_from_array(0, 0, NOTIF_BG_296x128, 296, 128)
-        display.set_pen(15)
-    else:
-        # Fallback: altes Rechteck-Design
-        display.set_pen(0)
-        display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
-        display.set_pen(15)
-        display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
-        display.set_pen(0)
+
+    # Einfaches, speichersicheres Notification-Layout ohne Hintergrundbitmap.
+    display.set_pen(0)
+    display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
+    display.set_pen(15)
+    display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
+    display.set_pen(0)
     
     if notification_data["type"] == "achievement":
         # Achievement-Benachrichtigung
