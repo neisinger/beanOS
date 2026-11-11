@@ -23,7 +23,7 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 - 🎨 E-Ink-optimierte Bitmap-Icons
 - 💾 Automatische CSV-Protokollierung
 
-**Installation:** Kopiere nur `main.py` auf dein Badger2040 → Fertig! Alle Icons, Konfigurationen und die Batterieanzeige sind bereits enthalten.
+**Installation:** Kopiere `main.py`, `ui_bitmaps.py` und `icon_bitmaps.py` in dasselbe Verzeichnis auf dein Badger2040. Wenn du die Wartungsintervalle anpassen willst, füge optional auch `maintenance_config.json` hinzu.
 
 ---
 
@@ -341,14 +341,17 @@ So installieren Sie beanOS auf Ihrem Badger2040:
 ### Installationsschritte
 1. Verbinden Sie Ihr Badger2040 über USB mit Ihrem Computer
 2. Öffnen Sie Thonny IDE und stellen Sie sicher, dass das Gerät erkannt wird
-3. Kopieren Sie den Inhalt der `main.py`-Datei in Thonnys Editor
-4. Speichern Sie die Datei auf Ihrem Badger2040 als `main.py`
-5. Trennen Sie die Verbindung und starten Sie das Gerät neu
+3. Kopieren Sie die Dateien `main.py`, `ui_bitmaps.py` und `icon_bitmaps.py` in dasselbe Verzeichnis auf dem Badger2040
+4. Optional: Falls Sie die Wartungsintervalle anpassen möchten, kopieren Sie zusätzlich `maintenance_config.json` in dasselbe Verzeichnis
+5. Starten Sie das Gerät neu oder führen Sie `main.py` aus
 
-**Das war's!** Alle benötigten Daten (Icons und Wartungskonfiguration) sind bereits in `main.py` enthalten.
+**Das war's!** `main.py` lädt die Bitmap-Assets aus `ui_bitmaps.py` und `icon_bitmaps.py`; `maintenance_config.json` ist nur optional und überschreibt die Standard-Wartungsintervalle.
 
 ### Erforderliche Dateien
-- **main.py** - Vollständige Anwendung mit eingebetteten Icons und Konfiguration
+- **main.py** - Hauptanwendung
+- **ui_bitmaps.py** - UI- und Benachrichtigungs-Bitmaps
+- **icon_bitmaps.py** - Icon-Definitionen für Achievements und Menüelemente
+- **maintenance_config.json** *(optional)* - Anpassbare Wartungsintervalle
 
 ### Automatisch generierte Dateien
 Die folgenden Dateien werden während der Nutzung automatisch erstellt:
