@@ -47,6 +47,51 @@ try:
 except Exception:
     badger_os = None
 
+try:
+    from ui_bitmaps import get_notification_bitmap_file
+except Exception:
+    def get_notification_bitmap_file(notification_type):
+        return None
+
+
+def path_exists(path):
+    try:
+        uos.stat(path)
+        return True
+    except Exception:
+        return False
+
+
+def get_notification_bitmap_fallback_files(notification_type):
+    if notification_type == "achievement":
+        return (
+            "/images/achievement_296x128.bin",
+            "images/achievement_296x128.bin",
+            "/images/achievements_296x128.bin",
+            "images/achievements_296x128.bin",
+            "/images/achievement.bin",
+            "images/achievement.bin",
+        )
+    if notification_type == "bean_pack":
+        return (
+            "/images/bean_pack_296x128.bin",
+            "images/bean_pack_296x128.bin",
+            "/images/beans_296x128.bin",
+            "images/beans_296x128.bin",
+            "/images/beans.bin",
+            "images/beans.bin",
+        )
+    if notification_type == "maintenance":
+        return (
+            "/images/maintenance_296x128.bin",
+            "images/maintenance_296x128.bin",
+            "/images/elektra_296x128.bin",
+            "images/elektra_296x128.bin",
+            "/images/maintenance.bin",
+            "images/maintenance.bin",
+        )
+    return ()
+
 # Battery monitoring for the Badger2040's VSYS input.
 # Badger2040 exposes battery sense on ADC29 and a reference voltage on ADC28
 # (enabled via GPIO27). Reading both avoids incorrect percentages when 3V3 is
@@ -357,15 +402,36 @@ def draw_bitmap_from_array(x, y, bitmap_data, width, height):
     byte_width = (width + 7) // 8
     display.set_pen(0)
     for row in range(height):
-        row_start = row * byte_width
-        row_bytes = bitmap_data[row_start:row_start + byte_width]
-        if len(row_bytes) < byte_width:
-            continue
         for col in range(width):
-            byte = row_bytes[col // 8]
+            byte_idx = row * byte_width + (col // 8)
+            if byte_idx >= len(bitmap_data):
+                continue
+            byte = bitmap_data[byte_idx]
             bit_idx = 7 - (col % 8)
             if (byte >> bit_idx) & 1:
                 display.rectangle(x + col, y + row, 1, 1)
+
+
+def draw_bitmap_from_file(x, y, file_path, width, height):
+    """Draw a 1-bit bitmap by streaming rows from a .bin file."""
+    byte_width = (width + 7) // 8
+    display.set_pen(0)
+    try:
+        with open(file_path, "rb") as bitmap_file:
+            for row in range(height):
+                row_bytes = bitmap_file.read(byte_width)
+                if len(row_bytes) < byte_width:
+                    return False
+                for col in range(width):
+                    byte = row_bytes[col // 8]
+                    bit_idx = 7 - (col % 8)
+                    if (byte >> bit_idx) & 1:
+                        display.rectangle(x + col, y + row, 1, 1)
+        return True
+    except MemoryError:
+        return False
+    except OSError:
+        return False
 
 # =============================================================================
 # FILE CONFIGURATION  
@@ -402,7 +468,7 @@ current_menu_option, menu_active, change_date_active, view_statistics_active, vi
 version = "2.6.1"
 
 # Debug logging (set to True for verbose serial output)
-DEBUG = False
+DEBUG = True
 
 def debug(msg):
     if DEBUG:
@@ -689,62 +755,99 @@ def handle_notification_display():
     display.set_pen(15)
     display.clear()
 
-    # Einfaches, speichersicheres Notification-Layout ohne Hintergrundbitmap.
-    display.set_pen(0)
-    display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
-    display.set_pen(15)
-    display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
-    display.set_pen(0)
+    notif_type = notification_data.get("type")
+    if notif_type == "bean_pack":
+        notif_bg_file = None
+        for preferred_path in (
+            "/images/bean_pack_296x128.bin",
+            "images/bean_pack_296x128.bin",
+        ):
+            if path_exists(preferred_path):
+                notif_bg_file = preferred_path
+                break
+        if notif_bg_file is None:
+            notif_bg_file = get_notification_bitmap_file(notif_type)
+    else:
+        notif_bg_file = get_notification_bitmap_file(notif_type)
+
+    bg_drawn = False
+    if notif_bg_file:
+        bg_drawn = draw_bitmap_from_file(0, 0, notif_bg_file, 296, 128)
+
+    if not bg_drawn:
+        for fallback_file in get_notification_bitmap_fallback_files(notif_type):
+            if fallback_file == notif_bg_file:
+                continue
+            if draw_bitmap_from_file(0, 0, fallback_file, 296, 128):
+                bg_drawn = True
+                break
+
+    if bg_drawn:
+        display.set_pen(0)
+    else:
+        # Speichersicheres Fallback-Layout ohne Hintergrundbitmap.
+        display.set_pen(0)
+        display.rectangle(5, 20, WIDTH-10, HEIGHT-40)
+        display.set_pen(15)
+        display.rectangle(7, 22, WIDTH-14, HEIGHT-44)
+        display.set_pen(0)
     
     if notification_data["type"] == "achievement":
         # Achievement-Benachrichtigung
         achievement_key = notification_data["data"]
 
-        # Text nur auf der großen weißen Fläche rendern.
-        text_left = 25
-        text_top = 36
-        max_text_width = WIDTH - 2 * text_left
+        text_left = 4
+        text_top = 4
+        text_width = 188
+        text_height = HEIGHT - 8
 
-        # Titel zentrieren
+        display.set_pen(15)
+        display.rectangle(text_left, text_top, text_width, text_height)
+        display.set_pen(0)
+
         title_text = "!! ACHIEVEMENT !!"
         title_width = display.measure_text(title_text, 2)
-        title_x = (max_text_width - title_width) // 2 + text_left
-        display.text(title_text, title_x, text_top, scale=2)
+        title_x = text_left + ((text_width - title_width) // 2)
+        display.text(title_text, title_x, text_top + 8, scale=2)
 
-        # Achievement anzeigen
         definitions = get_achievement_definitions()
         if achievement_key in definitions:
             achievement = definitions[achievement_key]
 
             icon_symbol = achievement['icon']
             icon_size = 32
-            icon_x = (max_text_width - icon_size) // 2 + text_left
-            icon_y = text_top + 22
+            icon_x = text_left + ((text_width - icon_size) // 2)
+            icon_y = text_top + 30
             draw_bitmap_icon(icon_x, icon_y, icon_symbol)
 
             name_text = achievement['name']
-            text_width = display.measure_text(name_text, 2)
-            x_centered = (max_text_width - text_width) // 2 + text_left
-            display.text(name_text, x_centered, icon_y + icon_size + 5, scale=2)
+            text_width_name = display.measure_text(name_text, 2)
+            x_centered = text_left + ((text_width - text_width_name) // 2)
+            display.text(name_text, x_centered, icon_y + icon_size + 4, scale=2)
 
         ok_text = "OK"
-        ok_x = text_left + 15 - display.measure_text(ok_text, 1) // 2
-        display.text(ok_text, ok_x, HEIGHT - 15, scale=1)
+        ok_x = text_left + 14 - display.measure_text(ok_text, 1) // 2
+        display.text(ok_text, ok_x, HEIGHT - 14, scale=1)
 
     elif notification_data["type"] == "maintenance":
         # Wartungs-Benachrichtigung
         maintenance_warnings = notification_data["data"]
 
-        text_left = 26
-        text_top = 38
-        max_text_width = WIDTH - 2 * text_left
+        text_left = 4
+        text_top = 4
+        text_width = 188
+        text_height = HEIGHT - 8
+
+        display.set_pen(15)
+        display.rectangle(text_left, text_top, text_width, text_height)
+        display.set_pen(0)
 
         title_text = "!! WARTUNG FÄLLIG !!"
         title_width = display.measure_text(title_text, 2)
-        title_x = (max_text_width - title_width) // 2 + text_left
-        display.text(title_text, title_x, text_top, scale=2)
+        title_x = text_left + ((text_width - title_width) // 2)
+        display.text(title_text, title_x, text_top + 8, scale=2)
 
-        y_pos = text_top + 28
+        y_pos = text_top + 38
         for warn in maintenance_warnings:
             warn_names = {
                 "cleaning": "Maschine reinigen",
@@ -754,40 +857,49 @@ def handle_notification_display():
                 "deep_cleaning": "Grundreinigung"
             }
             warn_display = warn_names.get(warn, warn)
-            text_width = display.measure_text(warn_display, 2)
-            x_centered = (max_text_width - text_width) // 2 + text_left
+            text_width_warn = display.measure_text(warn_display, 2)
+            x_centered = text_left + ((text_width - text_width_warn) // 2)
             display.text(warn_display, x_centered, y_pos, scale=2)
             y_pos += 25
 
         erledigt_text = "Erledigt"
         erledigt_x = text_left + 10 - display.measure_text(erledigt_text, 1) // 2
-        display.text(erledigt_text, erledigt_x, HEIGHT - 15, scale=1)
+        display.text(erledigt_text, erledigt_x, HEIGHT - 14, scale=1)
 
         verstecken_text = "Verstecken"
         verstecken_x = WIDTH - text_left - 10 - display.measure_text(verstecken_text, 1) // 2
-        display.text(verstecken_text, verstecken_x, HEIGHT - 15, scale=1)
+        display.text(verstecken_text, verstecken_x, HEIGHT - 14, scale=1)
 
     elif notification_data["type"] == "bean_pack":
         # Bean Pack Benachrichtigung
         pack_size = notification_data["data"]["size"]
 
-        text_left = 26
-        text_top = 38
-        max_text_width = WIDTH - 2 * text_left
+        text_left = 4
+        text_top = 4
+        text_width = 188
+        text_height = HEIGHT - 8
 
-        title_text = "Neue Packung gestartet!"
-        title_width = display.measure_text(title_text, 2)
-        title_x = (max_text_width - title_width) // 2 + text_left
-        display.text(title_text, title_x, text_top, scale=2)
+        # Textbereich auf ein definiertes weißes Feld begrenzen: 4px Rand links,
+        # oben und unten, sowie 188px Breite. Dadurch bleibt der Text im weißen
+        # Bereich der Bitmap und überlagert nicht das Bild selbst.
+        display.set_pen(15)
+        display.rectangle(text_left, text_top, text_width, text_height)
+        display.set_pen(0)
+
+        title_lines = ["Neue Packung", "gestartet!"]
+        for line_index, line_text in enumerate(title_lines):
+            line_width = display.measure_text(line_text, 2)
+            line_x = text_left + ((text_width - line_width) // 2)
+            display.text(line_text, line_x, text_top + 10 + (line_index * 20), scale=2)
 
         size_text = f"{pack_size}g Bohnen"
         size_width = display.measure_text(size_text, 2)
-        size_x = (max_text_width - size_width) // 2 + text_left
-        display.text(size_text, size_x, text_top + 32, scale=2)
+        size_x = text_left + ((text_width - size_width) // 2)
+        display.text(size_text, size_x, text_top + 52, scale=2)
 
         ok_text = "OK"
-        ok_x = text_left + 15 - display.measure_text(ok_text, 1) // 2
-        display.text(ok_text, ok_x, HEIGHT - 15, scale=1)    
+        ok_x = text_left + 14 - display.measure_text(ok_text, 1) // 2
+        display.text(ok_text, ok_x, HEIGHT - 14, scale=1)
     display.update()
     return True
 
