@@ -43,7 +43,7 @@ Achievement icons for machine maintenance:
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
 | ![](https://github.com/neisinger/beanOS/blob/main/icons/Clean%20machine.png) | `Clean machine.png` | Saubere Maschine | First maintenance completed |
-|  | `maintenance_master.svg` | Wartungsmeister | All maintenance tasks on time |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Maintenance%20master%20.png) | `Maintenance master.png` | Wartungsmeister | All maintenance tasks on time |
 
 ### Experimental (`icons/experimental/`)
 
@@ -51,7 +51,7 @@ Achievement icons for experimental challenges:
 
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
-|  | `barista.svg` | Barista | All drink types tried |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Barista.png) | `Barista.png` | Barista | All drink types tried |
 | ![](https://github.com/neisinger/beanOS/blob/main/icons/Bean%20day%20.png) | `bean day.png` | Happy Bean Day | 10 coffees in a single day |
 
 ### General (`icons/general/`)
