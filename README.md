@@ -23,7 +23,7 @@ beanOS ist eine vollständige Kaffeeverfolgungsanwendung für das Badger2040 E-I
 - 🎨 E-Ink-optimierte Bitmap-Icons
 - 💾 Automatische CSV-Protokollierung
 
-**Installation:** Kopiere `main.py`, `ui_bitmaps.py` und `icon_bitmaps.py` in dasselbe Verzeichnis auf dein Badger2040. Wenn du die Wartungsintervalle anpassen willst, füge optional auch `maintenance_config.json` hinzu.
+**Installation:** Kopiere `main.py`, `ui_bitmaps.py` und `icon_bitmaps.py` in dasselbe Verzeichnis auf dein Badger2040. Wenn du die Wartungsintervalle anpassen willst, füge optional auch `maintenance_config.json` hinzu. Für den Sleep-Hintergrund kopiere zusätzlich `images/pixelart/sleep_296x128.bin` auf den Badger (Pfad `images/pixelart/`).
 
 ---
 

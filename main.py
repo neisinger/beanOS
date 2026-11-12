@@ -48,9 +48,11 @@ except Exception:
     badger_os = None
 
 try:
-    from ui_bitmaps import get_notification_bitmap_file
+    from ui_bitmaps import get_notification_bitmap_file, get_sleep_bitmap_file
 except Exception:
     def get_notification_bitmap_file(notification_type):
+        return None
+    def get_sleep_bitmap_file():
         return None
 
 
@@ -1476,16 +1478,14 @@ def nap():
             led.value(0)
             time.sleep(0.1)
     
-    # Sleep-Screen mit neutralem, nerdy Status-Text
+    # Sleep-Screen als Vollbild-Bitmap
     display.set_update_speed(badger2040.UPDATE_FAST)
-    display.set_pen(4)
-    text1 = "bean there,"
-    text2 = "tracked that"
-    text_width1 = display.measure_text(text1, 2)
-    text_width2 = display.measure_text(text2, 2)
-    # Text nach oben verschieben, damit er nicht vor den Zählern steht
-    display.text(text1, (WIDTH - text_width1) // 2, 35, scale=2)
-    display.text(text2, (WIDTH - text_width2) // 2, 55, scale=2)
+    display.set_pen(15)
+    display.clear()
+
+    sleep_bg_file = get_sleep_bitmap_file()
+    if sleep_bg_file:
+        draw_bitmap_from_file(0, 0, sleep_bg_file, WIDTH, HEIGHT)
     display.update()
     time.sleep(1)
 

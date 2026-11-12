@@ -31,6 +31,10 @@ _NOTIFICATION_BITMAP_FILES = {
         "maintenance.bin",
     ),
 }
+_SLEEP_BITMAP_FILES = (
+    "sleep_296x128.bin",
+    "sleep.bin",
+)
 
 
 def _path_exists(path):
@@ -48,14 +52,25 @@ def get_notification_bitmap_file(notification_type):
         return None
 
     for file_name in file_names:
-        candidates = (
-            "/images/" + file_name,
-            "images/" + file_name,
-            "/images/pixelart/" + file_name,
-            "images/pixelart/" + file_name,
-        )
-
-        for path in candidates:
+        for path in _iter_candidates(file_name):
             if _path_exists(path):
                 return path
     return None
+
+
+def get_sleep_bitmap_file():
+    """Return filesystem path for the sleep background."""
+    for file_name in _SLEEP_BITMAP_FILES:
+        for path in _iter_candidates(file_name):
+            if _path_exists(path):
+                return path
+    return None
+
+
+def _iter_candidates(file_name):
+    return (
+        "/images/" + file_name,
+        "images/" + file_name,
+        "/images/pixelart/" + file_name,
+        "images/pixelart/" + file_name,
+    )
