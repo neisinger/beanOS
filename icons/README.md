@@ -52,7 +52,7 @@ Achievement icons for experimental challenges:
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
 | >> | `barista.svg` | Barista | All drink types tried |
-| ^^ | `happy_bean_day.svg` | Happy Bean Day | 10 coffees in a single day |
+| ^^ | `bean day.png` | Happy Bean Day | 10 coffees in a single day |
 
 ### General (`icons/general/`)
 
