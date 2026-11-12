@@ -60,7 +60,7 @@ General UI icons:
 
 | Icon | File | Usage | Description |
 |------|------|-------|-------------|
-| ★ | `achievement_star.svg` | Daily Achievement Indicator | Appears in title bar when achievement unlocked today |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Star.png) | `Star.png` | Daily Achievement Indicator | Appears in title bar when achievement unlocked today |
 
 ## Design Guidelines
 
