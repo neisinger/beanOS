@@ -90,24 +90,16 @@ These SVG templates are designed to work with e-ink displays without requiring U
 
 ### Current Implementation
 
-Currently, beanOS uses Unicode characters defined in `main.py`:
-
-```python
-def get_achievement_definitions():
-    return {
-        "first_coffee": {"icon": "#1", ...},
-        "coffee_10": {"icon": "#10", ...},
-        # ... etc
-    }
-```
+The SVG templates in this folder are already converted to 1-bit `bytearray` bitmaps in `icon_bitmaps.py`.
+`main.py` references symbolic icon IDs (for example `#1`, `=7`, `~`) in `get_achievement_definitions()`, and those IDs are resolved via `ICON_MAP` to the converted bitmap data.
 
 ### Future Integration
 
-For full SVG icon integration, consider:
+For changes to icon artwork, keep this workflow:
 
-1. Converting SVGs to bitmap format compatible with MicroPython
-2. Using the Badger2040's image display capabilities
-3. Pre-rendering icons at build time for optimal performance
+1. Update or add SVGs in this folder
+2. Convert SVGs to 1-bit bitmap data
+3. Update `icon_bitmaps.py` and `ICON_MAP` mappings
 
 ## File Structure
 

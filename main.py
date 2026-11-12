@@ -1867,7 +1867,7 @@ def update_display(full_update=False):
                         # Unvollständiges Streak-Achievement
                         key, achievement, current_streak = item[1], item[2], item[3]
                         max_streak = 7 if key == "streak_7" else 30
-                        
+
                         # Icon und Name in größerer Schrift
                         icon_text = f"[ ] {achievement['name']}"
                         display.text(icon_text, 12, y_pos + 2, scale=2)
