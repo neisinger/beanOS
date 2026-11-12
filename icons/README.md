@@ -147,7 +147,7 @@ Follow the Pimoroni Badger2040 image conversion guide to convert SVGs to the app
 
 ### Method 3: Pre-render as Bitmap Arrays
 
-Convert SVGs to MicroPython-compatible bitmap arrays for embedding directly in `main.py`.
+Convert SVGs to MicroPython-compatible bitmap arrays and update `icon_bitmaps.py`.
 
 ## License
 

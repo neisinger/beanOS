@@ -343,7 +343,8 @@ So installieren Sie beanOS auf Ihrem Badger2040:
 2. Öffnen Sie Thonny IDE und stellen Sie sicher, dass das Gerät erkannt wird
 3. Kopieren Sie die Dateien `main.py`, `ui_bitmaps.py` und `icon_bitmaps.py` in dasselbe Verzeichnis auf dem Badger2040
 4. Optional: Falls Sie die Wartungsintervalle anpassen möchten, kopieren Sie zusätzlich `maintenance_config.json` in dasselbe Verzeichnis
-5. Starten Sie das Gerät neu oder führen Sie `main.py` aus
+5. Für den Sleep-Hintergrund zusätzlich `images/pixelart/sleep_296x128.bin` nach `images/pixelart/` auf dem Badger kopieren
+6. Starten Sie das Gerät neu oder führen Sie `main.py` aus
 
 **Das war's!** `main.py` lädt die Bitmap-Assets aus `ui_bitmaps.py` und `icon_bitmaps.py`; `maintenance_config.json` ist nur optional und überschreibt die Standard-Wartungsintervalle.
 
@@ -351,6 +352,7 @@ So installieren Sie beanOS auf Ihrem Badger2040:
 - **main.py** - Hauptanwendung
 - **ui_bitmaps.py** - UI- und Benachrichtigungs-Bitmaps
 - **icon_bitmaps.py** - Icon-Definitionen für Achievements und Menüelemente
+- **images/pixelart/sleep_296x128.bin** - Vollbild-Hintergrund für den Sleep-Modus
 - **maintenance_config.json** *(optional)* - Anpassbare Wartungsintervalle
 
 ### Automatisch generierte Dateien
@@ -423,7 +425,7 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - Rendert 32x32 Pixel Icons aus Bytearray-Daten
 - 16 vordefinierte Icons für Achievements und UI
 - E-Ink-optimiert: Nur Schwarz/Weiß, keine Graustufen
-- Icons direkt in `main.py` eingebettet für vereinfachte Installation
+- Icons werden aus `icon_bitmaps.py` über `ICON_MAP` geladen
 
 #### 3. Dateiverwaltung (Zeilen 99-240)
 - **Configuration Loading**: JSON-basierte Wartungskonfiguration
@@ -438,7 +440,7 @@ def draw_bitmap_icon(x, y, icon_symbol, width=32, height=32):
 - `current_date.txt` - Aktuelle Datumsspeicherung
 - `current_counts.txt` - Backup täglicher Zähler
 
-**Hinweis:** Wartungsintervalle sind jetzt direkt in `main.py` eingebettet und können in der Funktion `load_maintenance_config()` angepasst werden.
+**Hinweis:** Standard-Wartungsintervalle liegen in `main.py` und können optional über `maintenance_config.json` überschrieben werden.
 
 #### 4. Benachrichtigungssystem (Zeilen 241-469)
 ```python
@@ -490,7 +492,7 @@ def check_maintenance_warnings():
 - Manuelle Protokollierung über Menü
 - Visuelle Indikatoren ("!" bei überfälligen Tasks)
 
-**Konfiguration** (eingebettet in `main.py`):
+**Konfiguration** (Standard in `main.py`, optional überschreibbar über `maintenance_config.json`):
 ```python
 MAINTENANCE_TASKS = [
     {"name": "cleaning", "interval": 7},
@@ -599,7 +601,7 @@ while True:
 **Flash-Speicher (2MB):**
 - Effiziente CSV-Append-Operationen
 - JSON-Dateien für strukturierte Daten
-- Bitmap-Icons direkt im Hauptcode eingebettet
+- Bitmap-Icons in `icon_bitmaps.py` und UI-Hintergründe als `.bin`-Dateien
 
 ### E-Ink Display-Optimierungen
 
@@ -753,7 +755,7 @@ Intelligente Wartungsprüfung basierend auf Zeit und Nutzung.
 ```
 
 **Prüflogik:**
-1. Lade eingebettete Wartungskonfiguration
+1. Lade Standard-Wartungskonfiguration (und optionale Datei-Overrides)
 2. Lade `maintenance_status.json`
 3. Für jeden Task:
    - Zeit-basiert: Tage seit letzter Durchführung ≥ Intervall?
@@ -854,7 +856,7 @@ Datum,Espresso,Cappuccino,Lungo,Iced Latte,Affogato,Shakerato,Espresso Tonic,Fla
 01.11.2024,3,2,0,1,0,0,0,0
 ```
 
-#### Icon-Bitmap-Daten (eingebettet in main.py)
+#### Icon-Bitmap-Daten (in `icon_bitmaps.py`)
 
 **Struktur:**
 ```python
@@ -880,9 +882,9 @@ ICON_MAP = {
 - Experimental: `>>`, `^^`
 - General: `★`
 
-**Hinweis:** Die Icon-Daten sind jetzt direkt in `main.py` eingebettet, eine separate `icon_bitmaps.py`-Datei wird nicht mehr benötigt.
+**Hinweis:** Die Icon-Daten liegen in `icon_bitmaps.py` und werden in `main.py` über `ICON_MAP` verwendet.
 
-#### Wartungskonfiguration (eingebettet in main.py)
+#### Wartungskonfiguration (Standard in `main.py`)
 
 **Standardkonfiguration:**
 ```python
@@ -900,7 +902,7 @@ MAINTENANCE_TASKS = [
 - `interval`: Tages-Intervall für Zeit-basierte Warnung
 - `drink_limit`: Optional - Getränkezahl-Limit für nutzungsbasierte Warnung
 
-**Anpassung:** Die Wartungskonfiguration kann direkt in der Funktion `load_maintenance_config()` in `main.py` angepasst werden. Eine separate `maintenance_config.json`-Datei wird nicht mehr benötigt.
+**Anpassung:** Die Wartungskonfiguration kann direkt in `main.py` angepasst oder per `maintenance_config.json` überschrieben werden.
 
 ### State-Variablen
 
@@ -1282,6 +1284,7 @@ Bei korrupten Dateien:
 ### v2.6.1 (Current)
 - 🧠 **Caching**: Screen-Signaturen fuer gezieltes Redraw, weniger Display-Updates
 - 🗃️ **FS**: File-Exists-Cache konsequenter genutzt
+- 💤 **Sleep Screen**: Vollbild-Bitmap für den Ruhemodus (`images/pixelart/sleep_296x128.bin`)
 
 ### v2.6.0
 - 🧠 **Caching**: Zentrales Log-Parsing mit Cache, weniger Dateizugriffe
@@ -1298,17 +1301,13 @@ Bei korrupten Dateien:
 - 🔍 **Debug**: Serielle Logs sind ueber `DEBUG` schaltbar
 
 ### v2.5.0
-- 📦 **Simplified Installation**: Konsolidierung aller Dateien in eine einzige `main.py`
-- ✅ Icon-Bitmap-Daten jetzt eingebettet (keine separate `icon_bitmaps.py` mehr nötig)
-- ✅ Wartungskonfiguration jetzt eingebettet (keine separate `maintenance_config.json` mehr nötig)
-- 🚀 **Installation**: Nur eine Datei kopieren statt drei
-- 📝 **Documentation**: README aktualisiert mit vereinfachten Installationsanweisungen
-- 🔧 **Maintenance**: Wartungskonfiguration kann direkt in `main.py` angepasst werden
+- 🔧 **Maintenance**: Standard-Wartungskonfiguration in `main.py` konsolidiert
+- 🧩 **Configuration**: Optionale Overrides via `maintenance_config.json`
+- 📝 **Documentation**: README zu Installation und Konfiguration aktualisiert
 
 ### v2.4.1
 - 🎨 **New**: 1-Bit Bitmap Icon System
 - ✅ Converted all 16 SVG icons to 1-bit bitmaps (32x32 pixels)
-- ✅ Integrated bitmap icons into main.py for native rendering
 - ✅ Created icon_bitmaps.py module with pre-rendered icon data
 - ✅ Updated achievement notifications to display bitmap icons
 - ✅ Updated achievement menu to show bitmap icons

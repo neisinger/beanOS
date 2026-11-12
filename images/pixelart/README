@@ -1,1 +1,17 @@
+Pixelart-Assets für Vollbild-Hintergründe (Badger2040, 296x128, 1-Bit).
 
+## Enthaltene Dateien
+
+- `achievement_296x128.bin` – Hintergrund für Achievement-Benachrichtigung
+- `bean_pack_296x128.bin` – Hintergrund für Bohnenpack-Benachrichtigung
+- `maintenance_296x128.bin` – Hintergrund für Wartungswarnung
+- `sleep_296x128.bin` – Hintergrund für Sleep/Ruhemodus
+
+## Quellen (PNG)
+
+- `Badger Screens Achievement.png`
+- `Badger Screens Beans.png`
+- `Badger Screens Elektra.png`
+- `Badger Screens Sleep.png`
+
+Die `.bin`-Dateien werden von `main.py` gestreamt und direkt pixelweise gerendert.
