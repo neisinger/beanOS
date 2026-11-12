@@ -10,12 +10,12 @@ Achievement icons for reaching coffee consumption milestones:
 
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
-|  | `First coffee.png` | Erster Kaffee | First coffee ever! |
-|  | `Coffee starter.png` | Kaffee-Starter | 10 coffees consumed |
-|  | `Coffee fan.png` | Kaffee-Fan | 50 coffees consumed |
-|  | `Coffee lover.png` | Kaffee-Liebhaber | 100 coffees consumed |
-|  | `Coffee expert.png` | Kaffee-Experte | 500 coffees consumed |
-|  | `Coffee master.png` | Kaffee-Meister | 1000 coffees consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/First%20coffee%20.png) | `First coffee.png` | Erster Kaffee | First coffee ever! |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Coffee%20starter.png) | `Coffee starter.png` | Kaffee-Starter | 10 coffees consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Coffee%20fan%20.png) | `Coffee fan.png` | Kaffee-Fan | 50 coffees consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Coffee%20lover.png) | `Coffee lover.png` | Kaffee-Liebhaber | 100 coffees consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Coffee%20expert%20.png) | `Coffee expert.png` | Kaffee-Experte | 500 coffees consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Coffee%20master.png) | `Coffee master.png` | Kaffee-Meister | 1000 coffees consumed |
 
 ### Streaks (`icons/streaks/`)
 
@@ -23,8 +23,8 @@ Achievement icons for consecutive day streaks:
 
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
-|  | `Consistency expert.png` | Consistency Expert | 7 days in a row with coffee |
-|  | `Consistency master.png` | Consistency Master | 30 days in a row with coffee |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Consistency%20expert%20.png) | `Consistency expert.png` | Consistency Expert | 7 days in a row with coffee |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Consistency%20master%20.png) | `Consistency master.png` | Consistency Master | 30 days in a row with coffee |
 
 ### Special Drinks (`icons/special_drinks/`)
 
@@ -32,9 +32,9 @@ Achievement icons for trying special coffee drinks:
 
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
-| https://github.com/neisinger/beanOS/blob/main/icons/Stay%20cool.png | `Stay cool.png` | Stay Cool | First iced latte consumed |
-|  | `Dessert.png` | Dessert | First affogato consumed |
-|  | `Shake it.png` | Shake it! | First shakerato consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Stay%20cool.png) | `Stay cool.png` | Stay Cool | First iced latte consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Dessert.png) | `Dessert.png` | Dessert | First affogato consumed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Shake%20it%20.png) | `Shake it.png` | Shake it! | First shakerato consumed |
 
 ### Maintenance (`icons/maintenance/`)
 
@@ -42,7 +42,7 @@ Achievement icons for machine maintenance:
 
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
-|  | `Clean machine.png` | Saubere Maschine | First maintenance completed |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Clean%20machine.png) | `Clean machine.png` | Saubere Maschine | First maintenance completed |
 |  | `maintenance_master.svg` | Wartungsmeister | All maintenance tasks on time |
 
 ### Experimental (`icons/experimental/`)
@@ -52,7 +52,7 @@ Achievement icons for experimental challenges:
 | Icon | File | Achievement | Description |
 |------|------|-------------|-------------|
 |  | `barista.svg` | Barista | All drink types tried |
-|  | `bean day.png` | Happy Bean Day | 10 coffees in a single day |
+| ![](https://github.com/neisinger/beanOS/blob/main/icons/Bean%20day%20.png) | `bean day.png` | Happy Bean Day | 10 coffees in a single day |
 
 ### General (`icons/general/`)
 
